@@ -1247,37 +1247,31 @@ export default function BillCalculator() {
                   </details>
                 </div>
 
-                {/* STEP 3: Taxes & Regulatory Fees */}
+                {/* STEP 3: Regulatory Fees */}
                 <div className="bg-white dark:bg-zinc-950 border border-slate-100 dark:border-zinc-900 rounded-2xl p-6 space-y-4 shadow-xs">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                       <div className="w-5 h-5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 flex items-center justify-center font-bold text-[11px]">3</div>
-                      <h4 className="text-xs font-bold text-neutral-800 dark:text-neutral-200">Taxes & Regulatory Fees</h4>
+                      <h4 className="text-xs font-bold text-neutral-800 dark:text-neutral-200 font-sans">Regulatory Fees</h4>
                     </div>
                     <span className="text-xs font-bold text-neutral-900 dark:text-white font-sans">
-                      {(regulatoryFee + vatAmount).toFixed(2)} ETB
+                      {regulatoryFee.toFixed(2)} ETB
                     </span>
                   </div>
 
                   {/* Clean key-value pairs */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-slate-50/50 dark:bg-zinc-900/30 rounded-xl border border-slate-100/50 dark:border-zinc-900/50 text-[11px]">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 bg-slate-50/50 dark:bg-zinc-900/30 rounded-xl border border-slate-100/50 dark:border-zinc-900/50 text-[11px]">
                     <div>
-                      <span className="text-slate-400 dark:text-zinc-500 block mb-0.5">Regulatory Fee (0.5%)</span>
-                      <span className="font-bold text-neutral-800 dark:text-zinc-200">{regulatoryFee.toFixed(2)} ETB</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 dark:text-zinc-500 block mb-0.5">VAT Amount (15%)</span>
-                      <span className="font-bold text-neutral-800 dark:text-zinc-200">{vatAmount.toFixed(2)} ETB</span>
+                      <span className="text-slate-400 dark:text-zinc-500 block mb-0.5">Regulatory Rate</span>
+                      <span className="font-bold text-neutral-800 dark:text-zinc-200">0.5%</span>
                     </div>
                     <div>
                       <span className="text-slate-400 dark:text-zinc-500 block mb-0.5">Taxable Base</span>
-                      <span className="font-bold text-neutral-800 dark:text-zinc-200">{vatTaxableAmount.toFixed(2)} ETB</span>
+                      <span className="font-bold text-neutral-800 dark:text-zinc-200">{(baseEnergyBill + serviceCharge).toFixed(2)} ETB</span>
                     </div>
                     <div>
-                      <span className="text-slate-400 dark:text-zinc-500 block mb-0.5">VAT Exemption</span>
-                      <span className="font-bold text-neutral-800 dark:text-zinc-200">
-                        {category === 'domestic' ? `${(200 * (billDays / 30)).toFixed(1)} kWh` : 'None'}
-                      </span>
+                      <span className="text-slate-400 dark:text-zinc-500 block mb-0.5">Calculation Formula</span>
+                      <span className="font-bold text-neutral-800 dark:text-zinc-200">(Energy Bill + Service Charge) × 0.5%</span>
                     </div>
                   </div>
 
@@ -1291,9 +1285,7 @@ export default function BillCalculator() {
                     </summary>
                     <div className="px-4 pb-4 pt-1.5 text-[11px] text-slate-600 dark:text-zinc-400 space-y-3 border-t border-slate-100/50 dark:border-zinc-900/50">
                       <p className="text-[10.5px] text-slate-500 dark:text-zinc-400 leading-relaxed">
-                        <strong>Regulatory Fee (0.5%):</strong> Flat regulatory levy applied to the sum of the consumption charge and the service charge.
-                        <br />
-                        <strong>VAT (15%):</strong> Applied fully on Commercial accounts. For Domestic accounts, energy charges are exempt if actual consumption is ≤ 200 kWh (scaled pro-rata).
+                        <strong>Regulatory Fee (0.5%):</strong> Flat regulatory support levy applied dynamically to the combined amount of the energy consumption charge and the fixed monthly service charge.
                       </p>
 
                       <div className="bg-slate-50 dark:bg-zinc-900/50 p-3 rounded-xl border border-slate-100 dark:border-zinc-800 text-[10.5px] font-sans space-y-3">
@@ -1309,8 +1301,64 @@ export default function BillCalculator() {
                             = {regulatoryFee.toFixed(2)} ETB
                           </div>
                         </div>
+                      </div>
+                    </div>
+                  </details>
+                </div>
 
-                        <div className="pt-2 border-t border-slate-150/60 dark:border-zinc-800">
+                {/* STEP 4: Value Added Tax (VAT) */}
+                <div className="bg-white dark:bg-zinc-950 border border-slate-100 dark:border-zinc-900 rounded-2xl p-6 space-y-4 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-5 h-5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 flex items-center justify-center font-bold text-[11px]">4</div>
+                      <h4 className="text-xs font-bold text-neutral-800 dark:text-neutral-200 font-sans">Value Added Tax (VAT)</h4>
+                    </div>
+                    <span className="text-xs font-bold text-neutral-900 dark:text-white font-sans">
+                      {vatAmount.toFixed(2)} ETB
+                    </span>
+                  </div>
+
+                  {/* Clean key-value pairs */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-slate-50/50 dark:bg-zinc-900/30 rounded-xl border border-slate-100/50 dark:border-zinc-900/50 text-[11px]">
+                    <div>
+                      <span className="text-slate-400 dark:text-zinc-500 block mb-0.5">VAT Rate</span>
+                      <span className="font-bold text-neutral-800 dark:text-zinc-200">15%</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 dark:text-zinc-500 block mb-0.5">Taxable Base</span>
+                      <span className="font-bold text-neutral-800 dark:text-zinc-200">{vatTaxableAmount.toFixed(2)} ETB</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 dark:text-zinc-500 block mb-0.5">VAT Exemption</span>
+                      <span className="font-bold text-neutral-800 dark:text-zinc-200">
+                        {category === 'domestic' ? `${(200 * (billDays / 30)).toFixed(1)} kWh` : 'None'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 dark:text-zinc-500 block mb-0.5">VAT Status</span>
+                      <span className="font-bold text-neutral-800 dark:text-zinc-200">
+                        {category === 'domestic' && actualKwh <= 200 * (billDays / 30) ? 'Exempt (Energy Bill)' : 'Fully Taxable'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Discreet details */}
+                  <details className="group border border-slate-100 dark:border-zinc-850 rounded-xl bg-slate-50/20 dark:bg-zinc-900/10 overflow-hidden transition-all">
+                    <summary className="flex items-center justify-between p-3.5 cursor-pointer select-none text-[11px] font-medium text-slate-500 hover:text-slate-800 dark:hover:text-zinc-200 transition-colors">
+                      <span className="flex items-center gap-1.5">
+                        <ChevronDown className="w-3.5 h-3.5 transition-transform duration-200 group-open:rotate-180 text-slate-400" />
+                        View calculation details
+                      </span>
+                    </summary>
+                    <div className="px-4 pb-4 pt-1.5 text-[11px] text-slate-600 dark:text-zinc-400 space-y-3 border-t border-slate-100/50 dark:border-zinc-900/50">
+                      <p className="text-[10.5px] text-slate-500 dark:text-zinc-400 leading-relaxed">
+                        <strong>VAT (15%):</strong> Standard value-added tax rate. 
+                        For Commercial accounts, VAT is fully applicable on both the energy bill and the service charge.
+                        For Domestic accounts, energy charges are exempt from VAT if actual consumption is less than or equal to 200 kWh (scaled pro-rata based on billing cycle days). In that case, only the service charge is VAT taxable.
+                      </p>
+
+                      <div className="bg-slate-50 dark:bg-zinc-900/50 p-3 rounded-xl border border-slate-100 dark:border-zinc-800 text-[10.5px] font-sans space-y-3">
+                        <div className="pt-2">
                           <div className="font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider text-[9px] mb-1">
                             VAT Calculation Math
                           </div>
@@ -1362,11 +1410,11 @@ export default function BillCalculator() {
                   </details>
                 </div>
 
-                {/* STEP 4: Broadcasting Service Fee */}
+                {/* STEP 5: Broadcasting Service Fee */}
                 <div className="bg-white dark:bg-zinc-950 border border-slate-100 dark:border-zinc-900 rounded-2xl p-6 space-y-4 shadow-xs">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-5 h-5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 flex items-center justify-center font-bold text-[11px]">4</div>
+                      <div className="w-5 h-5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 flex items-center justify-center font-bold text-[11px]">5</div>
                       <h4 className="text-xs font-bold text-neutral-800 dark:text-neutral-200">Broadcasting Service Fee</h4>
                     </div>
                     <span className="text-xs font-bold text-neutral-900 dark:text-white">
