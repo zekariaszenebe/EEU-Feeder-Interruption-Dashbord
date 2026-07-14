@@ -199,17 +199,7 @@ export default function CustomerContacts({
           </p>
         </div>
 
-        {/* Admin Role Status Badge */}
-        <div className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 border shadow-sm shrink-0 ${
-          isAdmin 
-            ? 'bg-emerald-50/80 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/60 text-emerald-750 dark:text-emerald-400' 
-            : 'bg-amber-50/80 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/60 text-amber-700 dark:text-amber-400'
-        }`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${isAdmin ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
-          <span>
-            {isAdmin ? 'Admin: Write Access Active' : 'Agent: Read-Only (Admin role required to edit)'}
-          </span>
-        </div>
+
       </div>
 
       {/* Filters, Search Bar & Actions */}
