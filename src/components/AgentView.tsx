@@ -976,7 +976,7 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
                 placeholder="Search location (e.g. ለገሐር, ቦሌ)..."
                 value={locationSearchQuery}
                 onChange={(e) => setLocationSearchQuery(e.target.value)}
-                className="pl-8 pr-7 py-1.5 text-xs rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1.5 focus:ring-[#5FA354] w-56 font-mono font-medium transition-all"
+                className="pl-8 pr-7 py-1.5 text-xs rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1.5 focus:ring-[#5FA354] w-56 font-sans font-medium transition-all"
               />
               {locationSearchQuery && (
                 <button 
@@ -995,7 +995,7 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
               className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-950 dark:hover:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 transition-all flex items-center gap-1.5"
             >
               <span>{isDirectoryExpanded ? 'Hide Directory List' : 'Show Directory List'}</span>
-              <span className="text-[10.5px] font-mono font-bold bg-[#5FA354]/15 text-[#5FA354] px-2 py-0.2 rounded-full">
+              <span className="text-[10.5px] font-sans font-bold bg-[#5FA354]/15 text-[#5FA354] px-2 py-0.2 rounded-full">
                 {filteredUniqueLocations.length} locations
               </span>
             </button>
@@ -1142,7 +1142,7 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
               return (
                 <div key={`group-heading-${dir}`} className="flex items-center justify-between border-b border-gray-150 dark:border-gray-800 pb-2.5 mt-8 mb-4 first:mt-2">
                   <div className="flex items-center gap-2.5">
-                    <span className={`p-1.5 rounded-lg border flex items-center justify-center ${dirColor}`}>
+                    <span className={`p-1.5 rounded-lg border flex items-center justify-center font-sans ${dirColor}`}>
                       <IconDir className="w-4 h-4" />
                     </span>
                     <div>

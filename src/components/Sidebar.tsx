@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, ShieldAlert, Bell, History, Zap, User, AlertTriangle, ChevronLeft, ChevronRight, LogOut, MapPin, Phone, Calculator } from 'lucide-react';
+import { LayoutDashboard, ShieldAlert, Bell, History, Zap, User, AlertTriangle, ChevronLeft, ChevronRight, LogOut, MapPin, Phone, Calculator, Gauge } from 'lucide-react';
 import EEULogo from './EEULogo';
 
 interface SidebarProps {
@@ -41,6 +41,7 @@ export default function Sidebar({
     { id: 'notifications', name: 'Notification Feed', icon: Bell, badgeCount: notificationCount },
     { id: 'history', name: 'Resolution Archive', icon: History },
     { id: 'calculator', name: 'Bill Calculator', icon: Calculator },
+    { id: 'smartmeter', name: 'Smart Meter Calculator', icon: Gauge },
     { id: 'hub', name: 'CSC Address', icon: MapPin },
     { id: 'contacts', name: 'Other Region Phone NO', icon: Phone }
   ];

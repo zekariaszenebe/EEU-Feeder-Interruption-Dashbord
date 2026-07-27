@@ -487,8 +487,8 @@ export default function BillCalculator() {
         // If consumption exceeds the pro-rated 200 kWh limit, VAT is 15% on the sum of the energy bill and the service charge: (Energy Bill + Service Charge) × 15%
         vatBase = eCharge + sCharge;
       } else {
-        // Consumption is below or equal to the pro-rated 200 kWh exemption. Only service charge is VAT taxable.
-        vatBase = sCharge;
+        // Consumption is below or equal to the pro-rated 200 kWh exemption. VAT is 0.
+        vatBase = 0;
       }
     } else {
       // Commercial: VAT is 15% on the entire sum of energy bill and service charge
@@ -501,9 +501,9 @@ export default function BillCalculator() {
     setVatTaxableAmount(vatBase);
     setVatAmount(vat);
 
-    // Step 5: EBC TV Fee (applied if actual consumption exceeds 50 kWh, 10 Birr monthly pro-rated)
+    // Step 5: EBC TV Fee (applied ONLY to domestic customers if actual consumption exceeds 50 kWh, 10 Birr monthly pro-rated)
     let ebc = 0;
-    if (kwh > 50) {
+    if (category === 'domestic' && kwh > 50) {
       ebc = 10 * prFactor;
     }
     setEbcFee(ebc);
@@ -1337,7 +1337,7 @@ export default function BillCalculator() {
                     <div>
                       <span className="text-slate-400 dark:text-zinc-500 block mb-0.5">VAT Status</span>
                       <span className="font-bold text-neutral-800 dark:text-zinc-200">
-                        {category === 'domestic' && actualKwh <= 200 * (billDays / 30) ? 'Exempt (Energy Bill)' : 'Fully Taxable'}
+                        {category === 'domestic' && actualKwh <= 200 * (billDays / 30) ? 'Fully Exempt (0 ETB)' : 'Fully Taxable'}
                       </span>
                     </div>
                   </div>
@@ -1354,7 +1354,7 @@ export default function BillCalculator() {
                       <p className="text-[10.5px] text-slate-500 dark:text-zinc-400 leading-relaxed">
                         <strong>VAT (15%):</strong> Standard value-added tax rate. 
                         For Commercial accounts, VAT is fully applicable on both the energy bill and the service charge.
-                        For Domestic accounts, energy charges are exempt from VAT if actual consumption is less than or equal to 200 kWh (scaled pro-rata based on billing cycle days). In that case, only the service charge is VAT taxable.
+                        For Domestic accounts, both energy charges and service charges are fully exempt from VAT if actual consumption is less than or equal to 200 kWh (scaled pro-rata based on billing cycle days).
                       </p>
 
                       <div className="bg-slate-50 dark:bg-zinc-900/50 p-3 rounded-xl border border-slate-100 dark:border-zinc-800 text-[10.5px] font-sans space-y-3">
@@ -1370,12 +1370,12 @@ export default function BillCalculator() {
                                   <div className="text-neutral-700 dark:text-neutral-300 font-semibold">
                                     Usage ({actualKwh.toFixed(1)} kWh) ≤ {(200 * (billDays/30)).toFixed(1)} kWh. Exemption Active!
                                   </div>
-                                  <div>Taxable Base = Service Charge only = {serviceCharge.toFixed(2)} ETB</div>
+                                  <div>Taxable Base = 0.00 ETB (Fully Exempt)</div>
                                   <div className="text-slate-450 dark:text-zinc-500 font-mono text-[10px]">
-                                    VAT = {serviceCharge.toFixed(2)} × 15%
+                                    VAT = 0.00 × 15%
                                   </div>
                                   <div className="font-bold text-slate-900 dark:text-white">
-                                    = {vatAmount.toFixed(2)} ETB
+                                    = 0.00 ETB
                                   </div>
                                 </>
                               ) : (
@@ -1426,15 +1426,21 @@ export default function BillCalculator() {
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 bg-slate-50/50 dark:bg-zinc-900/30 rounded-xl border border-slate-100/50 dark:border-zinc-900/50 text-[11px]">
                     <div>
                       <span className="text-slate-400 dark:text-zinc-500 block mb-0.5">EBC TV Fee Rate</span>
-                      <span className="font-bold text-neutral-800 dark:text-zinc-200">10.00 ETB / month</span>
+                      <span className="font-bold text-neutral-800 dark:text-zinc-200">
+                        {category === 'domestic' ? '10.00 ETB / month' : '0.00 ETB (N/A)'}
+                      </span>
                     </div>
                     <div>
-                      <span className="text-slate-400 dark:text-zinc-500 block mb-0.5">Exemption Threshold</span>
-                      <span className="font-bold text-neutral-800 dark:text-zinc-200">≤ 50 kWh</span>
+                      <span className="text-slate-400 dark:text-zinc-500 block mb-0.5">Customer Category</span>
+                      <span className="font-bold text-neutral-800 dark:text-zinc-200">
+                        {category === 'domestic' ? 'Domestic' : 'Commercial (Exempt)'}
+                      </span>
                     </div>
                     <div>
                       <span className="text-slate-400 dark:text-zinc-500 block mb-0.5">Status</span>
-                      <span className="font-bold text-neutral-800 dark:text-zinc-200">{actualKwh <= 50 ? 'Exempted' : 'Active'}</span>
+                      <span className="font-bold text-neutral-800 dark:text-zinc-200">
+                        {category !== 'domestic' ? 'Exempt (Domestic Only)' : actualKwh <= 50 ? 'Exempted (≤ 50 kWh)' : 'Active'}
+                      </span>
                     </div>
                   </div>
 
@@ -1448,16 +1454,20 @@ export default function BillCalculator() {
                     </summary>
                     <div className="px-4 pb-4 pt-1.5 text-[11px] text-slate-600 dark:text-zinc-400 space-y-3 border-t border-slate-100/50 dark:border-zinc-900/50">
                       <p className="text-[10.5px] text-slate-500 dark:text-zinc-400">
-                        A flat broadcasting support fee of 10.00 Birr per month for customers exceeding 50 kWh, pro-rated to the billing cycle days.
+                        The broadcasting support fee (10.00 Birr per month pro-rated) applies strictly to Domestic customers exceeding 50 kWh. Commercial and non-domestic customer categories are exempt from EBC TV fees.
                       </p>
 
                       <div className="bg-slate-50 dark:bg-zinc-900/50 p-3 rounded-xl border border-slate-100 dark:border-zinc-800 text-[10.5px] font-sans space-y-1">
                         <div className="font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider text-[9px] mb-1">
                           EBC TV Right Levy Math
                         </div>
-                        {actualKwh <= 50 ? (
+                        {category !== 'domestic' ? (
                           <div className="text-neutral-700 dark:text-neutral-300 font-semibold">
-                            Consumption ({actualKwh.toFixed(1)} kWh) ≤ 50 kWh limit. Fully Exempted!
+                            Commercial Customer: EBC Broadcasting Fee applies only to domestic customers. EBC Fee = 0.00 ETB
+                          </div>
+                        ) : actualKwh <= 50 ? (
+                          <div className="text-neutral-700 dark:text-neutral-300 font-semibold">
+                            Domestic Consumption ({actualKwh.toFixed(1)} kWh) ≤ 50 kWh limit. Fully Exempted!
                           </div>
                         ) : (
                           <>
@@ -1466,7 +1476,7 @@ export default function BillCalculator() {
                               = 10.00 × ({billDays} / 30)
                             </div>
                             <div className="font-bold text-slate-900 dark:text-white">
-                              = {ebcFee.toFixed(3)} ETB
+                              = {ebcFee.toFixed(2)} ETB
                             </div>
                           </>
                         )}

@@ -600,10 +600,10 @@ export default function AdminPanel({
             All Listed Feeder Disruptions ({interruptions.length})
           </h3>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono font-bold text-emerald-650 bg-emerald-500/10 dark:bg-emerald-950/30 px-2 py-0.5 rounded border border-emerald-500/25">
+            <span className="text-[10px] font-sans font-bold text-emerald-650 bg-emerald-500/10 dark:bg-emerald-950/30 px-2 py-0.5 rounded border border-emerald-500/25">
               Admin: Write Access Active
             </span>
-            <span className="text-[10px] font-mono text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">
+            <span className="text-[10px] font-sans text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">
               Live Persistence
             </span>
           </div>
