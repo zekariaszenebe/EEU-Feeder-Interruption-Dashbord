@@ -154,8 +154,8 @@ export default function BillCalculator() {
   // Inputs state
   const [category, setCategory] = useState<'domestic' | 'commercial'>('domestic');
   const [connectionType, setConnectionType] = useState<'postpaid' | 'prepaid'>('postpaid');
-  const [year, setYear] = useState<'2017' | '2018' | '2019' | '2020'>('2020');
-  const [quarter, setQuarter] = useState<'1' | '2' | '3' | '4'>('4');
+  const [year, setYear] = useState<'2017' | '2018' | '2019' | '2020'>('2019');
+  const [quarter, setQuarter] = useState<'1' | '2' | '3' | '4'>('1');
   const [ethiopianMonth, setEthiopianMonth] = useState<string>('Custom / Standard Cycle');
   const [billDays, setBillDays] = useState<number>(30);
   const [inputMode, setInputMode] = useState<'direct' | 'readings'>('direct');
@@ -530,7 +530,7 @@ export default function BillCalculator() {
     <div id="eeu-bill-calculator-root" className="max-w-7xl mx-auto space-y-6">
       
       {/* Header Panel */}
-      <div className="relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 bg-white dark:bg-zinc-950 border border-gray-150 dark:border-zinc-900 rounded-2xl shadow-xs">
+      <div className="relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl shadow-xs">
         {/* Elegant top accent strip */}
         <div className="absolute top-0 left-0 right-0 h-[3px] bg-white" />
         
@@ -539,8 +539,8 @@ export default function BillCalculator() {
             <Receipt className="w-5.5 h-5.5" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-gray-900 dark:text-white font-sans tracking-tight">
-              EEU Smart Bill Calculator
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white font-sans tracking-tight">
+              EEU Energy Consumption Bill Calculator
             </h1>
             <p className="text-xs text-gray-400 dark:text-zinc-500 font-sans mt-0.5 font-medium">
               Official Multi-Tariff Audit Engine (2017–2020)
@@ -640,7 +640,7 @@ export default function BillCalculator() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
         {/* Left Column - Form Inputs */}
-        <div className="lg:col-span-5 bg-white dark:bg-zinc-950 border border-gray-250 dark:border-zinc-900 rounded-2xl shadow-xs overflow-hidden">
+        <div className="lg:col-span-5 bg-white dark:bg-zinc-950 border-none rounded-2xl shadow-xs overflow-hidden">
           <div className="p-5 border-b border-gray-150/80 dark:border-zinc-900 bg-gray-50/40 dark:bg-zinc-900/10 flex items-center justify-between">
             <h2 className="text-xs font-bold text-gray-850 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-2 font-sans">
               <Receipt className="w-4 h-4 text-[#5FA354]" />

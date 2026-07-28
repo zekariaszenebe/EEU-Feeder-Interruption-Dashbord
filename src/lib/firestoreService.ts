@@ -74,34 +74,32 @@ const customerContactsCol = collection(db, 'customerContacts');
  * This guarantees the application is fully functional with live records on initial load.
  */
 export async function seedInitialDataIfEmpty() {
+  // Delete legacy mock interruptions (f-1 through f-9) if present so they don't persist automatically
   try {
-    const interSnap = await getDocs(query(interruptionsCol, limit(1)));
-    if (interSnap.empty) {
-      console.log("Seeding initial interruptions to Firestore...");
-      const batch = writeBatch(db);
-      INITIAL_INTERRUPTIONS.forEach((item) => {
-        const docRef = doc(db, 'interruptions', item.id);
-        batch.set(docRef, item);
-      });
-      await batch.commit();
+    const mockInterIds = ['f-1', 'f-2', 'f-3', 'f-4', 'f-5', 'f-6', 'f-7', 'f-8', 'f-9'];
+    for (const mockId of mockInterIds) {
+      try {
+        await deleteDoc(doc(db, 'interruptions', mockId));
+      } catch (e) {
+        // ignore
+      }
     }
   } catch (error) {
-    handleFirestoreError(error, OperationType.WRITE, 'interruptions');
+    console.error('Error cleaning legacy mock interruptions:', error);
   }
 
+  // Delete legacy mock notifications (n-2, n-3, n-4) if present
   try {
-    const notifSnap = await getDocs(query(notificationsCol, limit(1)));
-    if (notifSnap.empty) {
-      console.log("Seeding initial notifications to Firestore...");
-      const batch = writeBatch(db);
-      INITIAL_NOTIFICATIONS.forEach((item) => {
-        const docRef = doc(db, 'notifications', item.id);
-        batch.set(docRef, item);
-      });
-      await batch.commit();
+    const mockNotifIds = ['n-2', 'n-3', 'n-4'];
+    for (const notifId of mockNotifIds) {
+      try {
+        await deleteDoc(doc(db, 'notifications', notifId));
+      } catch (e) {
+        // ignore
+      }
     }
   } catch (error) {
-    handleFirestoreError(error, OperationType.WRITE, 'notifications');
+    console.error('Error cleaning legacy mock notifications:', error);
   }
 
   try {

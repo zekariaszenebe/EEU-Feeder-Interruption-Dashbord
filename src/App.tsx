@@ -60,7 +60,7 @@ export default function App() {
   // 2. Data State
   const [interruptions, setInterruptions] = useState<FeederInterruption[]>(() => {
     const saved = localStorage.getItem('eeu-interruptions');
-    let loaded: FeederInterruption[] = INITIAL_INTERRUPTIONS;
+    let loaded: FeederInterruption[] = [];
     if (saved) {
       try {
         loaded = JSON.parse(saved);
@@ -68,10 +68,11 @@ export default function App() {
         console.error('Failed to load interruptions from localStorage', e);
       }
     }
-    // Deep deduplication safeguard
+    // Deep deduplication safeguard and filter out legacy mock IDs
     const seen = new Set<string>();
+    const legacyMockIds = new Set(['f-1', 'f-2', 'f-3', 'f-4', 'f-5', 'f-6', 'f-7', 'f-8', 'f-9']);
     return loaded.filter((item) => {
-      if (!item || !item.id || seen.has(item.id)) {
+      if (!item || !item.id || seen.has(item.id) || legacyMockIds.has(item.id)) {
         return false;
       }
       seen.add(item.id);
@@ -81,7 +82,7 @@ export default function App() {
 
   const [notifications, setNotifications] = useState<SystemNotification[]>(() => {
     const saved = localStorage.getItem('eeu-notifications');
-    let loaded: SystemNotification[] = INITIAL_NOTIFICATIONS;
+    let loaded: SystemNotification[] = [];
     if (saved) {
       try {
         loaded = JSON.parse(saved);
@@ -89,10 +90,11 @@ export default function App() {
         console.error('Failed to load notifications from localStorage', e);
       }
     }
-    // Deep deduplication safeguard and filtering of Emergency Diagnostics Launched
+    // Deep deduplication safeguard and filtering of Emergency Diagnostics Launched & legacy mocks
     const seen = new Set<string>();
+    const legacyNotifIds = new Set(['n-2', 'n-3', 'n-4']);
     return loaded.filter((item) => {
-      if (!item || !item.id || seen.has(item.id)) {
+      if (!item || !item.id || seen.has(item.id) || legacyNotifIds.has(item.id)) {
         return false;
       }
       if (item.title === 'Emergency Diagnostics Launched') {
@@ -540,15 +542,7 @@ export default function App() {
               Other Region Phone NO
             </button>
 
-            {isAdmin && (
-              <button
-                id="mob-logout-btn"
-                onClick={() => { handleLogoutAdmin(); setMobileMenuOpen(false); }}
-                className="w-full mt-2 py-2 text-center text-xs font-bold text-red-500 border border-red-200 dark:border-red-950/60 rounded-xl cursor-pointer"
-              >
-                LOGOUT SYSTEM ADMIN
-              </button>
-            )}
+
 
             <button
               id="mob-web-logout-btn"
@@ -556,7 +550,7 @@ export default function App() {
               className="w-full mt-2 py-2 text-center text-xs font-bold text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-800 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-900 cursor-pointer"
             >
               <LogOut className="w-3.5 h-3.5 text-red-500 animate-pulse" />
-              <span>SIGN OUT WEBSITE</span>
+              <span>SIGN OUT PORTAL</span>
             </button>
 
             <div className="text-[10px] text-gray-400 dark:text-gray-500 text-center select-none pt-2.5 font-sans border-t border-gray-100 dark:border-gray-900/40">

@@ -45,18 +45,34 @@ const DOMESTIC_TARIFFS = {
   }
 };
 
+// 2017 - 2020 EEU Tariff Matrices (Commercial)
+const COMMERCIAL_TARIFFS = {
+  '2017': { '1': 2.6057, '2': 3.0874, '3': 3.5691, '4': 4.0507 },
+  '2018': { '1': 4.5324, '2': 5.0141, '3': 5.4958, '4': 5.9775 },
+  '2019': { '1': 6.4592, '2': 6.9409, '3': 7.4225, '4': 7.9042 },
+  '2020': { '1': 8.3859, '2': 8.8676, '3': 9.3493, '4': 9.8310 }
+};
+
 const PREPAID_SERVICE_CHARGES = {
-  under50: {
-    '2017': { '1': 3.67, '2': 3.84, '3': 4.01, '4': 4.18 },
-    '2018': { '1': 4.36, '2': 4.53, '3': 4.70, '4': 4.87 },
-    '2019': { '1': 5.04, '2': 5.21, '3': 5.38, '4': 5.50 },
-    '2020': { '1': 5.72, '2': 5.89, '3': 6.07, '4': 6.24 }
+  domestic: {
+    under50: {
+      '2017': { '1': 3.67, '2': 3.84, '3': 4.01, '4': 4.18 },
+      '2018': { '1': 4.36, '2': 4.53, '3': 4.70, '4': 4.87 },
+      '2019': { '1': 5.04, '2': 5.21, '3': 5.38, '4': 5.50 },
+      '2020': { '1': 5.72, '2': 5.89, '3': 6.07, '4': 6.24 }
+    },
+    above50: {
+      '2017': { '1': 15.02, '2': 15.33, '3': 15.65, '4': 15.97 },
+      '2018': { '1': 16.28, '2': 16.60, '3': 16.92, '4': 17.23 },
+      '2019': { '1': 17.55, '2': 17.87, '3': 18.18, '4': 18.50 },
+      '2020': { '1': 18.82, '2': 19.13, '3': 19.45, '4': 19.77 }
+    }
   },
-  above50: {
-    '2017': { '1': 15.02, '2': 15.33, '3': 15.65, '4': 15.97 },
-    '2018': { '1': 16.28, '2': 16.60, '3': 16.92, '4': 17.23 },
-    '2019': { '1': 17.55, '2': 17.87, '3': 18.18, '4': 18.50 },
-    '2020': { '1': 18.82, '2': 19.13, '3': 19.45, '4': 19.77 }
+  commercial: {
+    '2017': { '1': 19.31, '2': 19.71, '3': 20.12, '4': 20.53 },
+    '2018': { '1': 20.94, '2': 21.34, '3': 21.75, '4': 22.16 },
+    '2019': { '1': 22.57, '2': 22.97, '3': 23.38, '4': 23.79 },
+    '2020': { '1': 24.19, '2': 24.60, '3': 25.01, '4': 25.42 }
   }
 };
 
@@ -78,8 +94,9 @@ interface TopUpStep {
 }
 
 export default function SmartMeterCalculator() {
-  const [year, setYear] = useState<'2017' | '2018' | '2019' | '2020'>('2018');
-  const [quarter, setQuarter] = useState<'1' | '2' | '3' | '4'>('4');
+  const [category, setCategory] = useState<'domestic' | 'commercial'>('domestic');
+  const [year, setYear] = useState<'2017' | '2018' | '2019' | '2020'>('2019');
+  const [quarter, setQuarter] = useState<'1' | '2' | '3' | '4'>('1');
   
   // Top-up sessions list
   const [topUpSteps, setTopUpSteps] = useState<TopUpStep[]>([
@@ -87,10 +104,11 @@ export default function SmartMeterCalculator() {
   ]);
 
   const [newKwhInput, setNewKwhInput] = useState<string>('');
-  const [showFormulaDetails, setShowFormulaDetails] = useState<boolean>(true);
+  const [showFormulaDetails, setShowFormulaDetails] = useState<boolean>(false);
 
   // Active tariff array based on selected year & quarter
   const currentRates = DOMESTIC_TARIFFS[year][quarter];
+  const currentCommercialRate = COMMERCIAL_TARIFFS[year][quarter];
 
   // Helper to get block tier index from cumulative kWh
   const getTierIndex = (cumulativeKwh: number): number => {
@@ -111,25 +129,39 @@ export default function SmartMeterCalculator() {
     const kwhAdded = Math.max(0, step.kwh);
     const cumulativeKwh = accumulatedKwh + kwhAdded;
     
-    // Tier index for current cumulative kWh
-    const tierIdx = getTierIndex(cumulativeKwh);
-    const rate = currentRates[tierIdx];
-    
-    // 1. Cumulative Energy Charge
-    const energyCharge = cumulativeKwh * rate;
+    let tierIdx = 0;
+    let tierRange = '';
+    let rate = 0;
+    let energyCharge = 0;
+    let serviceCharge = 0;
+    let ebcFee = 0;
+    let vatBase = 0;
 
-    // 2. Prepaid Service Charge based on cumulative kWh level (applies when cumulativeKwh > 0)
-    const level = cumulativeKwh > 50 ? 'above50' : 'under50';
-    const serviceCharge = cumulativeKwh > 0 ? PREPAID_SERVICE_CHARGES[level][year][quarter] : 0;
+    if (category === 'domestic') {
+      tierIdx = getTierIndex(cumulativeKwh);
+      tierRange = TIER_RANGES[tierIdx];
+      rate = currentRates[tierIdx];
+      energyCharge = cumulativeKwh * rate;
 
-    // 3. TV (EBC) Fee (10.00 ETB if cumulative kWh > 50)
-    const ebcFee = cumulativeKwh > 50 ? 10.00 : 0.00;
+      const level = cumulativeKwh > 50 ? 'above50' : 'under50';
+      serviceCharge = cumulativeKwh > 0 ? PREPAID_SERVICE_CHARGES.domestic[level][year][quarter] : 0;
+      ebcFee = cumulativeKwh > 50 ? 10.00 : 0.00;
+      vatBase = cumulativeKwh > 200 ? (energyCharge + serviceCharge) : 0;
+    } else {
+      tierIdx = 0;
+      tierRange = 'Commercial Flat Rate';
+      rate = currentCommercialRate;
+      energyCharge = cumulativeKwh * rate;
+
+      serviceCharge = cumulativeKwh > 0 ? PREPAID_SERVICE_CHARGES.commercial[year][quarter] : 0;
+      ebcFee = 0.00; // Commercial exempt
+      vatBase = cumulativeKwh > 0 ? (energyCharge + serviceCharge) : 0;
+    }
 
     // 4. Regulatory Fee (0.5% of Energy Charge + Service Charge, applies when cumulativeKwh > 0)
     const regulatoryFee = cumulativeKwh > 0 ? (energyCharge + serviceCharge) * 0.005 : 0;
 
-    // 5. VAT (15% if cumulative kWh > 200)
-    const vatBase = cumulativeKwh > 200 ? (energyCharge + serviceCharge) : 0;
+    // 5. VAT (15%)
     const vatAmount = vatBase * 0.15;
 
     // 6. Cumulative Total Cost for cumulativeKwh
@@ -145,7 +177,7 @@ export default function SmartMeterCalculator() {
       previousKwh: accumulatedKwh,
       cumulativeKwh,
       tierIdx,
-      tierRange: TIER_RANGES[tierIdx],
+      tierRange,
       rate,
       energyCharge,
       serviceCharge,
@@ -178,6 +210,14 @@ export default function SmartMeterCalculator() {
     const val = isNaN(parsed) || parsed < 0 ? 0 : parsed;
 
     setTopUpSteps(prev => {
+      // If there is an existing step with 0 kWh (e.g., initial 1st step), update it instead of adding a new step
+      const zeroIdx = prev.findIndex(s => s.kwh === 0);
+      if (zeroIdx !== -1) {
+        const updated = [...prev];
+        updated[zeroIdx] = { ...updated[zeroIdx], kwh: val };
+        return updated;
+      }
+
       const nextNumber = prev.length + 1;
       const ordinals = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'];
       const label = `${ordinals[nextNumber - 1] || `${nextNumber}th`} Top-Up`;
@@ -252,7 +292,7 @@ export default function SmartMeterCalculator() {
                 <h1 className="text-xl font-bold text-gray-900 dark:text-white font-sans tracking-tight">
                   EEU Smart Meter Incremental Top-Up Calculator
                 </h1>
-                <span className="text-[11px] font-sans font-bold bg-emerald-500/10 text-[#5FA354] dark:text-emerald-400 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                <span className="text-[11px] font-sans font-bold bg-emerald-50 dark:bg-emerald-950/40 text-[#5FA354] dark:text-emerald-400 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
                   Monthly Cumulative Billing Mode
                 </span>
               </div>
@@ -272,7 +312,7 @@ export default function SmartMeterCalculator() {
           
           {/* Tariff Settings & Add Top-Up Card */}
           <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-900 rounded-2xl shadow-xs overflow-hidden">
-            <div className="p-4 border-b border-gray-150 dark:border-zinc-900 bg-gray-50/50 dark:bg-zinc-900/20 flex flex-wrap items-center justify-between gap-2">
+            <div className="h-[58px] px-4 border-b border-gray-150 dark:border-zinc-900 bg-gray-50/50 dark:bg-zinc-900/20 flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-xs font-bold text-gray-800 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-2 font-sans">
                 <CreditCard className="w-4 h-4 text-[#5FA354] dark:text-emerald-400" />
                 Tariff Period & Top-Ups
@@ -292,6 +332,37 @@ export default function SmartMeterCalculator() {
             </div>
 
             <div className="p-5 space-y-5">
+              {/* Customer Category & Tariff Period Selection */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-zinc-400 mb-1.5 font-sans">
+                  Customer Category
+                </label>
+                <div className="grid grid-cols-2 gap-2 p-1 bg-gray-100 dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800">
+                  <button
+                    type="button"
+                    onClick={() => setCategory('domestic')}
+                    className={`py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      category === 'domestic'
+                        ? 'bg-[#5FA354] text-white shadow-xs'
+                        : 'text-gray-600 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white'
+                    }`}
+                  >
+                    Domestic
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCategory('commercial')}
+                    className={`py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      category === 'commercial'
+                        ? 'bg-[#5FA354] text-white shadow-xs'
+                        : 'text-gray-600 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white'
+                    }`}
+                  >
+                    Commercial
+                  </button>
+                </div>
+              </div>
+
               {/* Year & Quarter Selection */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -440,38 +511,59 @@ export default function SmartMeterCalculator() {
           <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-900 rounded-2xl p-5 space-y-3 shadow-xs">
             <h3 className="text-xs font-bold text-gray-800 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-2 font-sans">
               <BookOpen className="w-4 h-4 text-[#5FA354] dark:text-emerald-400" />
-              Active Domestic Tariff Matrix ({year} Q{quarter})
+              Active {category === 'domestic' ? 'Domestic' : 'Commercial'} Tariff Matrix ({year} Q{quarter})
             </h3>
-            <div className="border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden text-xs font-sans">
-              <div className="grid grid-cols-2 bg-gray-50 dark:bg-zinc-900/80 px-3.5 py-3 border-b border-gray-200 dark:border-zinc-800 font-bold text-gray-600 dark:text-zinc-300">
-                <span>Monthly kWh Range</span>
-                <span className="text-right">Tariff Rate (ETB/kWh)</span>
+            {category === 'domestic' ? (
+              <div className="border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden text-xs font-sans">
+                <div className="grid grid-cols-2 bg-gray-50 dark:bg-zinc-900/80 px-3.5 py-3 border-b border-gray-200 dark:border-zinc-800 font-bold text-gray-600 dark:text-zinc-300">
+                  <span>Monthly kWh Range</span>
+                  <span className="text-right">Tariff Rate (ETB/kWh)</span>
+                </div>
+                <div className="divide-y divide-gray-150 dark:divide-zinc-850 font-sans text-xs">
+                  {TIER_RANGES.map((range, idx) => {
+                    const rate = currentRates[idx];
+                    const isCurrentActive = getTierIndex(totalKwhPurchased) === idx;
+                    return (
+                      <div
+                        key={range}
+                        className={`grid grid-cols-2 px-3.5 py-2.5 items-center transition-colors ${
+                          isCurrentActive ? 'bg-emerald-500/10 dark:bg-emerald-950/40 font-bold text-[#5FA354] dark:text-emerald-300' : 'text-gray-700 dark:text-zinc-300'
+                        }`}
+                      >
+                        <span className="flex items-center gap-1.5 font-medium">
+                          {range}
+                          {isCurrentActive && (
+                            <span className="text-[10px] font-extrabold bg-[#5FA354] text-white px-2 py-0.5 rounded-full font-mono">
+                              ACTIVE
+                            </span>
+                          )}
+                        </span>
+                        <span className="text-right font-mono font-bold">{rate.toFixed(4)} ETB</span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-              <div className="divide-y divide-gray-150 dark:divide-zinc-850 font-sans text-xs">
-                {TIER_RANGES.map((range, idx) => {
-                  const rate = currentRates[idx];
-                  const isCurrentActive = getTierIndex(totalKwhPurchased) === idx;
-                  return (
-                    <div
-                      key={range}
-                      className={`grid grid-cols-2 px-3.5 py-2.5 items-center transition-colors ${
-                        isCurrentActive ? 'bg-emerald-500/10 dark:bg-emerald-950/40 font-bold text-[#5FA354] dark:text-emerald-300' : 'text-gray-700 dark:text-zinc-300'
-                      }`}
-                    >
-                      <span className="flex items-center gap-1.5 font-medium">
-                        {range}
-                        {isCurrentActive && (
-                          <span className="text-[10px] font-extrabold bg-[#5FA354] text-white px-2 py-0.5 rounded-full font-mono">
-                            ACTIVE
-                          </span>
-                        )}
-                      </span>
-                      <span className="text-right font-mono font-bold">{rate.toFixed(4)} ETB</span>
-                    </div>
-                  );
-                })}
+            ) : (
+              <div className="border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden text-xs font-sans p-4 space-y-3 bg-gray-50/50 dark:bg-zinc-900/50">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600 dark:text-zinc-400 font-medium">Commercial Flat Rate:</span>
+                  <span className="font-bold text-emerald-700 dark:text-emerald-400 font-sans text-sm">{currentCommercialRate.toFixed(4)} ETB/kWh</span>
+                </div>
+                <div className="flex justify-between items-center border-t border-gray-200 dark:border-zinc-800 pt-2.5">
+                  <span className="text-gray-600 dark:text-zinc-400 font-medium">Prepaid Service Charge:</span>
+                  <span className="font-bold text-gray-800 dark:text-zinc-200 font-sans">{PREPAID_SERVICE_CHARGES.commercial[year][quarter].toFixed(2)} ETB</span>
+                </div>
+                <div className="flex justify-between items-center border-t border-gray-200 dark:border-zinc-800 pt-2.5">
+                  <span className="text-gray-600 dark:text-zinc-400 font-medium">VAT Rate:</span>
+                  <span className="font-bold text-gray-800 dark:text-zinc-200 font-sans">15% (All kWh)</span>
+                </div>
+                <div className="flex justify-between items-center border-t border-gray-200 dark:border-zinc-800 pt-2.5">
+                  <span className="text-gray-600 dark:text-zinc-400 font-medium">TV (EBC) Fee:</span>
+                  <span className="font-bold text-gray-800 dark:text-zinc-200 font-sans">0.00 ETB (Exempt)</span>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
         </div>
@@ -491,7 +583,7 @@ export default function SmartMeterCalculator() {
                   EEU SMART METER DIGITAL INTERFACE
                 </span>
               </div>
-              <span className="text-[11px] font-sans font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+              <span className="text-[11px] font-sans font-bold text-white bg-[#5FA354] px-3 py-1 rounded-full">
                 ONLINE • PREPAID LOGIC
               </span>
             </div>
@@ -500,29 +592,29 @@ export default function SmartMeterCalculator() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 relative z-10">
               <div className="p-4 bg-gray-50/80 dark:bg-zinc-900/60 rounded-xl border border-gray-200/80 dark:border-zinc-800 flex flex-col justify-between h-full">
                 <span className="text-[11px] font-sans font-medium uppercase text-gray-900 dark:text-zinc-200 block">Total Monthly kWh</span>
-                <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono tracking-tight mt-1.5 block">
+                <span className="text-2xl font-black text-[#5FA354] dark:text-[#5FA354] font-sans tracking-tight mt-1.5 block">
                   {totalKwhPurchased.toFixed(1)} <span className="text-xs font-normal text-gray-500 dark:text-zinc-400">kWh</span>
                 </span>
               </div>
 
               <div className="p-4 bg-gray-50/80 dark:bg-zinc-900/60 rounded-xl border border-gray-200/80 dark:border-zinc-800 flex flex-col justify-between h-full">
                 <span className="text-[11px] font-sans font-medium uppercase text-gray-900 dark:text-zinc-200 block">Total Spent This Month</span>
-                <span className="text-2xl font-black text-[#009966] dark:text-emerald-400 font-mono tracking-tight mt-1.5 block">
+                <span className="text-2xl font-black text-[#5FA354] dark:text-[#5FA354] font-sans tracking-tight mt-1.5 block">
                   {totalPaidMonth.toFixed(2)} <span className="text-xs font-normal text-gray-500 dark:text-zinc-400">ETB</span>
                 </span>
               </div>
 
               <div className="p-4 bg-gray-50/80 dark:bg-zinc-900/60 rounded-xl border border-gray-200/80 dark:border-zinc-800 flex flex-col justify-between h-full">
                 <span className="text-[11px] font-sans font-medium uppercase text-gray-900 dark:text-zinc-200 block">Current Tariff Tier</span>
-                <span className="text-base font-bold text-emerald-600 dark:text-emerald-400 font-sans tracking-tight mt-1.5 block leading-tight">
-                  {TIER_RANGES[getTierIndex(totalKwhPurchased)]}
+                <span className="text-[20px] font-bold text-[#5FA354] dark:text-[#5FA354] font-sans tracking-tight mt-1.5 block leading-tight">
+                  {category === 'domestic' ? TIER_RANGES[getTierIndex(totalKwhPurchased)] : 'Commercial Flat Rate'}
                 </span>
               </div>
             </div>
 
             <div className="text-xs font-sans text-gray-900 dark:text-zinc-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-t border-gray-150 dark:border-zinc-900 pt-3.5 relative z-10">
               <span>Selected Tariff Matrix: <strong className="text-gray-900 dark:text-white font-mono">{year} Q{quarter}</strong></span>
-              <span>Active Tier Rate: <strong className="text-emerald-600 dark:text-emerald-400 font-mono">{currentRates[getTierIndex(totalKwhPurchased)].toFixed(4)} ETB/kWh</strong></span>
+              <span>Active Tier Rate: <strong className="text-[#5FA354] dark:text-[#5FA354] font-mono">{currentRates[getTierIndex(totalKwhPurchased)].toFixed(4)} ETB/kWh</strong></span>
             </div>
           </div>
 
@@ -570,11 +662,11 @@ export default function SmartMeterCalculator() {
                       </div>
 
                       {/* Customer Pays Badge */}
-                      <div className="text-left sm:text-right bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 p-2.5 px-3.5 rounded-xl shrink-0">
-                        <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">
-                          👈 Customer Pays Now
+                      <div className="text-left sm:text-right bg-[#5FA354] p-2.5 px-3.5 rounded-xl shrink-0">
+                        <span className="text-[10px] font-bold text-white uppercase tracking-wider block">
+                          Customer Purchased
                         </span>
-                        <span className="text-lg font-extrabold text-emerald-700 dark:text-emerald-300 font-mono">
+                        <span className="text-lg font-extrabold text-white font-sans">
                           {step.customerPaysNow.toFixed(2)} ETB
                         </span>
                       </div>
@@ -583,50 +675,50 @@ export default function SmartMeterCalculator() {
                     {/* Step Calculation Details Grid */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 bg-gray-50/70 dark:bg-zinc-900/40 rounded-xl border border-gray-150 dark:border-zinc-850 text-xs font-sans">
                       <div>
-                        <span className="text-[10.5px] text-gray-500 dark:text-zinc-400 block font-medium">Applied Tariff Tier</span>
+                        <span className="text-[10.5px] text-gray-500 dark:text-zinc-400 block font-medium font-sans">Applied Tariff Tier</span>
                         <span className="font-bold text-gray-800 dark:text-zinc-200 mt-0.5 block font-sans">
                           {step.tierRange}
                         </span>
                       </div>
                       <div>
-                        <span className="text-[10.5px] text-gray-500 dark:text-zinc-400 block font-medium">Tier Rate ({year} Q{quarter})</span>
-                        <span className="font-bold text-gray-800 dark:text-zinc-200 mt-0.5 block font-mono">
+                        <span className="text-[10.5px] text-gray-500 dark:text-zinc-400 block font-medium font-sans">Tier Rate ({year} Q{quarter})</span>
+                        <span className="font-bold text-gray-800 dark:text-zinc-200 mt-0.5 block font-sans">
                           {step.rate.toFixed(4)} ETB/kWh
                         </span>
                       </div>
                       <div>
-                        <span className="text-[10.5px] text-gray-500 dark:text-zinc-400 block font-medium">Energy Charge</span>
-                        <span className="font-bold text-gray-800 dark:text-zinc-200 mt-0.5 block font-mono">
+                        <span className="text-[10.5px] text-gray-500 dark:text-zinc-400 block font-medium font-sans">Energy Charge</span>
+                        <span className="font-bold text-gray-800 dark:text-zinc-200 mt-0.5 block font-sans">
                           {step.energyCharge.toFixed(2)} ETB
                         </span>
                       </div>
                       <div>
-                        <span className="text-[10.5px] text-gray-500 dark:text-zinc-400 block font-medium">Prepaid Service Charge</span>
-                        <span className="font-bold text-gray-800 dark:text-zinc-200 mt-0.5 block font-mono">
+                        <span className="text-[10.5px] text-gray-500 dark:text-zinc-400 block font-medium font-sans">Prepaid Service Charge</span>
+                        <span className="font-bold text-gray-800 dark:text-zinc-200 mt-0.5 block font-sans">
                           {step.serviceCharge.toFixed(2)} ETB
                         </span>
                       </div>
                       <div>
-                        <span className="text-[10.5px] text-gray-500 dark:text-zinc-400 block font-medium">TV (EBC) Fee</span>
-                        <span className="font-bold text-gray-800 dark:text-zinc-200 mt-0.5 block font-mono">
+                        <span className="text-[10.5px] text-gray-500 dark:text-zinc-400 block font-medium font-sans">TV (EBC) Fee</span>
+                        <span className="font-bold text-gray-800 dark:text-zinc-200 mt-0.5 block font-sans">
                           {step.ebcFee.toFixed(2)} ETB
                         </span>
                       </div>
                       <div>
-                        <span className="text-[10.5px] text-gray-500 dark:text-zinc-400 block font-medium">Regulatory Fee (0.5%)</span>
-                        <span className="font-bold text-gray-800 dark:text-zinc-200 mt-0.5 block font-mono">
+                        <span className="text-[10.5px] text-gray-500 dark:text-zinc-400 block font-medium font-sans">Regulatory Fee (0.5%)</span>
+                        <span className="font-bold text-gray-800 dark:text-zinc-200 mt-0.5 block font-sans">
                           {step.regulatoryFee.toFixed(3)} ETB
                         </span>
                       </div>
                       <div>
-                        <span className="text-[10.5px] text-gray-500 dark:text-zinc-400 block font-medium">VAT (15%)</span>
-                        <span className="font-bold text-gray-800 dark:text-zinc-200 mt-0.5 block font-mono">
+                        <span className="text-[10.5px] text-gray-500 dark:text-zinc-400 block font-medium font-sans">VAT (15%)</span>
+                        <span className="font-bold text-gray-800 dark:text-zinc-200 mt-0.5 block font-sans">
                           {step.vatAmount > 0 ? `${step.vatAmount.toFixed(3)} ETB` : '0.00 ETB (Exempt)'}
                         </span>
                       </div>
                       <div>
-                        <span className="text-[10.5px] text-gray-500 dark:text-zinc-400 block font-medium">Cumulative Total Bill</span>
-                        <span className="font-bold text-emerald-700 dark:text-emerald-300 mt-0.5 block font-mono">
+                        <span className="text-xs text-gray-500 dark:text-zinc-400 block font-medium font-sans">Cumulative Total Bill</span>
+                        <span className="font-bold text-emerald-700 dark:text-emerald-300 mt-0.5 block font-sans text-sm">
                           {step.cumulativeTotalCost.toFixed(2)} ETB
                         </span>
                       </div>
