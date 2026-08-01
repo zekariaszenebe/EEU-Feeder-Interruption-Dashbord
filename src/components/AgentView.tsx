@@ -949,7 +949,7 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
       {/* AFFECTED AREAS DIRECTORY & CATALOG */}
       <div id="affected-areas-directory-card" className="glass-card rounded-3xl p-5 border border-gray-250/50 dark:border-gray-850/70 space-y-4 shadow-sm select-none order-3">
         <div className="flex items-center justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 text-[17px]">
             <div className="w-9 h-9 rounded-xl bg-orange-500/10 dark:bg-orange-950/20 text-[#F48B20] flex items-center justify-center font-bold">
               <MapPin className="w-5 h-5" />
             </div>
