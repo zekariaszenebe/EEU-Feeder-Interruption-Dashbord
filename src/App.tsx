@@ -587,10 +587,10 @@ export default function App() {
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#5FA354] opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-[#5FA354]"></span>
                   </span>
-                  የኢትዮጵያ ኤሌክትሪክ አገልግሎት <span className="text-gray-300 dark:text-gray-700">|</span> Ethiopian Electric Utility Grid Operations Panel
+                  የኢትዮጵያ ኤሌክትሪክ አገልግሎት <span className="text-gray-300 dark:text-gray-700">|</span> Ethiopian Electric Utility
                 </span>
                 <h1 className="text-[25px] font-display font-black tracking-tight text-gray-950 dark:text-white mt-1">
-                  Feeder Interruption Management System
+                  Feeder Interruption For Call Center
                 </h1>
               </div>
 
@@ -718,17 +718,14 @@ export default function App() {
         )}
 
         {/* BOTTOM ACCENT BAR Representing Ethiopian Electric Utility */}
-        <footer id="branding-footer" className={`py-3 px-6 bg-white dark:bg-gray-950 border-t border-gray-100 dark:border-gray-900/60 text-center flex items-center justify-between text-[10px] text-gray-400 dark:text-gray-500 font-mono select-none transition-all duration-300 ${isSidebarMinimized ? 'lg:pl-24' : 'lg:pl-72'}`}>
-          <div className="flex items-center gap-2 justify-start">
+        <footer id="branding-footer" className={`py-3 px-6 bg-white dark:bg-gray-950 border-t border-gray-100 dark:border-gray-900/60 text-center flex items-center justify-end text-[10px] text-gray-400 dark:text-gray-500 font-mono select-none transition-all duration-300 ${isSidebarMinimized ? 'lg:pl-24' : 'lg:pl-72'}`}>
+          <div className="flex items-center gap-2 justify-end ml-auto">
             <EEULogo size={18} />
             <div className="flex items-center gap-1.5">
               <span className="font-sans font-semibold text-[#F48B20]">የኢትዮጵያ ኤሌክትሪክ አገልግሎት</span>
               <span className="text-gray-300 dark:text-gray-800">|</span>
               <span className="font-sans font-bold text-[#5FA354]">Ethiopian Electric Utility (EEU)</span>
             </div>
-          </div>
-          <div>
-            <span className="text-gray-400 dark:text-gray-600 font-semibold font-sans">GRID OPERATIONAL CONTROL CENTER</span>
           </div>
         </footer>
 

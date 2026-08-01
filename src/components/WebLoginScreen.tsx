@@ -114,7 +114,7 @@ export default function WebLoginScreen({ onLoginSuccess }: WebLoginScreenProps) 
             Ethiopian Electric Utility
           </h1>
           <p className="text-[13px] font-bold text-gray-500 mt-1.5 leading-relaxed font-sans">
-            Power interruptions management portal for contact center
+            Feeder Interruptions Dashboard For Contact Center
           </p>
         </div>
 

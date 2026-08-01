@@ -292,9 +292,6 @@ export default function SmartMeterCalculator() {
                 <h1 className="text-xl font-bold text-gray-900 dark:text-white font-sans tracking-tight">
                   EEU Smart Meter Incremental Top-Up Calculator
                 </h1>
-                <span className="text-[11px] font-sans font-bold bg-emerald-50 dark:bg-emerald-950/40 text-[#5FA354] dark:text-emerald-400 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
-                  Monthly Cumulative Billing Mode
-                </span>
               </div>
               <p className="text-xs text-gray-600 dark:text-zinc-400 font-sans mt-1 font-medium">
                 Calculates electricity costs when a customer tops up multiple times within a single calendar month using EEU block tariff progression.

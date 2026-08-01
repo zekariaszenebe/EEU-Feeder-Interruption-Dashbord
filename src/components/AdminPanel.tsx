@@ -507,7 +507,7 @@ export default function AdminPanel({
             <span>Feeder Administration Panel</span>
           </h2>
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            Publish real-time grid changes, manage available master feeder lines, or clear resolved areas.
+            Publish real-time interruption, manage available master feeder lines, or clear resolved areas.
           </p>
         </div>
 

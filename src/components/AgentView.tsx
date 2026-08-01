@@ -954,15 +954,13 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
               <MapPin className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="font-display font-bold text-gray-950 dark:text-white text-sm tracking-tight leading-tight flex items-center gap-2">
-                Affected Location Areas Directory
-                <span className="text-[9px] bg-[#5FA354]/15 text-[#5FA354] font-black px-2 py-0.5 rounded-full uppercase tracking-wider scale-95">
-                  የተጎዱ ሰፈሮችና መገኛዎች
+              <h2 className="font-display font-bold text-gray-950 dark:text-white text-[17px] tracking-tight leading-tight flex items-center gap-2">
+                Affected Areas
+                <span className="text-[11px] bg-[#5FA354]/15 text-[#5FA354] font-black px-2 py-0.5 rounded-full uppercase tracking-wider scale-95">
+                  የተጎዱ ሰፈሮች
                 </span>
               </h2>
-              <p className="text-[10.5px] text-gray-500 dark:text-gray-400 font-medium">
-                Click any specific Amharic sub-location badge to isolate that neighborhood's supplying feeder line
-              </p>
+
             </div>
           </div>
 
