@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Zap, Bell, Menu, X, ShieldAlert, CheckCircle2, AlertTriangle, 
-  Settings, RefreshCw, Layers, LayoutGrid, Clock, LogOut, Sun, Moon 
+  Settings, RefreshCw, Layers, LayoutGrid, Clock, LogOut, Sun, Moon,
+  Headset, ShieldCheck 
 } from 'lucide-react';
 
 // Types and mock data
@@ -594,21 +595,40 @@ export default function App() {
                 </h1>
               </div>
 
-              {/* Status and Active Indicators */}
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 p-2 px-3 glass-card rounded-2xl text-xs select-none shadow-none">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                  </span>
-                  <span className="text-gray-600 dark:text-gray-300 font-medium">Channel Status: <strong className="text-eeu-green dark:text-emerald-450 font-semibold">Online</strong></span>
-                </div>
+              {/* User Profile Pill Card & Action Buttons */}
+              <div className="flex items-center gap-2.5">
+                {/* Notifications Button */}
+                <button
+                  id="header-notification-toggle"
+                  onClick={() => setCurrentTab('notifications')}
+                  title="Notifications"
+                  className="relative w-10 h-10 rounded-full bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800 shadow-sm hover:shadow flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all cursor-pointer shrink-0"
+                >
+                  <Bell className="w-4.5 h-4.5 text-slate-700 dark:text-slate-200" />
+                  {activeUnreadCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
+                      {activeUnreadCount > 9 ? '9+' : activeUnreadCount}
+                    </span>
+                  )}
+                </button>
 
-                <div className="flex items-center gap-2 p-2 px-3 glass-card rounded-2xl text-xs shadow-none">
-                  <span className="text-gray-500 dark:text-gray-400">Current User:</span>
-                  <span className="font-semibold text-gray-900 dark:text-white flex items-center gap-1">
-                    <span>{isAdmin ? 'Admin' : 'Call Center Agent'}</span>
-                  </span>
+                {/* User Profile Pill Card */}
+                <div id="user-profile-pill" className="flex items-center gap-2.5 p-1.5 pr-4 pl-2 glass-card rounded-full shadow-sm border border-solid border-gray-250/70 dark:border-gray-800 select-none w-[165px] text-left">
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${
+                    isAdmin 
+                      ? 'bg-amber-500/15 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400' 
+                      : 'bg-emerald-500/15 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
+                  }`}>
+                    {isAdmin ? <ShieldCheck className="w-4.5 h-4.5" /> : <Headset className="w-4.5 h-4.5" />}
+                  </div>
+                  <div className="flex flex-col text-left leading-tight">
+                    <span className="text-xs font-bold text-gray-950 dark:text-white font-sans tracking-tight">
+                      {isAdmin ? 'Admin' : 'Call Agent'}
+                    </span>
+                    <span className="text-[10.5px] text-gray-500 dark:text-gray-400 font-medium font-sans">
+                      {isAdmin ? 'Admin Profile' : 'Call Center Profile'}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>

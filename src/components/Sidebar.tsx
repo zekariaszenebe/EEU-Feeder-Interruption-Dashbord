@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, ShieldAlert, Bell, History, Zap, User, AlertTriangle, ChevronLeft, ChevronRight, LogOut, MapPin, Phone, Calculator, Gauge } from 'lucide-react';
+import { LayoutDashboard, ShieldAlert, Bell, History, Zap, User, AlertTriangle, ChevronLeft, ChevronRight, LogOut, MapPin, Phone, Calculator, Gauge, Headset, ShieldCheck } from 'lucide-react';
 import EEULogo from './EEULogo';
 
 interface SidebarProps {
@@ -136,8 +136,38 @@ export default function Sidebar({
       </nav>
 
       {/* User Section & Admin Status */}
-      <div className={`p-4 border-t border-gray-200/40 dark:border-gray-900/40 bg-transparent flex flex-col ${isMinimized ? 'px-2 items-center gap-4' : 'gap-3'}`}>
-
+      <div className={`p-4 border-t border-gray-200/40 dark:border-gray-900/40 bg-transparent flex flex-col ${isMinimized ? 'px-2 items-center gap-3' : 'gap-3'}`}>
+        {/* User Profile Pill Card */}
+        {isMinimized ? (
+          <div 
+            className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 border border-gray-200/80 dark:border-gray-800 shadow-sm ${
+              isAdmin 
+                ? 'bg-amber-500/15 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400' 
+                : 'bg-emerald-500/15 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
+            }`}
+            title={isAdmin ? 'Admin - Admin Profile' : 'Call Agent - Call Center Profile'}
+          >
+            {isAdmin ? <ShieldCheck className="w-4.5 h-4.5" /> : <Headset className="w-4.5 h-4.5" />}
+          </div>
+        ) : (
+          <div className="flex items-center gap-2.5 p-1.5 pr-4 pl-2 bg-gray-50/80 dark:bg-gray-900/60 border border-gray-200/70 dark:border-gray-800/80 rounded-full select-none shadow-sm">
+            <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${
+              isAdmin 
+                ? 'bg-amber-500/15 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400' 
+                : 'bg-emerald-500/15 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
+            }`}>
+              {isAdmin ? <ShieldCheck className="w-4.5 h-4.5" /> : <Headset className="w-4.5 h-4.5" />}
+            </div>
+            <div className="flex flex-col text-left leading-tight overflow-hidden">
+              <span className="text-xs font-bold text-gray-950 dark:text-white font-sans truncate">
+                {isAdmin ? 'Admin' : 'Call Agent'}
+              </span>
+              <span className="text-[10.5px] text-gray-500 dark:text-gray-400 font-medium font-sans truncate">
+                {isAdmin ? 'Admin Profile' : 'Call Center Profile'}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Global Website Sign-out */}
         {isMinimized ? (

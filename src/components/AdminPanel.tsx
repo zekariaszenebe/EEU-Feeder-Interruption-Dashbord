@@ -536,13 +536,7 @@ export default function AdminPanel({
             <span>{csvCopied ? 'Copied to Sheets!' : 'Copy to CSV'}</span>
           </button>
 
-          <button
-            id="admin-logout-top-btn"
-            onClick={onSwitchToAgentMode || onLogoutAdmin}
-            className="px-4 py-2 text-xs font-semibold rounded-xl border border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:bg-amber-100/10 transition-all cursor-pointer"
-          >
-            Switch to Agent Mode
-          </button>
+
           
           {adminSubTab === 'outages' ? (
             <button
