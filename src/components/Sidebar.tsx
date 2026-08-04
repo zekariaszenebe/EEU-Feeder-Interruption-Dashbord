@@ -38,7 +38,6 @@ export default function Sidebar({
   const navItems: NavItem[] = [
     { id: 'dashboard', name: 'Interruption Dashboard', icon: LayoutDashboard },
     ...(isAdmin ? [{ id: 'admin', name: 'Admin Feed Control', icon: ShieldAlert }] : []),
-    { id: 'notifications', name: 'Notification Feed', icon: Bell, badgeCount: notificationCount },
     { id: 'history', name: 'Resolution Archive', icon: History },
     { id: 'calculator', name: 'Bill Calculator', icon: Calculator },
     { id: 'smartmeter', name: 'Smart Meter Calculator', icon: Gauge },
@@ -159,7 +158,7 @@ export default function Sidebar({
               {isAdmin ? <ShieldCheck className="w-4.5 h-4.5" /> : <Headset className="w-4.5 h-4.5" />}
             </div>
             <div className="flex flex-col text-left leading-tight overflow-hidden">
-              <span className="text-xs font-bold text-gray-950 dark:text-white font-sans truncate">
+              <span className="text-[13px] font-bold text-gray-950 dark:text-white font-sans truncate">
                 {isAdmin ? 'Admin' : 'Call Agent'}
               </span>
               <span className="text-[10.5px] text-gray-500 dark:text-gray-400 font-medium font-sans truncate">

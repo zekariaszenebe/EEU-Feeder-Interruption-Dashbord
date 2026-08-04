@@ -956,11 +956,7 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
             <div>
               <h2 className="font-display font-bold text-gray-950 dark:text-white text-[17px] tracking-tight leading-tight flex items-center gap-2">
                 Affected Areas
-                <span className="text-[11px] bg-[#5FA354]/15 text-[#5FA354] font-black px-2 py-0.5 rounded-full uppercase tracking-wider scale-95">
-                  የተጎዱ ሰፈሮች
-                </span>
               </h2>
-
             </div>
           </div>
 
@@ -1105,34 +1101,22 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
               : (['North', 'East', 'West', 'South', 'Sheger'] as const);
 
             const renderDirHeader = (dir: string, count: number) => {
-              let IconDir = Compass;
-              let dirColor = "text-gray-500 bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-800";
               let amStyle = "text-sky-600 bg-sky-500/10 dark:text-sky-400";
               let amName = "ሰሜን አዲስ አበባ";
 
               if (dir === 'North') {
-                IconDir = ArrowUp;
-                dirColor = "text-sky-500 bg-sky-500/5 dark:bg-sky-950/20 border-sky-200 dark:border-sky-900/50";
                 amStyle = "text-sky-600 bg-sky-500/10 dark:text-sky-400";
                 amName = "ሰሜን አዲስ አበባ";
               } else if (dir === 'East') {
-                IconDir = ArrowRight;
-                dirColor = "text-amber-500 bg-amber-500/5 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/50";
                 amStyle = "text-amber-600 bg-amber-500/10 dark:text-amber-400";
                 amName = "ምሥራቅ አዲስ አበባ";
               } else if (dir === 'South') {
-                IconDir = ArrowDown;
-                dirColor = "text-red-500 bg-red-500/5 dark:bg-red-950/20 border-red-200 dark:border-red-900/50";
                 amStyle = "text-red-650 bg-red-500/10 dark:text-red-400";
                 amName = "ደቡብ አዲስ አበባ";
               } else if (dir === 'West') {
-                IconDir = ArrowLeft;
-                dirColor = "text-emerald-500 bg-emerald-500/5 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/50";
                 amStyle = "text-emerald-600 bg-emerald-500/10 dark:text-emerald-400";
                 amName = "ምዕራብ አዲስ አበባ";
               } else {
-                IconDir = Compass;
-                dirColor = "text-purple-500 bg-purple-500/5 dark:bg-purple-950/20 border-purple-200 dark:border-purple-900/50";
                 amStyle = "text-purple-600 bg-purple-500/10 dark:text-purple-400";
                 amName = "ሸገር ክልል";
               }
@@ -1140,21 +1124,12 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
               return (
                 <div key={`group-heading-${dir}`} className="flex items-center justify-between border-b border-gray-150 dark:border-gray-800 pb-2.5 mt-8 mb-4 first:mt-2">
                   <div className="flex items-center gap-2.5">
-                    <span className={`p-1.5 rounded-lg border flex items-center justify-center font-sans ${dirColor}`}>
-                      <IconDir className="w-4 h-4" />
-                    </span>
                     <div>
                       <h3 className="font-display font-black text-gray-900 dark:text-white text-xl tracking-tight flex items-center gap-2">
                         {dir === 'Sheger' ? 'Sheger Region' : `${dir} Addis Ababa`}
-                        <span className={`text-sm font-bold px-2 py-0.5 rounded-full ${amStyle}`}>
-                          {amName}
-                        </span>
                       </h3>
                     </div>
                   </div>
-                  <span className="font-mono text-xs text-gray-500 font-bold bg-gray-100 dark:bg-gray-900 px-2.5 py-1 rounded-xl">
-                    {count} {count === 1 ? 'Outage' : 'Outages'}
-                  </span>
                 </div>
               );
             };
