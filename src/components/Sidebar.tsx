@@ -72,16 +72,7 @@ export default function Sidebar({
           </button>
         )}
 
-        {!isMinimized && (
-          <div className="pt-2.5 px-0.5 border-t border-gray-100/30 dark:border-gray-950/20 flex items-center justify-between text-[16px]">
-            <span className="text-[11px] font-sans font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-              Feeder Operations
-            </span>
-            <span className="text-[9px] bg-[#5FA354]/10 text-[#5FA354] dark:text-emerald-450 dark:bg-emerald-950/20 font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
-              HUB
-            </span>
-          </div>
-        )}
+
       </div>
 
       {/* Navigation Links */}
