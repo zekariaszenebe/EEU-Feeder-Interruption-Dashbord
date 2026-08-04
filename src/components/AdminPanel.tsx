@@ -21,6 +21,12 @@ const parseFeeder = (feederStr: string) => {
   return { feederLine: feederStr, amharicLocation: '' };
 };
 
+export const normalizeFeederName = (name: string) => {
+  if (!name) return '';
+  const parsed = parseFeeder(name);
+  return (parsed.feederLine || name).trim().toLowerCase();
+};
+
 export const parseFeederDetails = (feederLine: string) => {
   const parts = feederLine.split(' - ');
   if (parts.length >= 2) {
@@ -110,8 +116,13 @@ export default function AdminPanel({
   // Initialize form for adding
   const handleOpenAddForm = () => {
     setEditingItem(null);
-    const firstFeeder = activeFeeders[0] || 'GENERIC FEEDER - 01 (Area)';
-    const parsed = parseFeeder(firstFeeder);
+    const availableFeeder = activeFeeders.find((f) => {
+      const parsed = parseFeeder(f);
+      const norm = normalizeFeederName(parsed.feederLine);
+      return !interruptions.some((item) => normalizeFeederName(item.feederName) === norm && item.status !== InterruptionStatus.RESTORED);
+    }) || activeFeeders[0] || 'GENERIC FEEDER - 01 (Area)';
+
+    const parsed = parseFeeder(availableFeeder);
     setFeederName(parsed.feederLine);
     setCustomFeederEnabled(false);
     setCustomFeederName('');
@@ -282,6 +293,20 @@ export default function AdminPanel({
     const finalFeederName = customFeederEnabled ? customFeederName.trim() : feederName;
     if (!finalFeederName) {
       setFormError('Please specify or select a feeder station name.');
+      return;
+    }
+
+    // Validate: Do not allow adding or updating an interruption to the same feeder if an active/unrestored log already exists
+    const normFinal = normalizeFeederName(finalFeederName);
+    const existingUnrestored = interruptions.find((item) => {
+      if (editingItem && item.id === editingItem.id) return false;
+      const isSameFeeder = normalizeFeederName(item.feederName) === normFinal;
+      const isNotRestored = item.status !== InterruptionStatus.RESTORED;
+      return isSameFeeder && isNotRestored;
+    });
+
+    if (existingUnrestored) {
+      setFormError(`An active interruption log already exists for feeder "${finalFeederName}" (${existingUnrestored.status}). A new log cannot be created for this feeder until the existing issue is Restored.`);
       return;
     }
     
@@ -936,9 +961,16 @@ export default function AdminPanel({
                       >
                         {activeFeeders.map((feeder) => {
                           const parsed = parseFeeder(feeder);
+                          const norm = normalizeFeederName(parsed.feederLine);
+                          const activeItem = interruptions.find(
+                            (item) =>
+                              (!editingItem || item.id !== editingItem.id) &&
+                              normalizeFeederName(item.feederName) === norm &&
+                              item.status !== InterruptionStatus.RESTORED
+                          );
                           return (
-                            <option key={feeder} value={parsed.feederLine}>
-                              {parsed.feederLine}
+                            <option key={feeder} value={parsed.feederLine} disabled={!!activeItem}>
+                              {parsed.feederLine} {activeItem ? `⚠️ (Outage Active: ${activeItem.status})` : ''}
                             </option>
                           );
                         })}
