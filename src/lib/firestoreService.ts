@@ -12,7 +12,7 @@ import {
   limit
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { FeederInterruption, SystemNotification, InterruptionStatus, TeamLeaderNote, ContactItem } from '../types';
+import { FeederInterruption, SystemNotification, InterruptionStatus, TeamLeaderNote, ContactItem, TeamLeaderUser } from '../types';
 import { INITIAL_INTERRUPTIONS, INITIAL_NOTIFICATIONS, INITIAL_FEEDERS_LIST, INITIAL_CUSTOMER_CONTACTS } from '../data/mockData';
 import { HubRecord, HUB_RECORDS } from '../data/hubData';
 
@@ -68,6 +68,7 @@ const presetFeedersCol = collection(db, 'presetFeeders');
 const hubRecordsCol = collection(db, 'hubRecords');
 const teamLeaderNotesCol = collection(db, 'teamLeaderNotes');
 const customerContactsCol = collection(db, 'customerContacts');
+const teamLeadersCol = collection(db, 'teamLeaders');
 
 /**
  * Seeding helper to populate firestore with default mock data if it is completely empty.
@@ -146,6 +147,52 @@ export async function seedInitialDataIfEmpty() {
     }
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, 'customerContacts');
+  }
+
+  try {
+    const tlSnap = await getDocs(query(teamLeadersCol, limit(1)));
+    if (tlSnap.empty) {
+      console.log("Seeding initial default Call Center Team Leaders (Teams A, B, C, D) to Firestore...");
+      const defaultTeamLeaders: TeamLeaderUser[] = [
+        {
+          id: 'tl-a',
+          username: '@team_a',
+          password: 'Tl@1234',
+          name: 'Team A Leader',
+          district: 'Team A',
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 'tl-b',
+          username: '@team_b',
+          password: 'Tl@1234',
+          name: 'Team B Leader',
+          district: 'Team B',
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 'tl-c',
+          username: '@team_c',
+          password: 'Tl@1234',
+          name: 'Team C Leader',
+          district: 'Team C',
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 'tl-d',
+          username: '@team_d',
+          password: 'Tl@1234',
+          name: 'Team D Leader',
+          district: 'Team D',
+          createdAt: new Date().toISOString()
+        }
+      ];
+      for (const tl of defaultTeamLeaders) {
+        await setDoc(doc(db, 'teamLeaders', tl.id), tl);
+      }
+    }
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, 'teamLeaders');
   }
 
   // Removing team leader notes seeding to ensure board is empty on reload
@@ -685,6 +732,90 @@ export async function deleteCustomerContactDoc(id: string) {
     await deleteDoc(doc(db, 'customerContacts', id));
   } catch (error) {
     handleFirestoreError(error, OperationType.DELETE, `customerContacts/${id}`);
+  }
+}
+
+/**
+ * Subscribes to Team Leaders in real-time.
+ */
+export function subscribeToTeamLeaders(onUpdate: (items: TeamLeaderUser[]) => void) {
+  return onSnapshot(teamLeadersCol, (snapshot) => {
+    const list: TeamLeaderUser[] = [];
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      list.push({
+        id: data.id || doc.id,
+        username: data.username,
+        password: data.password,
+        name: data.name,
+        district: data.district,
+        mustChangePassword: data.mustChangePassword,
+        createdAt: data.createdAt || new Date().toISOString()
+      } as TeamLeaderUser);
+    });
+
+    list.sort((a, b) => a.name.localeCompare(b.name));
+    onUpdate(list);
+  }, (err) => {
+    handleFirestoreError(err, OperationType.GET, 'teamLeaders');
+  });
+}
+
+/**
+ * Adds a new Team Leader.
+ */
+export async function addTeamLeaderDoc(item: Omit<TeamLeaderUser, 'id' | 'createdAt'>) {
+  const newId = `tl-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+  const cleanUsername = item.username.trim();
+
+  const record: Record<string, any> = {
+    id: newId,
+    username: cleanUsername,
+    password: item.password.trim(),
+    name: item.name.trim(),
+    createdAt: new Date().toISOString()
+  };
+  if (item.district) record.district = item.district;
+  if (typeof item.mustChangePassword === 'boolean') record.mustChangePassword = item.mustChangePassword;
+
+  try {
+    await setDoc(doc(db, 'teamLeaders', newId), record);
+    return record as TeamLeaderUser;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.CREATE, `teamLeaders/${newId}`);
+  }
+}
+
+/**
+ * Updates an existing Team Leader's username, password, name, or district.
+ */
+export async function updateTeamLeaderDoc(item: TeamLeaderUser) {
+  const cleanUsername = item.username.trim();
+  const record: Record<string, any> = {
+    id: item.id,
+    username: cleanUsername,
+    password: item.password.trim(),
+    name: item.name.trim(),
+    createdAt: item.createdAt || new Date().toISOString()
+  };
+  if (item.district) record.district = item.district;
+  if (typeof item.mustChangePassword === 'boolean') record.mustChangePassword = item.mustChangePassword;
+
+  try {
+    await setDoc(doc(db, 'teamLeaders', item.id), record);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, `teamLeaders/${item.id}`);
+  }
+}
+
+/**
+ * Deletes a Team Leader account.
+ */
+export async function deleteTeamLeaderDoc(id: string) {
+  try {
+    await deleteDoc(doc(db, 'teamLeaders', id));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, `teamLeaders/${id}`);
   }
 }
 

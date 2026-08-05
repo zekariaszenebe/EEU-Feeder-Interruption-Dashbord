@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ShieldAlert, Lock, Unlock, Plus, Edit3, CheckCircle2, Trash2, X, AlertCircle, 
-  RefreshCw, Info, MapPin, Zap, Clock, ShieldCheck, HelpCircle, Download, Copy, Check, Building
+  RefreshCw, Info, MapPin, Zap, Clock, ShieldCheck, HelpCircle, Download, Copy, Check, Building,
+  UserCheck, Users, Eye, EyeOff, UserPlus, KeyRound, Shield
 } from 'lucide-react';
-import { FeederInterruption, InterruptionType, InterruptionStatus, stripBrackets } from '../types';
+import { FeederInterruption, InterruptionType, InterruptionStatus, stripBrackets, TeamLeaderUser, UserRole } from '../types';
 import { INITIAL_DISTRICTS, INITIAL_FEEDERS_LIST } from '../data/mockData';
 import { InterruptionTypeBadge, getCardinalDirection } from './AgentView';
 
@@ -39,6 +40,9 @@ export const parseFeederDetails = (feederLine: string) => {
 
 interface AdminPanelProps {
   isAdmin: boolean;
+  isTeamLeader?: boolean;
+  userRole?: UserRole;
+  currentTeamLeader?: TeamLeaderUser | null;
   onLoginAdmin: (pin: string) => boolean;
   onLogoutAdmin: () => void;
   onSwitchToAgentMode?: () => void;
@@ -48,10 +52,17 @@ interface AdminPanelProps {
   onDeleteInterruption: (id: string) => void;
   feedersList?: string[];
   onUpdateFeedersList?: (list: string[]) => void;
+  teamLeaders?: TeamLeaderUser[];
+  onAddTeamLeader?: (tl: Omit<TeamLeaderUser, 'id' | 'createdAt'>) => void;
+  onUpdateTeamLeader?: (tl: TeamLeaderUser) => void;
+  onDeleteTeamLeader?: (id: string) => void;
 }
 
 export default function AdminPanel({
   isAdmin,
+  isTeamLeader = false,
+  userRole = 'agent',
+  currentTeamLeader,
   onLoginAdmin,
   onLogoutAdmin,
   onSwitchToAgentMode,
@@ -60,7 +71,11 @@ export default function AdminPanel({
   onUpdateInterruption,
   onDeleteInterruption,
   feedersList,
-  onUpdateFeedersList
+  onUpdateFeedersList,
+  teamLeaders = [],
+  onAddTeamLeader,
+  onUpdateTeamLeader,
+  onDeleteTeamLeader
 }: AdminPanelProps) {
   // Authentication variables
   const [pinCode, setPinCode] = useState('');
@@ -74,8 +89,8 @@ export default function AdminPanel({
     }
   };
 
-  // Switch tabs between Outages board vs Presets Database manager
-  const [adminSubTab, setAdminSubTab] = useState<'outages' | 'feeders'>('outages');
+  // Switch tabs between Outages board vs Presets Database manager vs Team Leaders User Management
+  const [adminSubTab, setAdminSubTab] = useState<'outages' | 'feeders' | 'team_leaders'>('outages');
 
   // Form toggles
   const [showFormModal, setShowFormModal] = useState(false);
@@ -106,11 +121,97 @@ export default function AdminPanel({
   const [feederFormError, setFeederFormError] = useState('');
   const [csvCopied, setCsvCopied] = useState(false);
 
+  // Team Leaders state for Admin user management subtab
+  const [showTLModal, setShowTLModal] = useState(false);
+  const [editingTL, setEditingTL] = useState<TeamLeaderUser | null>(null);
+  const [tlName, setTlName] = useState('');
+  const [tlDistrict, setTlDistrict] = useState(INITIAL_DISTRICTS[0]);
+  const [tlUsername, setTlUsername] = useState('');
+  const [tlPassword, setTlPassword] = useState('');
+  const [tlFormError, setTlFormError] = useState('');
+  const [visibleTLPasswords, setVisibleTLPasswords] = useState<Record<string, boolean>>({});
+
+  const toggleTLPasswordVisibility = (id: string) => {
+    setVisibleTLPasswords(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleOpenAddTL = () => {
+    setEditingTL(null);
+    setTlName('');
+    setTlDistrict(INITIAL_DISTRICTS[0]);
+    setTlUsername('');
+    setTlPassword('');
+    setTlFormError('');
+    setShowTLModal(true);
+  };
+
+  const handleOpenEditTL = (tl: TeamLeaderUser) => {
+    setEditingTL(tl);
+    setTlName(tl.name);
+    setTlDistrict(tl.district || INITIAL_DISTRICTS[0]);
+    setTlUsername(tl.username);
+    setTlPassword(tl.password);
+    setTlFormError('');
+    setShowTLModal(true);
+  };
+
+  const handleSaveTL = (e: React.FormEvent) => {
+    e.preventDefault();
+    setTlFormError('');
+
+    if (!tlName.trim()) {
+      setTlFormError('Please enter the team leader name.');
+      return;
+    }
+    if (!tlUsername.trim()) {
+      setTlFormError('Please enter a valid username.');
+      return;
+    }
+    if (!tlPassword.trim()) {
+      setTlFormError('Please enter a password.');
+      return;
+    }
+
+    const cleanUser = tlUsername.trim();
+
+    // Check duplicate username if adding or changing
+    const duplicate = teamLeaders.find(tl => 
+      tl.id !== editingTL?.id && tl.username.trim().toLowerCase() === cleanUser.toLowerCase()
+    );
+    if (duplicate) {
+      setTlFormError(`Username ${cleanUser} is already assigned to another team leader.`);
+      return;
+    }
+
+    if (editingTL) {
+      if (onUpdateTeamLeader) {
+        onUpdateTeamLeader({
+          ...editingTL,
+          name: tlName.trim(),
+          district: tlDistrict,
+          username: cleanUser,
+          password: tlPassword.trim()
+        });
+      }
+    } else {
+      if (onAddTeamLeader) {
+        onAddTeamLeader({
+          name: tlName.trim(),
+          district: tlDistrict,
+          username: cleanUser,
+          password: tlPassword.trim()
+        });
+      }
+    }
+
+    setShowTLModal(false);
+  };
+
   // Deletion confirmation custom overlay state
   const [deleteConfirm, setDeleteConfirm] = useState<{
     idOrStr: string;
     name: string;
-    type: 'interruption' | 'feeder';
+    type: 'interruption' | 'feeder' | 'team_leader';
   } | null>(null);
 
   // Initialize form for adding
@@ -462,8 +563,8 @@ export default function AdminPanel({
       });
   };
 
-  // Login view component if not authenticated
-  if (!isAdmin) {
+  // Login view component if not authenticated as Admin or Team Leader
+  if (!isAdmin && !isTeamLeader && userRole !== 'team_leader') {
     return (
       <div id="admin-login-view" className="max-w-md mx-auto my-12 p-8 glass-card rounded-3xl text-center">
         <div className="flex flex-col items-center">
@@ -572,7 +673,7 @@ export default function AdminPanel({
               <Plus className="w-4 h-4" />
               <span>Add Interruption</span>
             </button>
-          ) : (
+          ) : adminSubTab === 'feeders' ? (
             <button
               id="admin-preset-add-btn"
               onClick={handleOpenAddFeeder}
@@ -581,34 +682,59 @@ export default function AdminPanel({
               <Plus className="w-4 h-4" />
               <span>Add Feeder Preset</span>
             </button>
+          ) : (
+            <button
+              id="admin-tl-add-btn"
+              onClick={handleOpenAddTL}
+              className="px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shadow-lg shadow-sky-600/15 cursor-pointer"
+            >
+              <UserPlus className="w-4 h-4" />
+              <span>Add Team Leader</span>
+            </button>
           )}
         </div>
       </div>
 
       {/* Admin Panel Tabs */}
-      <div className="flex border-b border-gray-200 dark:border-gray-800/60 gap-1">
+      <div className="flex border-b border-gray-200 dark:border-gray-800/60 gap-1 flex-wrap">
         <button
           id="admin-subtab-outages"
           onClick={() => setAdminSubTab('outages')}
-          className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
+          className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
             adminSubTab === 'outages'
               ? 'border-eeu-green text-eeu-green'
               : 'border-transparent text-gray-500 hover:text-gray-900 dark:hover:text-white'
           }`}
         >
-          Disruptions Board ({interruptions.length})
+          <Zap className="w-3.5 h-3.5" />
+          <span>Disruptions Board ({interruptions.length})</span>
         </button>
         <button
           id="admin-subtab-feeders"
           onClick={() => setAdminSubTab('feeders')}
-          className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
+          className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
             adminSubTab === 'feeders'
               ? 'border-eeu-green text-eeu-green'
               : 'border-transparent text-gray-500 hover:text-gray-900 dark:hover:text-white'
           }`}
         >
-          Preset Feeder Lines Database ({activeFeeders.length})
+          <Building className="w-3.5 h-3.5" />
+          <span>Preset Feeder Lines Database ({activeFeeders.length})</span>
         </button>
+        {(isAdmin || userRole === 'admin') && (
+          <button
+            id="admin-subtab-team-leaders"
+            onClick={() => setAdminSubTab('team_leaders')}
+            className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
+              adminSubTab === 'team_leaders'
+                ? 'border-sky-500 text-sky-600 dark:text-sky-400 font-bold'
+                : 'border-transparent text-gray-500 hover:text-gray-900 dark:hover:text-white'
+            }`}
+          >
+            <UserCheck className="w-3.5 h-3.5 text-sky-500" />
+            <span>Team Leaders Accounts ({teamLeaders.length})</span>
+          </button>
+        )}
       </div>
 
       {/* Grid Interruption Direct List Control */}
@@ -870,6 +996,119 @@ export default function AdminPanel({
                               }}
                               title="Delete Area Preset"
                               className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-all cursor-pointer"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Team Leaders User Management View (Admin Only) */}
+      {adminSubTab === 'team_leaders' && (isAdmin || userRole === 'admin') && (
+        <div className="glass-card rounded-2xl overflow-hidden">
+          <div className="p-5 border-b border-gray-200/30 dark:border-gray-800/30 bg-transparent flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <h3 className="font-display font-medium text-xs text-gray-600 dark:text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                <Shield className="w-4 h-4 text-sky-500" />
+                <span>Team Leader User Accounts & Credentials</span>
+              </h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Only Admin can create, edit, or manage usernames and passwords for Team Leaders.
+              </p>
+            </div>
+            <button
+              onClick={handleOpenAddTL}
+              className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shadow-md shadow-sky-600/15 cursor-pointer"
+            >
+              <UserPlus className="w-4 h-4" />
+              <span>Add Team Leader Account</span>
+            </button>
+          </div>
+
+          {teamLeaders.length === 0 ? (
+            <div className="p-12 text-center text-gray-500 space-y-2">
+              <Users className="w-8 h-8 mx-auto text-sky-500/60" />
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">No Team Leader Accounts Created Yet</p>
+              <p className="text-xs text-gray-500">Click "Add Team Leader Account" above to create credentials for team leaders.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="border-b border-gray-200/40 dark:border-gray-800/40 bg-gray-50/50 dark:bg-gray-900/40 text-gray-500 uppercase tracking-wider text-[10px] font-mono">
+                    <th className="py-3 px-4 font-semibold">Team Leader Name</th>
+                    <th className="py-3 px-4 font-semibold">District / Region</th>
+                    <th className="py-3 px-4 font-semibold">Username</th>
+                    <th className="py-3 px-4 font-semibold">Password</th>
+                    <th className="py-3 px-4 font-semibold">Role Permissions</th>
+                    <th className="py-3 px-4 font-semibold text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200/30 dark:divide-gray-800/30 font-sans">
+                  {teamLeaders.map((tl) => {
+                    const isPassVisible = visibleTLPasswords[tl.id] || false;
+                    return (
+                      <tr key={tl.id} className="hover:bg-gray-50/40 dark:hover:bg-gray-900/30 transition-colors">
+                        <td className="py-3.5 px-4 font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center font-bold text-xs shrink-0">
+                            <UserCheck className="w-3.5 h-3.5" />
+                          </div>
+                          <span>{tl.name}</span>
+                        </td>
+                        <td className="py-3.5 px-4 text-gray-600 dark:text-gray-400 font-medium">
+                          {tl.district || 'Team A'}
+                        </td>
+                        <td className="py-3.5 px-4 font-mono font-bold text-sky-600 dark:text-sky-400">
+                          {tl.username}
+                        </td>
+                        <td className="py-3.5 px-4 font-mono">
+                          <div className="flex items-center gap-2">
+                            <span className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-gray-800 dark:text-gray-200 font-semibold text-xs tracking-wider">
+                              {isPassVisible ? tl.password : '••••••••'}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => toggleTLPasswordVisibility(tl.id)}
+                              className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors cursor-pointer"
+                              title={isPassVisible ? "Hide password" : "Show password"}
+                            >
+                              {isPassVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                            </button>
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10.5px] font-bold bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
+                            <Plus className="w-3 h-3" />
+                            <span>Add Interruption Only</span>
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              onClick={() => handleOpenEditTL(tl)}
+                              className="p-2 text-sky-600 hover:bg-sky-500/10 dark:text-sky-400 rounded-lg transition-all cursor-pointer"
+                              title="Edit Credentials"
+                            >
+                              <Edit3 className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setDeleteConfirm({
+                                  idOrStr: tl.id,
+                                  name: `${tl.name} (${tl.username})`,
+                                  type: 'team_leader'
+                                });
+                              }}
+                              className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-all cursor-pointer"
+                              title="Delete Team Leader Account"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -1268,6 +1507,113 @@ export default function AdminPanel({
         </div>
       )}
 
+      {/* Team Leader Account Modal */}
+      {showTLModal && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="glass-card rounded-3xl max-w-md w-full shadow-2xl animate-in fade-in zoom-in-95 duration-150 overflow-hidden border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
+            <div className="p-5 border-b border-gray-200/30 dark:border-gray-800/30 flex items-center justify-between bg-sky-500/5">
+              <div className="flex items-center gap-2">
+                <UserCheck className="w-5 h-5 text-sky-500" />
+                <h3 className="text-base font-display font-semibold text-gray-900 dark:text-white">
+                  {editingTL ? 'Edit Team Leader Account' : 'Create Team Leader Account'}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowTLModal(false)}
+                className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveTL} className="p-5 space-y-4 text-left">
+              {tlFormError && (
+                <div className="p-3 bg-red-100/70 dark:bg-red-950/20 border border-red-200 dark:border-red-900 text-red-650 dark:text-red-400 rounded-xl text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{tlFormError}</span>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
+                  Team Leader Name / Title
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g., Call Center Team Leader"
+                  value={tlName}
+                  onChange={(e) => setTlName(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/50 text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
+                  Call Center Shift Team / Region Assignment
+                </label>
+                <select
+                  value={tlDistrict}
+                  onChange={(e) => setTlDistrict(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/50 text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium"
+                >
+                  {INITIAL_DISTRICTS.map((d) => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1 flex items-center justify-between">
+                  <span>Username</span>
+                  <span className="text-[10px] text-sky-600 dark:text-sky-400 font-mono">Unique Account ID</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. team_a or teamleader"
+                  value={tlUsername}
+                  onChange={(e) => setTlUsername(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/50 text-xs font-mono font-semibold text-sky-600 dark:text-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
+                  Password
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g., Tl@1234"
+                  value={tlPassword}
+                  onChange={(e) => setTlPassword(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/50 text-xs font-mono text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+
+              <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/20 text-[11px] text-sky-800 dark:text-sky-300">
+                <strong>Role Authority:</strong> Team leaders can log in with these credentials to record feeder interruptions, while username and password management is exclusively restricted to the Admin.
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowTLModal(false)}
+                  className="px-4 py-2 text-xs font-semibold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold rounded-xl shadow-md transition-all cursor-pointer"
+                >
+                  Save Team Leader Credentials
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Custom Confirmation / Deletion Dialog */}
       {deleteConfirm && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
@@ -1298,6 +1644,8 @@ export default function AdminPanel({
                     onDeleteInterruption(deleteConfirm.idOrStr);
                   } else if (deleteConfirm.type === 'feeder') {
                     handleDeleteFeeder(deleteConfirm.idOrStr);
+                  } else if (deleteConfirm.type === 'team_leader' && onDeleteTeamLeader) {
+                    onDeleteTeamLeader(deleteConfirm.idOrStr);
                   }
                   setDeleteConfirm(null);
                 }}

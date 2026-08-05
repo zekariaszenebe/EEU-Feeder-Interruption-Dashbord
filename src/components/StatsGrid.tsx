@@ -42,7 +42,7 @@ export default function StatsGrid({ interruptions }: StatsGridProps) {
     },
     {
       id: "stat-earth-fault",
-      title: "Earth Faults (EF)",
+      title: "Earth Faults",
       value: earthFaults,
       bgColor: "bg-amber-500/10 dark:bg-amber-500/5",
       borderColor: "border-amber-200 dark:border-amber-950/40",
@@ -54,7 +54,7 @@ export default function StatsGrid({ interruptions }: StatsGridProps) {
     },
     {
       id: "stat-short-circuit",
-      title: "Short Circuit (SC)",
+      title: "Short Circuit",
       value: shortCircuits,
       bgColor: "bg-orange-500/10 dark:bg-orange-500/5",
       borderColor: "border-orange-200 dark:border-orange-950/40",

@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Lock, User, Eye, EyeOff, AlertCircle, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
+import { Lock, User, Eye, EyeOff, AlertCircle, ShieldCheck, Zap, UserCheck, Shield } from 'lucide-react';
 import EEULogo from './EEULogo';
 import loginBg from '../assets/images/login_bg_1783314180079.jpg';
+import { UserRole, TeamLeaderUser } from '../types';
 
 interface WebLoginScreenProps {
-  onLoginSuccess: (isAdmin: boolean) => void;
+  onLoginSuccess: (role: UserRole, teamLeader?: TeamLeaderUser) => void;
+  teamLeaders?: TeamLeaderUser[];
 }
 
-export default function WebLoginScreen({ onLoginSuccess }: WebLoginScreenProps) {
+export default function WebLoginScreen({ onLoginSuccess, teamLeaders = [] }: WebLoginScreenProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -30,46 +32,96 @@ export default function WebLoginScreen({ onLoginSuccess }: WebLoginScreenProps) 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (!username.trim() || !password) {
+      setError('Please fill in both username and password fields.');
+      return;
+    }
+
     setIsSubmitting(true);
 
-    // Normalize user input to handle typing with or without the leading '@'
-    const normalizedUsername = username.trim().toLowerCase();
-    const cleanUsername = normalizedUsername.startsWith('@') 
-      ? normalizedUsername 
-      : `@${normalizedUsername}`;
+    // Normalize user input to compare flexibly with or without leading '@'
+    const rawUser = username.trim().toLowerCase();
+    const strippedUser = rawUser.startsWith('@') ? rawUser.substring(1) : rawUser;
+    const withAtUser = rawUser.startsWith('@') ? rawUser : `@${rawUser}`;
 
-    // Target credentials:
-    // User / Agent: @contactcenter
-    // Admin: @admin
-    // Password: Eeu@1234
-    
     setTimeout(() => {
-      if ((cleanUsername === '@contactcenter' || cleanUsername === '@admin') && password === 'Eeu@1234') {
-        if (rememberMe) {
-          localStorage.setItem('eeu_remember_me', 'true');
-          localStorage.setItem('eeu_saved_username', username);
-          localStorage.setItem('eeu_saved_password', password);
-        } else {
-          localStorage.removeItem('eeu_remember_me');
-          localStorage.removeItem('eeu_saved_username');
-          localStorage.removeItem('eeu_saved_password');
-        }
-        const isUserAdmin = cleanUsername === '@admin';
-        onLoginSuccess(isUserAdmin);
-      } else {
-        if (!username.trim() || !password) {
-          setError('Please fill in both username and password fields.');
-        } else {
-          setError('Access Denied: Invalid operator credentials. Please check your username and password.');
-        }
-        setIsSubmitting(false);
+      // 1. Check if Admin
+      if ((strippedUser === 'admin' || withAtUser === '@admin') && password === 'Eeu@1234') {
+        saveCredentials();
+        onLoginSuccess('admin');
+        return;
       }
-    }, 600); // Realistic slight verification delay for premium feel
+
+      // 2. Check registered Team Leaders in database
+      const matchedTL = teamLeaders.find((tl) => {
+        const tlUser = tl.username.trim().toLowerCase();
+        const tlStripped = tlUser.startsWith('@') ? tlUser.substring(1) : tlUser;
+        return (tlUser === rawUser || tlUser === withAtUser || tlStripped === strippedUser) && tl.password === password;
+      });
+
+      if (matchedTL) {
+        saveCredentials();
+        onLoginSuccess('team_leader', matchedTL);
+        return;
+      }
+
+      // Default hardcoded Team Leader fallback (Teams A, B, C, D)
+      if (
+        (strippedUser === 'teamleader' || strippedUser === 'tl' || strippedUser === 'team_a' || strippedUser === 'team_b' || strippedUser === 'team_c' || strippedUser === 'team_d' || strippedUser === 'teama' || strippedUser === 'teamb' || strippedUser === 'teamc' || strippedUser === 'teamd') && 
+        (password === 'Tl@1234' || password === 'Eeu@1234')
+      ) {
+        let teamName = 'Team A Leader';
+        if (strippedUser === 'team_b' || strippedUser === 'teamb') teamName = 'Team B Leader';
+        if (strippedUser === 'team_c' || strippedUser === 'teamc') teamName = 'Team C Leader';
+        if (strippedUser === 'team_d' || strippedUser === 'teamd') teamName = 'Team D Leader';
+
+        saveCredentials();
+        onLoginSuccess('team_leader', {
+          id: `tl-fallback-${strippedUser}`,
+          username: rawUser,
+          password: 'Tl@1234',
+          name: teamName,
+          district: teamName.replace(' Leader', ''),
+          createdAt: new Date().toISOString()
+        });
+        return;
+      }
+
+      // 3. Check Contact Center Agent
+      if ((strippedUser === 'contactcenter' || strippedUser === 'agent') && password === 'Eeu@1234') {
+        saveCredentials();
+        onLoginSuccess('agent');
+        return;
+      }
+
+      // Invalid
+      setError('Access Denied: Invalid credentials. Please check your username and password.');
+      setIsSubmitting(false);
+    }, 500);
+  };
+
+  const saveCredentials = () => {
+    if (rememberMe) {
+      localStorage.setItem('eeu_remember_me', 'true');
+      localStorage.setItem('eeu_saved_username', username);
+      localStorage.setItem('eeu_saved_password', password);
+    } else {
+      localStorage.removeItem('eeu_remember_me');
+      localStorage.removeItem('eeu_saved_username');
+      localStorage.removeItem('eeu_saved_password');
+    }
   };
 
   const handleFillAgentDemo = () => {
     setUsername('@contactcenter');
     setPassword('Eeu@1234');
+    setError('');
+  };
+
+  const handleFillTLDemo = () => {
+    setUsername('@team_a');
+    setPassword('Tl@1234');
     setError('');
   };
 
@@ -220,7 +272,6 @@ export default function WebLoginScreen({ onLoginSuccess }: WebLoginScreenProps) 
             )}
           </button>
         </form>
-
       </div>
 
       {/* Footer copyright */}

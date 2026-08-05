@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { 
   Zap, Bell, Menu, X, ShieldAlert, CheckCircle2, AlertTriangle, 
   Settings, RefreshCw, Layers, LayoutGrid, Clock, LogOut, Sun, Moon,
-  Headset, ShieldCheck 
+  Headset, ShieldCheck, UserCheck, KeyRound, Eye, EyeOff 
 } from 'lucide-react';
 
 // Types and mock data
-import { FeederInterruption, InterruptionType, InterruptionStatus, SystemNotification, TeamLeaderNote, ContactItem } from './types';
+import { FeederInterruption, InterruptionType, InterruptionStatus, SystemNotification, TeamLeaderNote, ContactItem, TeamLeaderUser, UserRole } from './types';
 import { INITIAL_INTERRUPTIONS, INITIAL_NOTIFICATIONS, INITIAL_DISTRICTS, INITIAL_FEEDERS_LIST } from './data/mockData';
 
 // Firestore Services
@@ -33,7 +33,11 @@ import {
   subscribeToCustomerContacts,
   addCustomerContactDoc,
   updateCustomerContactDoc,
-  deleteCustomerContactDoc
+  deleteCustomerContactDoc,
+  subscribeToTeamLeaders,
+  addTeamLeaderDoc,
+  updateTeamLeaderDoc,
+  deleteTeamLeaderDoc
 } from './lib/firestoreService';
 import { HubRecord } from './data/hubData';
 
@@ -124,6 +128,7 @@ export default function App() {
   const [hubRecords, setHubRecords] = useState<HubRecord[]>([]);
   const [teamLeaderNotes, setTeamLeaderNotes] = useState<TeamLeaderNote[]>([]);
   const [customerContacts, setCustomerContacts] = useState<ContactItem[]>([]);
+  const [teamLeaders, setTeamLeaders] = useState<TeamLeaderUser[]>([]);
 
   // 3. User Authentication & Tab routing
   const [isWebLoggedIn, setIsWebLoggedIn] = useState<boolean>(() => {
@@ -132,6 +137,19 @@ export default function App() {
 
   const [isAdmin, setIsAdmin] = useState<boolean>(() => {
     return localStorage.getItem('eeu-admin-logged') === 'true';
+  });
+
+  const [userRole, setUserRole] = useState<UserRole>(() => {
+    const saved = localStorage.getItem('eeu-user-role');
+    if (saved === 'admin' || saved === 'team_leader' || saved === 'agent') {
+      return saved as UserRole;
+    }
+    return isAdmin ? 'admin' : 'agent';
+  });
+
+  const [currentTeamLeader, setCurrentTeamLeader] = useState<TeamLeaderUser | null>(() => {
+    const saved = localStorage.getItem('eeu-team-leader-user');
+    return saved ? JSON.parse(saved) : null;
   });
 
   const [currentTab, setCurrentTab] = useState<string>('dashboard');
@@ -156,6 +174,7 @@ export default function App() {
     let unsubHubRecords = () => {};
     let unsubNotes = () => {};
     let unsubCustomerContacts = () => {};
+    let unsubTeamLeaders = () => {};
 
     seedInitialDataIfEmpty().then(async () => {
       // Clear notes on reload/mount so the board starts empty as requested
@@ -183,6 +202,9 @@ export default function App() {
       unsubCustomerContacts = subscribeToCustomerContacts((items) => {
         setCustomerContacts(items);
       });
+      unsubTeamLeaders = subscribeToTeamLeaders((items) => {
+        setTeamLeaders(items);
+      });
     });
 
     return () => {
@@ -192,6 +214,7 @@ export default function App() {
       unsubHubRecords();
       unsubNotes();
       unsubCustomerContacts();
+      unsubTeamLeaders();
     };
   }, []);
 
@@ -241,28 +264,12 @@ export default function App() {
     if (pin === '1234') {
       setIsAdmin(true);
       localStorage.setItem('eeu-admin-logged', 'true');
+      setUserRole('admin');
+      localStorage.setItem('eeu-user-role', 'admin');
       triggerToast('Admin Authorized', 'Successfully entered administrative grid controls', 'success');
       return true;
     }
     return false;
-  };
-
-  const handleLogoutAdmin = () => {
-    setIsAdmin(false);
-    localStorage.setItem('eeu-admin-logged', 'false');
-    if (currentTab === 'admin') {
-      setCurrentTab('dashboard');
-    }
-    triggerToast('Logged Out', 'Successfully locked write privileges', 'info');
-  };
-
-  const handleLogoutWeb = () => {
-    setIsWebLoggedIn(false);
-    localStorage.setItem('eeu-web-logged', 'false');
-    setIsAdmin(false);
-    localStorage.setItem('eeu-admin-logged', 'false');
-    setCurrentTab('dashboard');
-    triggerToast('Signed Out', 'Operator console session closed successfully', 'info');
   };
 
   // Create interruption
@@ -414,19 +421,104 @@ export default function App() {
     });
   };
 
+  // Team Leader CRUD handlers
+  const handleAddTeamLeader = async (tl: Omit<TeamLeaderUser, 'id' | 'createdAt'>) => {
+    try {
+      const created = await addTeamLeaderDoc(tl);
+      if (created) {
+        setTeamLeaders(prev => [...prev.filter(x => x.id !== created.id), created].sort((a, b) => a.name.localeCompare(b.name)));
+      }
+      triggerToast('Team Leader Account Created', `Created account for ${tl.name} (${tl.username})`, 'success');
+    } catch (err) {
+      triggerToast('Failed to Create Account', 'Could not save Team Leader account', 'warn');
+    }
+  };
+
+  const handleUpdateTeamLeader = async (tl: TeamLeaderUser) => {
+    try {
+      await updateTeamLeaderDoc(tl);
+      setTeamLeaders(prev => prev.map(x => x.id === tl.id ? tl : x).sort((a, b) => a.name.localeCompare(b.name)));
+      triggerToast('Credentials Updated', `Saved updated credentials for ${tl.name}`, 'success');
+    } catch (err) {
+      triggerToast('Failed to Update', 'Could not save updated credentials', 'warn');
+    }
+  };
+
+  const handleDeleteTeamLeader = async (id: string) => {
+    try {
+      await deleteTeamLeaderDoc(id);
+      setTeamLeaders(prev => prev.filter(x => x.id !== id));
+      triggerToast('Account Deleted', 'Team leader credentials removed', 'info');
+    } catch (err) {
+      triggerToast('Failed to Delete', 'Could not delete Team Leader account', 'warn');
+    }
+  };
+
+  const handleLoginSuccess = (role: UserRole, teamLeader?: TeamLeaderUser) => {
+    setUserRole(role);
+    localStorage.setItem('eeu-user-role', role);
+    setIsWebLoggedIn(true);
+    localStorage.setItem('eeu-web-logged', 'true');
+
+    if (role === 'admin') {
+      setIsAdmin(true);
+      localStorage.setItem('eeu-admin-logged', 'true');
+      setCurrentTeamLeader(null);
+      localStorage.removeItem('eeu-team-leader-user');
+      triggerToast('Admin Authorized', 'Logged in as Admin with full system control', 'success');
+      setCurrentTab('admin');
+    } else if (role === 'team_leader') {
+      setIsAdmin(false);
+      localStorage.setItem('eeu-admin-logged', 'false');
+      if (teamLeader) {
+        setCurrentTeamLeader(teamLeader);
+        localStorage.setItem('eeu-team-leader-user', JSON.stringify(teamLeader));
+      }
+      triggerToast('Team Leader Authorized', `Welcome ${teamLeader?.name || 'Team Leader'} - Add Interruption Role Active`, 'success');
+      setCurrentTab('admin');
+    } else {
+      setIsAdmin(false);
+      localStorage.setItem('eeu-admin-logged', 'false');
+      setCurrentTeamLeader(null);
+      localStorage.removeItem('eeu-team-leader-user');
+      triggerToast('Call Agent Signed In', 'Logged in as Call Center Agent', 'info');
+      setCurrentTab('dashboard');
+    }
+  };
+
+  // Logout website session
+  const handleLogoutWeb = () => {
+    setIsWebLoggedIn(false);
+    localStorage.setItem('eeu-web-logged', 'false');
+    setIsAdmin(false);
+    localStorage.setItem('eeu-admin-logged', 'false');
+    setUserRole('agent');
+    localStorage.setItem('eeu-user-role', 'agent');
+    setCurrentTeamLeader(null);
+    localStorage.removeItem('eeu-team-leader-user');
+    setCurrentTab('dashboard');
+  };
+
+  // Logout admin mode
+  const handleLogoutAdmin = () => {
+    setIsAdmin(false);
+    localStorage.setItem('eeu-admin-logged', 'false');
+    setUserRole('agent');
+    localStorage.setItem('eeu-user-role', 'agent');
+    setCurrentTeamLeader(null);
+    localStorage.removeItem('eeu-team-leader-user');
+    triggerToast('Admin Logged Out', 'Switched back to Call Center Agent view mode', 'info');
+    setCurrentTab('dashboard');
+  };
+
   // Aggregate stats
   const activeUnreadCount = notifications.filter(n => !n.read).length;
 
   if (!isWebLoggedIn) {
     return (
       <WebLoginScreen
-        onLoginSuccess={(isUserAdmin) => {
-          setIsWebLoggedIn(true);
-          localStorage.setItem('eeu-web-logged', 'true');
-          setIsAdmin(isUserAdmin);
-          localStorage.setItem('eeu-admin-logged', isUserAdmin ? 'true' : 'false');
-          triggerToast('Welcome Back', isUserAdmin ? 'Logged in as Admin' : 'Logged in as Call Center Agent', 'success');
-        }}
+        teamLeaders={teamLeaders}
+        onLoginSuccess={handleLoginSuccess}
       />
     );
   }
@@ -568,6 +660,9 @@ export default function App() {
             currentTab={currentTab}
             setCurrentTab={setCurrentTab}
             isAdmin={isAdmin}
+            userRole={userRole}
+            isTeamLeader={userRole === 'team_leader'}
+            currentTeamLeader={currentTeamLeader}
             onLogoutAdmin={handleLogoutAdmin}
             onLogoutWeb={handleLogoutWeb}
             isDarkMode={isDarkMode}
@@ -613,20 +708,22 @@ export default function App() {
                 </button>
 
                 {/* User Profile Pill Card */}
-                <div id="user-profile-pill" className="flex items-center gap-2.5 p-1.5 pr-4 pl-2 glass-card rounded-full shadow-sm border border-solid border-gray-250/70 dark:border-gray-800 select-none w-[165px] text-left">
+                <div id="user-profile-pill" className="flex items-center gap-2.5 p-1.5 pr-4 pl-2 glass-card rounded-full shadow-sm border border-solid border-gray-250/70 dark:border-gray-800 select-none w-[175px] text-left">
                   <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${
                     isAdmin 
                       ? 'bg-amber-500/15 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400' 
+                      : userRole === 'team_leader'
+                      ? 'bg-sky-500/15 text-sky-600 dark:bg-sky-950/40 dark:text-sky-400'
                       : 'bg-emerald-500/15 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
                   }`}>
-                    {isAdmin ? <ShieldCheck className="w-4.5 h-4.5" /> : <Headset className="w-4.5 h-4.5" />}
+                    {isAdmin ? <ShieldCheck className="w-4.5 h-4.5" /> : userRole === 'team_leader' ? <UserCheck className="w-4.5 h-4.5" /> : <Headset className="w-4.5 h-4.5" />}
                   </div>
-                  <div className="flex flex-col text-left leading-tight">
-                    <span className="text-xs font-bold text-gray-950 dark:text-white font-sans tracking-tight">
-                      {isAdmin ? 'Admin' : 'Call Agent'}
+                  <div className="flex flex-col text-left leading-tight overflow-hidden">
+                    <span className="text-xs font-bold text-gray-950 dark:text-white font-sans tracking-tight truncate">
+                      {isAdmin ? 'Admin' : userRole === 'team_leader' ? (currentTeamLeader?.name || 'Zekarias Zenebe') : 'Call Agent'}
                     </span>
-                    <span className="text-[10.5px] text-gray-500 dark:text-gray-400 font-medium font-sans">
-                      {isAdmin ? 'Admin Profile' : 'Call Center Profile'}
+                    <span className="text-[10.5px] text-gray-500 dark:text-gray-400 font-medium font-sans truncate">
+                      {isAdmin ? 'Admin Profile' : userRole === 'team_leader' ? (currentTeamLeader?.district || 'Team Leader') : 'Call Center Profile'}
                     </span>
                   </div>
                 </div>
@@ -647,9 +744,12 @@ export default function App() {
                 />
               )}
 
-              {currentTab === 'admin' && isAdmin && (
+              {currentTab === 'admin' && (isAdmin || userRole === 'team_leader') && (
                 <AdminPanel
                   isAdmin={isAdmin}
+                  isTeamLeader={userRole === 'team_leader'}
+                  userRole={userRole}
+                  currentTeamLeader={currentTeamLeader}
                   onLoginAdmin={handleLoginAdmin}
                   onLogoutAdmin={handleLogoutAdmin}
                   onSwitchToAgentMode={() => setCurrentTab('dashboard')}
@@ -659,6 +759,10 @@ export default function App() {
                   onDeleteInterruption={handleDeleteInterruption}
                   feedersList={feedersList}
                   onUpdateFeedersList={handleUpdateFeedersList}
+                  teamLeaders={teamLeaders}
+                  onAddTeamLeader={handleAddTeamLeader}
+                  onUpdateTeamLeader={handleUpdateTeamLeader}
+                  onDeleteTeamLeader={handleDeleteTeamLeader}
                 />
               )}
 

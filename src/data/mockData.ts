@@ -1,12 +1,10 @@
 import { FeederInterruption, InterruptionType, InterruptionStatus, SystemNotification } from '../types';
 
 export const INITIAL_DISTRICTS = [
-  'East Addis Ababa',
-  'Inter-Regional/Boundary',
-  'North Addis Ababa',
-  'South Addis Ababa',
-  'West Addis Ababa',
-  'Sheger Region'
+  'Team A',
+  'Team B',
+  'Team C',
+  'Team D'
 ];
 
 export const INITIAL_FEEDERS_LIST = [

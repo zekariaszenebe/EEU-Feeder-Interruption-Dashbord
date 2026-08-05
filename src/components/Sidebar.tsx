@@ -1,11 +1,15 @@
 import React from 'react';
-import { LayoutDashboard, ShieldAlert, Bell, History, Zap, User, AlertTriangle, ChevronLeft, ChevronRight, LogOut, MapPin, Phone, Calculator, Gauge, Headset, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, ShieldAlert, Bell, History, Zap, User, AlertTriangle, ChevronLeft, ChevronRight, LogOut, MapPin, Phone, Calculator, Gauge, Headset, ShieldCheck, UserCheck } from 'lucide-react';
 import EEULogo from './EEULogo';
+import { UserRole, TeamLeaderUser } from '../types';
 
 interface SidebarProps {
   currentTab: string;
   setCurrentTab: (tab: string) => void;
   isAdmin: boolean;
+  userRole?: UserRole;
+  isTeamLeader?: boolean;
+  currentTeamLeader?: TeamLeaderUser | null;
   onLogoutAdmin: () => void;
   onLogoutWeb: () => void;
   isDarkMode?: boolean;
@@ -19,6 +23,9 @@ export default function Sidebar({
   currentTab,
   setCurrentTab,
   isAdmin,
+  userRole = 'agent',
+  isTeamLeader = false,
+  currentTeamLeader,
   onLogoutAdmin,
   onLogoutWeb,
   isDarkMode,
@@ -35,9 +42,12 @@ export default function Sidebar({
     badgeCount?: number;
   }
 
+  const canManageFeed = isAdmin || isTeamLeader || userRole === 'team_leader' || userRole === 'admin';
+  const feedTabName = isAdmin ? 'Admin Feed Control' : 'Add Interruption Feed';
+
   const navItems: NavItem[] = [
     { id: 'dashboard', name: 'Interruption Dashboard', icon: LayoutDashboard },
-    ...(isAdmin ? [{ id: 'admin', name: 'Admin Feed Control', icon: ShieldAlert }] : []),
+    ...(canManageFeed ? [{ id: 'admin', name: feedTabName, icon: ShieldAlert }] : []),
     { id: 'history', name: 'Resolution Archive', icon: History },
     { id: 'calculator', name: 'Bill Calculator', icon: Calculator },
     { id: 'smartmeter', name: 'Smart Meter Calculator', icon: Gauge },
@@ -133,27 +143,28 @@ export default function Sidebar({
             className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 border border-gray-200/80 dark:border-gray-800 shadow-sm ${
               isAdmin 
                 ? 'bg-amber-500/15 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400' 
+                : isTeamLeader 
+                ? 'bg-sky-500/15 text-sky-600 dark:bg-sky-950/40 dark:text-sky-400'
                 : 'bg-emerald-500/15 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
             }`}
-            title={isAdmin ? 'Admin - Admin Profile' : 'Call Agent - Call Center Profile'}
+            title={isAdmin ? 'Admin Profile' : isTeamLeader ? 'Team Leader (Role: Add Interruption)' : 'Call Center Profile'}
           >
-            {isAdmin ? <ShieldCheck className="w-4.5 h-4.5" /> : <Headset className="w-4.5 h-4.5" />}
+            {isAdmin ? <ShieldCheck className="w-4.5 h-4.5" /> : isTeamLeader ? <UserCheck className="w-4.5 h-4.5" /> : <Headset className="w-4.5 h-4.5" />}
           </div>
         ) : (
           <div className="flex items-center gap-2.5 p-1.5 pr-4 pl-2 bg-gray-50/80 dark:bg-gray-900/60 border border-gray-200/70 dark:border-gray-800/80 rounded-full select-none shadow-sm">
             <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${
               isAdmin 
                 ? 'bg-amber-500/15 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400' 
+                : isTeamLeader
+                ? 'bg-sky-500/15 text-sky-600 dark:bg-sky-950/40 dark:text-sky-400'
                 : 'bg-emerald-500/15 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
             }`}>
-              {isAdmin ? <ShieldCheck className="w-4.5 h-4.5" /> : <Headset className="w-4.5 h-4.5" />}
+              {isAdmin ? <ShieldCheck className="w-4.5 h-4.5" /> : isTeamLeader ? <UserCheck className="w-4.5 h-4.5" /> : <Headset className="w-4.5 h-4.5" />}
             </div>
             <div className="flex flex-col text-left leading-tight overflow-hidden">
               <span className="text-[13px] font-bold text-gray-950 dark:text-white font-sans truncate">
-                {isAdmin ? 'Admin' : 'Call Agent'}
-              </span>
-              <span className="text-[10.5px] text-gray-500 dark:text-gray-400 font-medium font-sans truncate">
-                {isAdmin ? 'Admin Profile' : 'Call Center Profile'}
+                {isAdmin ? 'Admin' : isTeamLeader ? (currentTeamLeader?.name || 'Zekarias Zenebe') : 'Call Agent'}
               </span>
             </div>
           </div>

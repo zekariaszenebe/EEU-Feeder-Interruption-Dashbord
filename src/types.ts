@@ -59,6 +59,18 @@ export interface ContactItem {
   hotlineShortCode?: string;
 }
 
+export interface TeamLeaderUser {
+  id: string;
+  username: string;
+  password: string;
+  name: string;
+  district?: string;
+  mustChangePassword?: boolean;
+  createdAt: string;
+}
+
+export type UserRole = 'admin' | 'team_leader' | 'agent';
+
 export function stripBrackets(name: string | undefined): string {
   if (!name) return '';
   return name.replace(/\s*\(.*?\)/g, '').trim();

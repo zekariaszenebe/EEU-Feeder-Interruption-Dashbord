@@ -86,6 +86,21 @@
         "hotlineShortCode": { "type": "string" }
       },
       "required": ["id", "name", "phone", "category"]
+    },
+    "TeamLeaderUser": {
+      "title": "Team Leader User",
+      "description": "Team leader user account credential and team assignment.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "username": { "type": "string" },
+        "password": { "type": "string" },
+        "name": { "type": "string" },
+        "district": { "type": "string" },
+        "mustChangePassword": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "username", "password", "name"]
     }
   },
   "firestore": {
@@ -112,6 +127,10 @@
     "customerContacts/{contactId}": {
       "schema": "CustomerContact",
       "description": "Customer contact and hotline records."
+    },
+    "teamLeaders/{tlId}": {
+      "schema": "TeamLeaderUser",
+      "description": "Registered Team Leader accounts and credentials."
     }
   }
 }
