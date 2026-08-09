@@ -348,14 +348,30 @@ export default function AdminPanel({
 
       newList[editingFeederIdx] = combined;
 
-      // Automatically cascade edit: Rename feeder line in all active disruptions!
-      if (oldParsed.feederLine !== newParsed.feederLine) {
-        interruptions.forEach((item) => {
-          if (item.feederName === oldParsed.feederLine) {
-            onUpdateInterruption(item.id, { feederName: newParsed.feederLine });
+      // Automatically cascade edit: Rename feeder line and update associated community areas across all interruption records!
+      const normOldLine = normalizeFeederName(oldParsed.feederLine);
+      const normOldStr = normalizeFeederName(oldFeederStr);
+
+      interruptions.forEach((item) => {
+        const normItem = normalizeFeederName(item.feederName);
+        const isMatch = normItem === normOldLine || 
+                        normItem === normOldStr || 
+                        item.feederName.trim().toLowerCase() === oldParsed.feederLine.trim().toLowerCase() ||
+                        item.feederName.trim().toLowerCase() === oldFeederStr.trim().toLowerCase();
+
+        if (isMatch) {
+          const updates: Partial<FeederInterruption> = {};
+          if (oldParsed.feederLine !== newParsed.feederLine) {
+            updates.feederName = newParsed.feederLine;
           }
-        });
-      }
+          if (newParsed.amharicLocation && (item.affectedArea === oldParsed.amharicLocation || !item.affectedArea || oldParsed.amharicLocation !== newParsed.amharicLocation)) {
+            updates.affectedArea = newParsed.amharicLocation;
+          }
+          if (Object.keys(updates).length > 0) {
+            onUpdateInterruption(item.id, updates);
+          }
+        }
+      });
     } else {
       // Check for duplicate names
       const duplicate = newList.some(f => parseFeeder(f).feederLine.toLowerCase() === fullFeederLine.toLowerCase());
@@ -1045,7 +1061,7 @@ export default function AdminPanel({
                 <thead>
                   <tr className="border-b border-gray-200/40 dark:border-gray-800/40 bg-gray-50/50 dark:bg-gray-900/40 text-gray-500 uppercase tracking-wider text-[10px] font-mono">
                     <th className="py-3 px-4 font-semibold">Team Leader Name</th>
-                    <th className="py-3 px-4 font-semibold">District / Region</th>
+                    <th className="py-3 px-4 font-semibold">Team</th>
                     <th className="py-3 px-4 font-semibold">Username</th>
                     <th className="py-3 px-4 font-semibold">Password</th>
                     <th className="py-3 px-4 font-semibold">Role Permissions</th>

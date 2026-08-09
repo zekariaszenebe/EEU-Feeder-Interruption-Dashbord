@@ -1086,12 +1086,8 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
         <div id="no-results-panel" className="glass-card rounded-3xl p-12 text-center">
           <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
           <h3 className="text-base font-display font-semibold text-gray-900 dark:text-white">
-            No Outage Records Found Matching Criteria
+            No Outage Records
           </h3>
-          <p className="text-xs text-gray-500 max-w-md mx-auto mt-2 leading-relaxed">
-            There are currently no matching power interruptions for the selected filters. Change search parameters or clear filters to track other substations.
-          </p>
-
         </div>
       ) : (
         <>

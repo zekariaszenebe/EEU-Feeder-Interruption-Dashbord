@@ -7,6 +7,7 @@ interface EEULogoProps {
   textColor?: string;
   textPosition?: 'right' | 'bottom';
   textSize?: 'sm' | 'md' | 'lg';
+  style?: React.CSSProperties;
 }
 
 export default function EEULogo({
@@ -15,7 +16,8 @@ export default function EEULogo({
   showText = false,
   textColor = 'text-gray-900 dark:text-white',
   textPosition = 'right',
-  textSize = 'md'
+  textSize = 'md',
+  style
 }: EEULogoProps) {
   // Brand Colors: 
   // Orange: #F48B20 / #f39c12
@@ -106,7 +108,10 @@ export default function EEULogo({
 
   if (textPosition === 'right') {
     return (
-      <div className="flex items-center gap-3 select-none text-left leading-tight">
+      <div 
+        className={`flex items-center gap-3 select-none text-left leading-tight ${className}`}
+        style={{ width: '200px', height: '74.75px', ...style }}
+      >
         {emblem}
         <div>
           <div className="font-display font-medium text-[#F48B20] text-sm tracking-wide">
