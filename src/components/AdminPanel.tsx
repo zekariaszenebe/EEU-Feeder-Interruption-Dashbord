@@ -1230,17 +1230,6 @@ export default function AdminPanel({
                           );
                         })}
                       </select>
-                      <button
-                        id="form-toggle-custom-on"
-                        type="button"
-                        onClick={() => {
-                          setCustomFeederEnabled(true);
-                          setCustomFeederName('');
-                        }}
-                        className="text-[10px] text-eeu-green font-bold uppercase tracking-wider block text-left"
-                      >
-                        + Write Custom Feeder Name
-                      </button>
                     </div>
                   ) : (
                     <div className="space-y-1.5">
@@ -1284,7 +1273,7 @@ export default function AdminPanel({
 
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase font-mono tracking-wider mb-1.5 border-none">
-                    Administrative District Region
+                    Administrative Team Leader
                   </label>
                   <select
                     id="form-district-select"

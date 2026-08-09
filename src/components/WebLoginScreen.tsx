@@ -165,7 +165,7 @@ export default function WebLoginScreen({ onLoginSuccess, teamLeaders = [] }: Web
           </div>
 
           <div className="mt-6 pt-4 border-t border-white/20 text-[11px] font-medium text-gray-700 dark:text-gray-200">
-            Official Feeder Interruptions & Contact Center Portal
+            Official Feeder Interruptions Dashboard And Bill & Smart Meter Calculator Contact Center Portal
           </div>
         </div>
 

@@ -565,56 +565,9 @@ export default function SmartMeterCalculator() {
 
         </div>
 
-        {/* Right Column: Smart Meter Digital LCD Display & Step-by-Step Audit Cards */}
+        {/* Right Column: Step-by-Step Audit Cards & Smart Meter Digital LCD Display */}
         <div className="lg:col-span-7 space-y-6">
           
-          {/* Smart Meter Digital Terminal Display - Refactored Light Card styling */}
-          <div className="bg-white dark:bg-zinc-950 text-gray-900 dark:text-white rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-zinc-900 relative overflow-hidden space-y-5">
-            {/* Ambient Accent Glow */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
-            
-            <div className="flex items-center justify-between border-b border-gray-150 dark:border-zinc-900 pb-4 relative z-10">
-              <div className="flex items-center gap-2.5">
-                <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse shadow-sm shadow-emerald-500/50" />
-                <span className="text-xs font-sans font-bold text-gray-900 dark:text-white uppercase tracking-wider">
-                  EEU SMART METER DIGITAL INTERFACE
-                </span>
-              </div>
-              <span className="text-[11px] font-sans font-bold text-white bg-[#5FA354] px-3 py-1 rounded-full">
-                ONLINE • PREPAID LOGIC
-              </span>
-            </div>
-
-            {/* Main Meter Metrics */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 relative z-10">
-              <div className="p-4 bg-gray-50/80 dark:bg-zinc-900/60 rounded-xl border border-gray-200/80 dark:border-zinc-800 flex flex-col justify-between h-full">
-                <span className="text-[11px] font-sans font-medium uppercase text-gray-900 dark:text-zinc-200 block">Total Monthly kWh</span>
-                <span className="text-2xl font-black text-[#5FA354] dark:text-[#5FA354] font-sans tracking-tight mt-1.5 block">
-                  {totalKwhPurchased.toFixed(1)} <span className="text-xs font-normal text-gray-500 dark:text-zinc-400">kWh</span>
-                </span>
-              </div>
-
-              <div className="p-4 bg-gray-50/80 dark:bg-zinc-900/60 rounded-xl border border-gray-200/80 dark:border-zinc-800 flex flex-col justify-between h-full">
-                <span className="text-[11px] font-sans font-medium uppercase text-gray-900 dark:text-zinc-200 block">Total Spent This Month</span>
-                <span className="text-2xl font-black text-[#5FA354] dark:text-[#5FA354] font-sans tracking-tight mt-1.5 block">
-                  {totalPaidMonth.toFixed(2)} <span className="text-xs font-normal text-gray-500 dark:text-zinc-400">ETB</span>
-                </span>
-              </div>
-
-              <div className="p-4 bg-gray-50/80 dark:bg-zinc-900/60 rounded-xl border border-gray-200/80 dark:border-zinc-800 flex flex-col justify-between h-full">
-                <span className="text-[11px] font-sans font-medium uppercase text-gray-900 dark:text-zinc-200 block">Current Tariff Tier</span>
-                <span className="text-[20px] font-bold text-[#5FA354] dark:text-[#5FA354] font-sans tracking-tight mt-1.5 block leading-tight">
-                  {category === 'domestic' ? TIER_RANGES[getTierIndex(totalKwhPurchased)] : 'Commercial Flat Rate'}
-                </span>
-              </div>
-            </div>
-
-            <div className="text-xs font-sans text-gray-900 dark:text-zinc-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-t border-gray-150 dark:border-zinc-900 pt-3.5 relative z-10">
-              <span>Selected Tariff Matrix: <strong className="text-gray-900 dark:text-white font-mono">{year} Q{quarter}</strong></span>
-              <span>Active Tier Rate: <strong className="text-[#5FA354] dark:text-[#5FA354] font-mono">{currentRates[getTierIndex(totalKwhPurchased)].toFixed(4)} ETB/kWh</strong></span>
-            </div>
-          </div>
-
           {/* Step-By-Step Incremental Top-Up Calculation Breakdown */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -798,6 +751,53 @@ export default function SmartMeterCalculator() {
               </div>
             </div>
 
+          </div>
+
+          {/* Smart Meter Digital Terminal Display */}
+          <div className="bg-white dark:bg-zinc-950 text-gray-900 dark:text-white rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-zinc-900 relative overflow-hidden space-y-5">
+            {/* Ambient Accent Glow */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+            
+            <div className="flex items-center justify-between border-b border-gray-150 dark:border-zinc-900 pb-4 relative z-10">
+              <div className="flex items-center gap-2.5">
+                <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse shadow-sm shadow-emerald-500/50" />
+                <span className="text-xs font-sans font-bold text-gray-900 dark:text-white uppercase tracking-wider">
+                  EEU SMART METER DIGITAL INTERFACE
+                </span>
+              </div>
+              <span className="text-[11px] font-sans font-bold text-white bg-[#5FA354] px-3 py-1 rounded-full">
+                ONLINE • PREPAID LOGIC
+              </span>
+            </div>
+
+            {/* Main Meter Metrics */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 relative z-10">
+              <div className="p-4 bg-gray-50/80 dark:bg-zinc-900/60 rounded-xl border border-gray-200/80 dark:border-zinc-800 flex flex-col justify-between h-full">
+                <span className="text-[11px] font-sans font-medium uppercase text-gray-900 dark:text-zinc-200 block">Total Monthly kWh</span>
+                <span className="text-2xl font-black text-[#5FA354] dark:text-[#5FA354] font-sans tracking-tight mt-1.5 block">
+                  {totalKwhPurchased.toFixed(1)} <span className="text-xs font-normal text-gray-500 dark:text-zinc-400">kWh</span>
+                </span>
+              </div>
+
+              <div className="p-4 bg-gray-50/80 dark:bg-zinc-900/60 rounded-xl border border-gray-200/80 dark:border-zinc-800 flex flex-col justify-between h-full">
+                <span className="text-[11px] font-sans font-medium uppercase text-gray-900 dark:text-zinc-200 block">Total Spent This Month</span>
+                <span className="text-2xl font-black text-[#5FA354] dark:text-[#5FA354] font-sans tracking-tight mt-1.5 block">
+                  {totalPaidMonth.toFixed(2)} <span className="text-xs font-normal text-gray-500 dark:text-zinc-400">ETB</span>
+                </span>
+              </div>
+
+              <div className="p-4 bg-gray-50/80 dark:bg-zinc-900/60 rounded-xl border border-gray-200/80 dark:border-zinc-800 flex flex-col justify-between h-full">
+                <span className="text-[11px] font-sans font-medium uppercase text-gray-900 dark:text-zinc-200 block">Current Tariff Tier</span>
+                <span className="text-[20px] font-bold text-[#5FA354] dark:text-[#5FA354] font-sans tracking-tight mt-1.5 block leading-tight">
+                  {category === 'domestic' ? TIER_RANGES[getTierIndex(totalKwhPurchased)] : 'Commercial Flat Rate'}
+                </span>
+              </div>
+            </div>
+
+            <div className="text-xs font-sans text-gray-900 dark:text-zinc-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-t border-gray-150 dark:border-zinc-900 pt-3.5 relative z-10">
+              <span>Selected Tariff Matrix: <strong className="text-gray-900 dark:text-white font-mono">{year} Q{quarter}</strong></span>
+              <span>Active Tier Rate: <strong className="text-[#5FA354] dark:text-[#5FA354] font-mono">{currentRates[getTierIndex(totalKwhPurchased)].toFixed(4)} ETB/kWh</strong></span>
+            </div>
           </div>
 
         </div>
