@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   ShieldAlert, Lock, Unlock, Plus, Edit3, CheckCircle2, Trash2, X, AlertCircle, 
   RefreshCw, Info, MapPin, Zap, Clock, ShieldCheck, HelpCircle, Download, Copy, Check, Building,
-  UserCheck, Users, Eye, EyeOff, UserPlus, KeyRound, Shield
+  UserCheck, Users, Eye, EyeOff, UserPlus, KeyRound, Shield, Search
 } from 'lucide-react';
 import { FeederInterruption, InterruptionType, InterruptionStatus, stripBrackets, TeamLeaderUser, UserRole } from '../types';
 import { INITIAL_DISTRICTS, INITIAL_FEEDERS_LIST } from '../data/mockData';
@@ -98,6 +98,8 @@ export default function AdminPanel({
 
   // Form state
   const [feederName, setFeederName] = useState('');
+  const [formFeederSearchQuery, setFormFeederSearchQuery] = useState('');
+  const [formFeederDropdownOpen, setFormFeederDropdownOpen] = useState(false);
   const [customFeederEnabled, setCustomFeederEnabled] = useState(false);
   const [customFeederName, setCustomFeederName] = useState('');
   const [district, setDistrict] = useState(INITIAL_DISTRICTS[0]);
@@ -225,6 +227,8 @@ export default function AdminPanel({
 
     const parsed = parseFeeder(availableFeeder);
     setFeederName(parsed.feederLine);
+    setFormFeederSearchQuery(parsed.feederLine);
+    setFormFeederDropdownOpen(false);
     setCustomFeederEnabled(false);
     setCustomFeederName('');
 
@@ -280,10 +284,14 @@ export default function AdminPanel({
     if (matchedPreset) {
       const parsed = parseFeeder(matchedPreset);
       setFeederName(parsed.feederLine);
+      setFormFeederSearchQuery(parsed.feederLine);
+      setFormFeederDropdownOpen(false);
       setCustomFeederEnabled(false);
       setCustomFeederName('');
     } else {
       setFeederName('');
+      setFormFeederSearchQuery(item.feederName);
+      setFormFeederDropdownOpen(false);
       setCustomFeederEnabled(true);
       setCustomFeederName(item.feederName);
     }
@@ -1179,57 +1187,131 @@ export default function AdminPanel({
                     Feeder Station Selection
                   </label>
                   {!customFeederEnabled ? (
-                    <div className="space-y-1.5">
-                      <select
-                        id="form-feeder-select"
-                        value={feederName}
-                        onChange={(e) => {
-                          const selectedValue = e.target.value;
-                          setFeederName(selectedValue);
-                          
-                          // Auto fill Affected Communities / Areas with the Amharic location
-                          const matchedPreset = activeFeeders.find((f) => {
-                            const parsed = parseFeeder(f);
-                            return parsed.feederLine === selectedValue;
-                          });
-                          if (matchedPreset) {
-                            const parsed = parseFeeder(matchedPreset);
-                            setAffectedArea(parsed.amharicLocation);
-                          }
+                    <div className="relative space-y-1.5">
+                      {formFeederDropdownOpen && (
+                        <div 
+                          className="fixed inset-0 z-40" 
+                          onClick={() => setFormFeederDropdownOpen(false)} 
+                        />
+                      )}
+                      <div className="relative z-50">
+                        <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <input
+                          id="form-feeder-select"
+                          type="text"
+                          placeholder="Search feeder (e.g. ADC-11, ADDIS CENTER)..."
+                          value={formFeederSearchQuery}
+                          onFocus={() => setFormFeederDropdownOpen(true)}
+                          onChange={(e) => {
+                            setFormFeederSearchQuery(e.target.value);
+                            setFormFeederDropdownOpen(true);
+                          }}
+                          className="w-full text-xs rounded-xl glass-input pl-9 pr-8 py-2.5 text-gray-900 dark:text-white focus:outline-none focus:ring-1.5 focus:ring-eeu-green bg-white dark:bg-gray-950 font-medium"
+                        />
+                        {formFeederSearchQuery && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormFeederSearchQuery('');
+                              setFormFeederDropdownOpen(true);
+                            }}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-white"
+                            title="Clear search"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
 
-                          // Auto-set District Region based on direction
-                          const dir = getCardinalDirection('', selectedValue);
-                          if (dir) {
-                            let matchedDistrict = '';
-                            if (dir === 'North') matchedDistrict = 'North Addis Ababa';
-                            else if (dir === 'East') matchedDistrict = 'East Addis Ababa';
-                            else if (dir === 'West') matchedDistrict = 'West Addis Ababa';
-                            else if (dir === 'South') matchedDistrict = 'South Addis Ababa';
-                            else if (dir === 'Sheger') matchedDistrict = 'Sheger Region';
+                      {/* Dropdown Options */}
+                      {formFeederDropdownOpen && (
+                        <div className="absolute z-50 left-0 right-0 top-full mt-1.5 max-h-60 overflow-y-auto bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-xl divide-y divide-gray-100 dark:divide-gray-800/50">
+                          {(() => {
+                            const query = formFeederSearchQuery.trim().toLowerCase();
+                            const matches = activeFeeders.filter((feeder) => {
+                              const parsed = parseFeeder(feeder);
+                              if (!query) return true;
+                              return (
+                                parsed.feederLine.toLowerCase().includes(query) ||
+                                parsed.amharicLocation.toLowerCase().includes(query) ||
+                                feeder.toLowerCase().includes(query)
+                              );
+                            });
 
-                            if (matchedDistrict && INITIAL_DISTRICTS.includes(matchedDistrict)) {
-                              setDistrict(matchedDistrict);
+                            if (matches.length === 0) {
+                              return (
+                                <div className="p-3 text-center text-xs text-gray-500 dark:text-gray-400">
+                                  No feeders match &quot;{formFeederSearchQuery}&quot;
+                                </div>
+                              );
                             }
-                          }
-                        }}
-                        className="w-full text-xs rounded-xl glass-input p-2.5 text-gray-900 dark:text-white focus:outline-none focus:ring-1.5 focus:ring-eeu-green bg-white dark:bg-gray-950"
-                      >
-                        {activeFeeders.map((feeder) => {
-                          const parsed = parseFeeder(feeder);
-                          const norm = normalizeFeederName(parsed.feederLine);
-                          const activeItem = interruptions.find(
-                            (item) =>
-                              (!editingItem || item.id !== editingItem.id) &&
-                              normalizeFeederName(item.feederName) === norm &&
-                              item.status !== InterruptionStatus.RESTORED
-                          );
-                          return (
-                            <option key={feeder} value={parsed.feederLine} disabled={!!activeItem}>
-                              {parsed.feederLine} {activeItem ? `⚠️ (Outage Active: ${activeItem.status})` : ''}
-                            </option>
-                          );
-                        })}
-                      </select>
+
+                            return matches.map((feeder) => {
+                              const parsed = parseFeeder(feeder);
+                              const norm = normalizeFeederName(parsed.feederLine);
+                              const activeItem = interruptions.find(
+                                (item) =>
+                                  (!editingItem || item.id !== editingItem.id) &&
+                                  normalizeFeederName(item.feederName) === norm &&
+                                  item.status !== InterruptionStatus.RESTORED
+                              );
+                              const isSelected = feederName === parsed.feederLine;
+
+                              return (
+                                <button
+                                  key={feeder}
+                                  type="button"
+                                  disabled={!!activeItem}
+                                  onClick={() => {
+                                    setFeederName(parsed.feederLine);
+                                    setFormFeederSearchQuery(parsed.feederLine);
+                                    setFormFeederDropdownOpen(false);
+
+                                    // Auto fill Affected Communities / Areas
+                                    setAffectedArea(parsed.amharicLocation);
+
+                                    // Auto-set District Region based on direction
+                                    const dir = getCardinalDirection('', parsed.feederLine);
+                                    if (dir) {
+                                      let matchedDistrict = '';
+                                      if (dir === 'North') matchedDistrict = 'North Addis Ababa';
+                                      else if (dir === 'East') matchedDistrict = 'East Addis Ababa';
+                                      else if (dir === 'West') matchedDistrict = 'West Addis Ababa';
+                                      else if (dir === 'South') matchedDistrict = 'South Addis Ababa';
+                                      else if (dir === 'Sheger') matchedDistrict = 'Sheger Region';
+
+                                      if (matchedDistrict && INITIAL_DISTRICTS.includes(matchedDistrict)) {
+                                        setDistrict(matchedDistrict);
+                                      }
+                                    }
+                                  }}
+                                  className={`w-full text-left px-3.5 py-2 text-xs transition-colors flex items-center justify-between gap-2 ${
+                                    isSelected
+                                      ? 'bg-eeu-green/10 text-eeu-green font-semibold'
+                                      : activeItem
+                                      ? 'bg-gray-50 dark:bg-gray-800/40 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+                                      : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-white'
+                                  }`}
+                                >
+                                  <div className="truncate">
+                                    <div className="font-semibold">{parsed.feederLine}</div>
+                                    {parsed.amharicLocation && (
+                                      <div className="text-[10px] text-gray-500 dark:text-gray-400 truncate">
+                                        {parsed.amharicLocation}
+                                      </div>
+                                    )}
+                                  </div>
+                                  {activeItem && (
+                                    <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded shrink-0">
+                                      ⚠️ Outage Active
+                                    </span>
+                                  )}
+                                </button>
+                              );
+                            });
+                          })()}
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="space-y-1.5">
