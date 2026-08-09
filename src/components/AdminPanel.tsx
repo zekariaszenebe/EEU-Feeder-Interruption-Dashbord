@@ -227,7 +227,7 @@ export default function AdminPanel({
 
     const parsed = parseFeeder(availableFeeder);
     setFeederName(parsed.feederLine);
-    setFormFeederSearchQuery(parsed.feederLine);
+    setFormFeederSearchQuery('');
     setFormFeederDropdownOpen(false);
     setCustomFeederEnabled(false);
     setCustomFeederName('');
@@ -1199,12 +1199,47 @@ export default function AdminPanel({
                         <input
                           id="form-feeder-select"
                           type="text"
-                          placeholder="Search feeder (e.g. ADC-11, ADDIS CENTER)..."
+                          placeholder={feederName ? `Selected: ${feederName} — type code to search (e.g. ADC-11)...` : "Search feeder (e.g. ADC-11, ADDIS CENTER)..."}
                           value={formFeederSearchQuery}
-                          onFocus={() => setFormFeederDropdownOpen(true)}
-                          onChange={(e) => {
-                            setFormFeederSearchQuery(e.target.value);
+                          onFocus={(e) => {
                             setFormFeederDropdownOpen(true);
+                            e.target.select();
+                          }}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setFormFeederSearchQuery(val);
+                            setFormFeederDropdownOpen(true);
+
+                            const q = val.trim().toLowerCase();
+                            if (q) {
+                              const match = activeFeeders.find((f) => {
+                                const parsed = parseFeeder(f);
+                                return (
+                                  parsed.feederLine.toLowerCase() === q ||
+                                  parsed.feederLine.toLowerCase().includes(q)
+                                );
+                              });
+                              if (match) {
+                                const parsed = parseFeeder(match);
+                                setFeederName(parsed.feederLine);
+                                if (parsed.amharicLocation) {
+                                  setAffectedArea(parsed.amharicLocation);
+                                }
+                                const dir = getCardinalDirection('', parsed.feederLine);
+                                if (dir) {
+                                  let matchedDistrict = '';
+                                  if (dir === 'North') matchedDistrict = 'North Addis Ababa';
+                                  else if (dir === 'East') matchedDistrict = 'East Addis Ababa';
+                                  else if (dir === 'West') matchedDistrict = 'West Addis Ababa';
+                                  else if (dir === 'South') matchedDistrict = 'South Addis Ababa';
+                                  else if (dir === 'Sheger') matchedDistrict = 'Sheger Region';
+
+                                  if (matchedDistrict && INITIAL_DISTRICTS.includes(matchedDistrict)) {
+                                    setDistrict(matchedDistrict);
+                                  }
+                                }
+                              }
+                            }
                           }}
                           className="w-full text-xs rounded-xl glass-input pl-9 pr-8 py-2.5 text-gray-900 dark:text-white focus:outline-none focus:ring-1.5 focus:ring-eeu-green bg-white dark:bg-gray-950 font-medium"
                         />
