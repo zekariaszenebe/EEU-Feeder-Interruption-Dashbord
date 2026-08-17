@@ -294,7 +294,7 @@ export default function SmartMeterCalculator() {
                 </h1>
               </div>
               <p className="text-xs text-gray-600 dark:text-zinc-400 font-sans mt-1 font-medium">
-                Calculates electricity costs when a customer tops up multiple times within a single calendar month using EEU block tariff progression.
+                Official Multi-Tariff Audit Engine (2017–2020)
               </p>
             </div>
           </div>

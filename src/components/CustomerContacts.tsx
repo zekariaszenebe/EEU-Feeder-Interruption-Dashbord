@@ -191,15 +191,10 @@ export default function CustomerContacts({
               <Phone className="w-5 h-5" />
             </span>
             <h2 className="text-lg font-display font-black text-gray-900 dark:text-white tracking-tight">
-              Other Region Phone NO
+              Other Region Phone Number
             </h2>
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 max-w-xl">
-            Quickly locate, dial, or copy contact phone numbers and shortcodes for Ethiopian Electric Utility (EEU) offices, regional subdivisions, and customer service centers nationwide.
-          </p>
         </div>
-
-
       </div>
 
       {/* Filters, Search Bar & Actions */}

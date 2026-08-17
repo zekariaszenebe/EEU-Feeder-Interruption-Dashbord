@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Search, Eye, ShieldAlert, MapPin, AlertTriangle, HelpCircle, 
-  Clock, CheckCircle, RefreshCcw, ArrowUpDown, Grid, List, 
+  Clock, CheckCircle, ArrowUpDown, Grid, List, 
   SlidersHorizontal, CheckSquare, Square, Bell, CalendarClock, Info,
   Columns, Rows, Zap, Settings, Compass, ArrowUp, ArrowDown, ArrowLeft, ArrowRight,
   Trash2, Edit3, Plus, MessageSquare, AlertCircle,
@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { FeederInterruption, InterruptionType, InterruptionStatus, stripBrackets, TeamLeaderNote } from '../types';
 import { INITIAL_DISTRICTS } from '../data/mockData';
-import { addTeamLeaderNoteDoc, updateTeamLeaderNoteDoc, deleteTeamLeaderNoteDoc } from '../lib/firestoreService';
+import { addTeamLeaderNoteDoc, updateTeamLeaderNoteDoc, deleteTeamLeaderNoteDoc, subscribeToInterruptions } from '../lib/firestoreService';
 
 export function sanitizeHtml(html: string): string {
   if (!html) return '';
@@ -182,13 +182,32 @@ export function InterruptionTypeBadge({ type }: { type: InterruptionType }) {
 }
 
 interface AgentViewProps {
-  interruptions: FeederInterruption[];
-  onTriggerMockIncident: () => void;
+  interruptions?: FeederInterruption[];
+  onTriggerMockIncident?: () => void;
   isAdmin?: boolean;
   teamLeaderNotes?: TeamLeaderNote[];
 }
 
 export default function AgentView({ interruptions, onTriggerMockIncident, isAdmin = false, teamLeaderNotes = [] }: AgentViewProps) {
+  // Real-time interruptions state listener via onSnapshot
+  const [liveInterruptions, setLiveInterruptions] = useState<FeederInterruption[]>(interruptions || []);
+
+  useEffect(() => {
+    if (interruptions) {
+      setLiveInterruptions(interruptions);
+    }
+  }, [interruptions]);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToInterruptions((items) => {
+      setLiveInterruptions(items);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
   // Filters & Search controls
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState('All');
@@ -203,32 +222,6 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
 
   // View state (horizontal vs grid vs table)
   const [viewLayout, setViewLayout] = useState<'horizontal' | 'grid' | 'table'>('horizontal');
-
-  // Auto-refresh countdown (30s)
-  const [countdown, setCountdown] = useState(30);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          // Reset countdown & simulate mild loading spinner
-          setIsRefreshing(true);
-          setTimeout(() => setIsRefreshing(false), 800);
-          return 30;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleManualRefresh = () => {
-    setIsRefreshing(true);
-    setCountdown(30);
-    setTimeout(() => setIsRefreshing(false), 600);
-  };
 
   // Team Leader Notes state controls
   const [isAddingNote, setIsAddingNote] = useState(false);
@@ -677,7 +670,7 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
   };
 
   // Process filters & search query
-  const filteredItems = interruptions.filter((item) => {
+  const filteredItems = liveInterruptions.filter((item) => {
     // 1. Search Query Match
     const matchesSearch = item.feederName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           item.affectedArea.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -729,7 +722,7 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
     status: InterruptionStatus;
   }> = [];
 
-  interruptions.forEach((item) => {
+  liveInterruptions.forEach((item) => {
     // Split the affectedArea on typical Amharic and English delimiter characters
     const rawParts = item.affectedArea.split(/[፣、፤,;]+/);
     
@@ -785,7 +778,7 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
     Sheger: { active: 0, restored: 0, total: 0, areas: [] as string[] },
   };
 
-  interruptions.forEach((item) => {
+  liveInterruptions.forEach((item) => {
     const dir = getCardinalDirection(item.district, item.feederName);
     const isActive = item.status !== InterruptionStatus.RESTORED;
     
@@ -824,7 +817,7 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
       
       {/* Search and Filters Drawer */}
       <div className="glass-card rounded-3xl px-6 pt-6 pb-7 space-y-5 order-2">
-        {/* Top bar: Search Input & Countdown */}
+        {/* Top bar: Search Input */}
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="relative flex-1 min-w-[280px]">
             <Search className="absolute left-4 top-3.5 w-4 h-4 text-gray-400 dark:text-gray-500" />
@@ -836,22 +829,6 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-11 pr-4 py-3 text-sm rounded-2xl glass-input text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-eeu-green placeholder-gray-400 dark:placeholder-gray-500 font-medium bg-white/50 dark:bg-gray-900/50 border border-gray-200/50 dark:border-gray-800/50"
             />
-          </div>
-
-          <div className="flex items-center gap-3">
-            {/* Auto refresh badge */}
-            <div className="flex items-center gap-2 p-2 px-3 rounded-2xl bg-gray-100 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 text-[11px] font-sans text-gray-500 dark:text-gray-400">
-              <RefreshCcw className={`w-3.5 h-3.5 text-eeu-green ${isRefreshing ? 'animate-spin' : ''}`} />
-              <span>Auto-refresh: <b>{countdown}s</b></span>
-              <button 
-                id="manual-refresh-btn"
-                onClick={handleManualRefresh}
-                title="Force refresh"
-                className="ml-1 text-eeu-green hover:underline cursor-pointer font-semibold"
-              >
-                Sync Now
-              </button>
-            </div>
           </div>
         </div>
 
