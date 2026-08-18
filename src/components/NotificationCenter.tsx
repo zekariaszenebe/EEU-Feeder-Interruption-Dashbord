@@ -37,11 +37,8 @@ export default function NotificationCenter({
             </div>
             <div>
               <h3 className="font-display font-semibold text-base text-gray-900 dark:text-white">
-                Notification Of Interruption Feeders
+                Notification Of Feeders Interruption And Feeders Restored
               </h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Live critical logs logged by admin line control.
-              </p>
             </div>
           </div>
 
@@ -111,7 +108,13 @@ export default function NotificationCenter({
                   <div className="flex-1 space-y-1 text-left">
                     <div className="flex items-start justify-between gap-2 flex-wrap">
                       <h4 className="font-semibold text-xs text-gray-900 dark:text-white flex items-center gap-2">
-                        <span>{noti.title}</span>
+                        <span>
+                          {noti.type === 'new' || noti.title === 'New Grid Warning Added' 
+                            ? 'New Feeder Added' 
+                            : (noti.type === 'resolve' || noti.title === 'Feeder Line Cleared' || noti.title === 'Feeder Restored Successfully' 
+                              ? 'Feeder Line Restored' 
+                              : noti.title)}
+                        </span>
                         {!noti.read && (
                           <span className="h-1.5 w-1.5 rounded-full bg-red-500 inline-block animate-ping" />
                         )}

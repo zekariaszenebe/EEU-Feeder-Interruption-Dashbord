@@ -384,7 +384,7 @@ export const INITIAL_NOTIFICATIONS: SystemNotification[] = [
     id: 'n-3',
     feederId: 'f-6',
     type: 'resolve',
-    title: 'Feeder Restored Successfully',
+    title: 'Feeder Line Restored',
     message: 'MEKANISA MEK-02 re-energized after replacing wet insulation gaskets. Voltage levels normal.',
     timestamp: getPastHoursString(0.5),
     read: false

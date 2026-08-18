@@ -310,7 +310,7 @@ export async function addInterruptionDoc(entry: Omit<FeederInterruption, 'id' | 
     id: notiId,
     feederId: newId,
     type: 'new',
-    title: `New Grid Warning Added`,
+    title: `New Feeder Added`,
     message: `${entry.feederName} (${entry.district}) logged under ${entry.status}. Affected areas: ${entry.affectedArea}`,
     timestamp: timestampStr,
     read: false
@@ -350,7 +350,7 @@ export async function updateInterruptionDoc(id: string, entry: Partial<FeederInt
   // 2. Add companion notification if the status has transitioned
   if (entry.status && entry.status !== existingRecord.status) {
     const typeVal: 'resolve' | 'update' = entry.status === InterruptionStatus.RESTORED ? 'resolve' : 'update';
-    const titleText = entry.status === InterruptionStatus.RESTORED ? 'Feeder Line Cleared' : 'Operational Status Changed';
+    const titleText = entry.status === InterruptionStatus.RESTORED ? 'Feeder Line Restored' : 'Operational Status Changed';
     const messageText = entry.status === InterruptionStatus.RESTORED 
       ? `${existingRecord.feederName} restored to active grid status and re-energized successfully.`
       : `${existingRecord.feederName} reassessed as ${entry.status}. Details: ${entry.remark || merged.remark}`;

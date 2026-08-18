@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Zap, Bell, Menu, X, ShieldAlert, CheckCircle2, AlertTriangle, 
   Settings, RefreshCw, Layers, LayoutGrid, Clock, LogOut, Sun, Moon,
-  Headset, ShieldCheck, UserCheck, KeyRound, Eye, EyeOff 
+  Headset, ShieldCheck, UserCheck, KeyRound, Eye, EyeOff, MessageCircle 
 } from 'lucide-react';
 
 // Types and mock data
@@ -54,6 +54,7 @@ import { FeederHub } from './components/FeederHub';
 import CustomerContacts from './components/CustomerContacts';
 import EEULogo from './components/EEULogo';
 import WebLoginScreen from './components/WebLoginScreen';
+import FeedbackModal from './components/FeedbackModal';
 
 export default function App() {
   // 1. Theme State (strictly light mode)
@@ -61,6 +62,9 @@ export default function App() {
   const toggleTheme = () => {
     // Theme toggling disabled to preserve strictly light mode
   };
+
+  // Feedback Modal State
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState<boolean>(false);
 
   // 2. Data State
   const [interruptions, setInterruptions] = useState<FeederInterruption[]>(() => {
@@ -635,7 +639,14 @@ export default function App() {
               Other Region Phone NO
             </button>
 
-
+            <button
+              id="mob-nav-feedback"
+              onClick={() => { setIsFeedbackModalOpen(true); setMobileMenuOpen(false); }}
+              className="w-full p-2.5 rounded-lg text-xs font-semibold flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-900 cursor-pointer"
+            >
+              <MessageCircle className="w-4 h-4 text-eeu-green" />
+              <span>Website Feedback</span>
+            </button>
 
             <button
               id="mob-web-logout-btn"
@@ -692,6 +703,17 @@ export default function App() {
 
               {/* User Profile Pill Card & Action Buttons */}
               <div className="flex items-center gap-2.5">
+                {/* Feedback Button */}
+                <button
+                  id="header-feedback-btn"
+                  onClick={() => setIsFeedbackModalOpen(true)}
+                  title="Share Website Feedback via Email (zekariaszenebe21@gmail.com)"
+                  className="relative h-10 px-3.5 rounded-full bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800 shadow-xs hover:shadow flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-eeu-green dark:hover:text-eeu-green hover:bg-gray-50 dark:hover:bg-gray-800 transition-all cursor-pointer shrink-0"
+                >
+                  <MessageCircle className="w-4 h-4 text-eeu-green" />
+                  <span>Feedback</span>
+                </button>
+
                 {/* Notifications Button */}
                 <button
                   id="header-notification-toggle"
@@ -852,6 +874,14 @@ export default function App() {
             </div>
           </div>
         </footer>
+
+        {/* FEEDBACK MODAL */}
+        <FeedbackModal
+          isOpen={isFeedbackModalOpen}
+          onClose={() => setIsFeedbackModalOpen(false)}
+          userRole={isAdmin ? 'Admin' : userRole === 'team_leader' ? 'Team Leader' : 'Call Agent'}
+          userName={isAdmin ? 'Admin' : currentTeamLeader?.name}
+        />
 
       </div>
     </div>

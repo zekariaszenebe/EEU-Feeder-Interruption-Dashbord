@@ -27,9 +27,6 @@ export default function ResolutionArchive({ interruptions }: ResolutionArchivePr
             <CheckSquare className="w-5 h-5 text-eeu-green" />
             <span>Feeder Resolution Archive</span>
           </h3>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            Read-only registry of restored services and cleared grid zones.
-          </p>
         </div>
 
         <div className="relative min-w-[240px]">
@@ -67,9 +64,6 @@ export default function ResolutionArchive({ interruptions }: ResolutionArchivePr
                   <span className="text-[10px] font-mono font-bold bg-eeu-green/10 text-eeu-green px-2 py-0.5 rounded-full uppercase">
                     RESOLVED & SUCCESSFUL
                   </span>
-                  <span className="text-[10px] text-gray-400 dark:text-gray-500 font-mono">
-                    ID: f-{item.id}
-                  </span>
                 </div>
 
                 <h4 className="font-display font-semibold text-sm text-gray-900 dark:text-white leading-tight">
@@ -81,13 +75,6 @@ export default function ResolutionArchive({ interruptions }: ResolutionArchivePr
                     Affected Locations Disconnected
                   </span>
                   <p className="leading-relaxed line-clamp-2 mt-0.5">{item.affectedArea}</p>
-                </div>
-
-                <div className="p-3 bg-gray-50 dark:bg-gray-950/50 rounded-xl border border-gray-100 dark:border-gray-850 text-xs">
-                  <span className="font-bold text-eeu-green">Closing Technician Report:</span>
-                  <p className="text-gray-600 dark:text-gray-400 italic mt-1 leading-relaxed">
-                    &ldquo;{item.remark}&rdquo;
-                  </p>
                 </div>
               </div>
 

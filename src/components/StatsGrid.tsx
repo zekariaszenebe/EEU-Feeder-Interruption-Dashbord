@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldAlert, Zap, Layers, RefreshCw, AlertTriangle, CalendarRange } from 'lucide-react';
+import { ShieldAlert, Zap, CalendarClock } from 'lucide-react';
 import { FeederInterruption, InterruptionType, InterruptionStatus } from '../types';
 import { EarthFaultIcon } from './AgentView';
 
@@ -23,57 +23,49 @@ export default function StatsGrid({ interruptions }: StatsGridProps) {
     i => i.status !== InterruptionStatus.RESTORED && (i.type === InterruptionType.PLANNED_INTERRUPTION || i.type === InterruptionType.OPERATIONAL_INTERRUPTION)
   ).length;
 
-  const restoredToday = interruptions.filter(
-    i => i.status === InterruptionStatus.RESTORED
-  ).length;
-
   const statCards = [
     {
       id: "stat-total-active",
       title: "Active Outages",
       value: activeCount,
-      bgColor: "bg-red-500/10 dark:bg-red-500/5",
-      borderColor: "border-red-200 dark:border-red-950/40",
-      textColor: "text-red-600 dark:text-red-400 font-bold",
+      textColor: "text-rose-600 dark:text-rose-400 font-bold",
       subtext: "Immediate dispatch team alerted",
-      icon: AlertTriangle,
-      iconColor: "text-red-500",
+      icon: ShieldAlert,
+      iconBg: "bg-rose-50 dark:bg-rose-950/40 border border-rose-200/70 dark:border-rose-900/40 shadow-xs",
+      iconColor: "text-rose-600 dark:text-rose-400",
       indicator: "right now"
     },
     {
       id: "stat-earth-fault",
       title: "Earth Faults",
       value: earthFaults,
-      bgColor: "bg-amber-500/10 dark:bg-amber-500/5",
-      borderColor: "border-amber-200 dark:border-amber-950/40",
-      textColor: "text-amber-600 dark:text-amber-400",
+      textColor: "text-amber-600 dark:text-amber-400 font-bold",
       subtext: "Ground patrols dispatched",
       icon: EarthFaultIcon,
-      iconColor: "text-amber-500",
+      iconBg: "bg-amber-50 dark:bg-amber-950/40 border border-amber-200/70 dark:border-amber-900/40 shadow-xs",
+      iconColor: "text-amber-600 dark:text-amber-400",
       indicator: "right now"
     },
     {
       id: "stat-short-circuit",
       title: "Short Circuit",
       value: shortCircuits,
-      bgColor: "bg-orange-500/10 dark:bg-orange-500/5",
-      borderColor: "border-orange-200 dark:border-orange-950/40",
-      textColor: "text-orange-600 dark:text-orange-400",
+      textColor: "text-orange-600 dark:text-orange-400 font-bold",
       subtext: "Phase-to-phase contact",
       icon: Zap,
-      iconColor: "text-orange-500",
+      iconBg: "bg-orange-50 dark:bg-orange-950/40 border border-orange-200/70 dark:border-orange-900/40 shadow-xs",
+      iconColor: "text-orange-600 dark:text-orange-400",
       indicator: "right now"
     },
     {
       id: "stat-planned",
       title: "Planned & OPERATIONAL",
       value: planned,
-      bgColor: "bg-blue-500/10 dark:bg-blue-500/5",
-      borderColor: "border-blue-200 dark:border-blue-950/40",
-      textColor: "text-blue-600 dark:text-blue-400",
+      textColor: "text-sky-600 dark:text-sky-400 font-bold",
       subtext: "Pre-notified clients",
-      icon: CalendarRange,
-      iconColor: "text-blue-500",
+      icon: CalendarClock,
+      iconBg: "bg-sky-50 dark:bg-sky-950/40 border border-sky-200/70 dark:border-sky-900/40 shadow-xs",
+      iconColor: "text-sky-600 dark:text-sky-400",
       indicator: "right now"
     }
   ];
@@ -86,15 +78,15 @@ export default function StatsGrid({ interruptions }: StatsGridProps) {
           <div
             id={card.id}
             key={card.id}
-            className={`p-5 rounded-2xl glass-card flex flex-col justify-between`}
+            className="p-5 rounded-2xl glass-card flex flex-col justify-between"
           >
             <div>
               <div className="flex items-center justify-between gap-3 mb-2">
                 <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   {card.title}
                 </span>
-                <div className={`p-2 rounded-xl bg-gray-50 dark:bg-gray-950`}>
-                  <Icon className={`w-4 h-4 ${card.iconColor}`} />
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${card.iconBg}`}>
+                  <Icon className={`w-4.5 h-4.5 ${card.iconColor}`} />
                 </div>
               </div>
 
