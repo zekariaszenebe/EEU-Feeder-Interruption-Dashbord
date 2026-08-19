@@ -720,50 +720,50 @@ export default function AdminPanel({
       </div>
 
       {/* Admin Panel Tabs */}
-      <div className="flex border-b border-gray-200 dark:border-gray-800/60 gap-1 flex-wrap">
+      <div className="flex border-b border-gray-200 dark:border-gray-800/60 gap-1 flex-wrap font-sans">
         <button
           id="admin-subtab-outages"
           onClick={() => setAdminSubTab('outages')}
-          className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
+          className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-2 font-sans ${
             adminSubTab === 'outages'
               ? 'border-eeu-green text-eeu-green'
               : 'border-transparent text-gray-500 hover:text-gray-900 dark:hover:text-white'
           }`}
         >
           <Zap className="w-3.5 h-3.5" />
-          <span>Disruptions Board ({interruptions.length})</span>
+          <span className="font-sans">Disruptions Board ({interruptions.length})</span>
         </button>
         <button
           id="admin-subtab-feeders"
           onClick={() => setAdminSubTab('feeders')}
-          className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
+          className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-2 font-sans ${
             adminSubTab === 'feeders'
               ? 'border-eeu-green text-eeu-green'
               : 'border-transparent text-gray-500 hover:text-gray-900 dark:hover:text-white'
           }`}
         >
           <Building className="w-3.5 h-3.5" />
-          <span>Preset Feeder Lines Database ({activeFeeders.length})</span>
+          <span className="font-sans">Preset Feeder Lines Database ({activeFeeders.length})</span>
         </button>
         {(isAdmin || userRole === 'admin') && (
           <button
             id="admin-subtab-team-leaders"
             onClick={() => setAdminSubTab('team_leaders')}
-            className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
+            className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-2 font-sans ${
               adminSubTab === 'team_leaders'
                 ? 'border-sky-500 text-sky-600 dark:text-sky-400 font-bold'
                 : 'border-transparent text-gray-500 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             <UserCheck className="w-3.5 h-3.5 text-sky-500" />
-            <span>Team Leaders Accounts ({teamLeaders.length})</span>
+            <span className="font-sans">Team Leaders Accounts ({teamLeaders.length})</span>
           </button>
         )}
       </div>
 
       {/* Grid Interruption Direct List Control */}
       {adminSubTab === 'outages' && (
-        <div className="glass-card rounded-2xl overflow-hidden">
+        <div className="glass-card rounded-2xl overflow-hidden font-sans">
         <div className="p-5 border-b border-gray-200/30 dark:border-gray-800/30 bg-transparent flex items-center justify-between flex-wrap gap-2">
           <h3 className="font-display font-medium text-xs text-gray-600 dark:text-gray-400 uppercase tracking-wider">
             All Listed Feeder Disruptions ({interruptions.length})
@@ -779,7 +779,7 @@ export default function AdminPanel({
         </div>
 
         {interruptions.length === 0 ? (
-          <div className="p-12 text-center text-gray-500 dark:text-gray-400">
+          <div className="p-12 text-center text-gray-500 dark:text-gray-400 font-sans">
             <Info className="w-10 h-10 text-gray-400 mx-auto mb-3" />
             <p className="font-semibold text-sm">No recorded feeder items found</p>
             <p className="text-xs text-gray-505 dark:text-gray-500 mt-1">
@@ -787,15 +787,15 @@ export default function AdminPanel({
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+          <div className="overflow-x-auto font-sans">
+            <table className="w-full text-left border-collapse font-sans">
               <thead>
-                <tr className="border-b border-gray-100 dark:border-gray-800 text-[11px] font-mono font-bold text-gray-400 dark:text-gray-500 uppercase bg-gray-50/30 dark:bg-gray-950/10">
-                  <th className="py-3.5 px-5">Feeder Station Details</th>
-                  <th className="py-3.5 px-5">Type / Region</th>
-                  <th className="py-3.5 px-5">Operational Status</th>
-                  <th className="py-3.5 px-5">Affected Location Area</th>
-                  <th className="py-3.5 px-5 text-right">Emergency Actions</th>
+                <tr className="border-b border-gray-100 dark:border-gray-800 text-[11px] font-sans font-bold text-gray-500 dark:text-gray-400 uppercase bg-gray-50/30 dark:bg-gray-950/10">
+                  <th className="py-3.5 px-5 font-sans">Feeder Station Details</th>
+                  <th className="py-3.5 px-5 font-sans">Type / Region</th>
+                  <th className="py-3.5 px-5 font-sans">Operational Status</th>
+                  <th className="py-3.5 px-5 font-sans">Affected Location Area</th>
+                  <th className="py-3.5 px-5 text-right font-sans">ACTIONS</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60 text-sm">
@@ -955,14 +955,14 @@ export default function AdminPanel({
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+            <div className="overflow-x-auto font-sans">
+              <table className="w-full text-left border-collapse font-sans">
                 <thead>
-                  <tr className="border-b border-gray-100 dark:border-gray-800 text-[11px] font-mono font-bold text-gray-400 dark:text-gray-500 uppercase bg-gray-50/30 dark:bg-gray-950/10">
-                    <th className="py-3.5 px-5 w-1/5">Substation Details</th>
-                    <th className="py-3.5 px-5 w-1/5">Feeder Identifier</th>
-                    <th className="py-3.5 px-5">Default Associated Communities & Landmark Areas</th>
-                    <th className="py-3.5 px-5 text-right w-28 font-mono">Actions</th>
+                  <tr className="border-b border-gray-100 dark:border-gray-800 text-[11px] font-sans font-bold text-gray-500 dark:text-gray-400 uppercase bg-gray-50/30 dark:bg-gray-950/10">
+                    <th className="py-3.5 px-5 w-1/5 font-sans">Substation Details</th>
+                    <th className="py-3.5 px-5 w-1/5 font-sans">Feeder Identifier</th>
+                    <th className="py-3.5 px-5 font-sans">Default Associated Communities & Landmark Areas</th>
+                    <th className="py-3.5 px-5 text-right w-28 font-sans">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60 text-sm">
@@ -1067,13 +1067,13 @@ export default function AdminPanel({
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="border-b border-gray-200/40 dark:border-gray-800/40 bg-gray-50/50 dark:bg-gray-900/40 text-gray-500 uppercase tracking-wider text-[10px] font-mono">
-                    <th className="py-3 px-4 font-semibold">Team Leader Name</th>
-                    <th className="py-3 px-4 font-semibold">Team</th>
-                    <th className="py-3 px-4 font-semibold">Username</th>
-                    <th className="py-3 px-4 font-semibold">Password</th>
-                    <th className="py-3 px-4 font-semibold">Role Permissions</th>
-                    <th className="py-3 px-4 font-semibold text-right">Actions</th>
+                  <tr className="border-b border-gray-200/40 dark:border-gray-800/40 bg-gray-50/50 dark:bg-gray-900/40 text-gray-500 uppercase tracking-wider text-[10px] font-sans">
+                    <th className="py-3 px-4 font-semibold font-sans">Team Leader Name</th>
+                    <th className="py-3 px-4 font-semibold font-sans">Team</th>
+                    <th className="py-3 px-4 font-semibold font-sans">Username</th>
+                    <th className="py-3 px-4 font-semibold font-sans">Password</th>
+                    <th className="py-3 px-4 font-semibold font-sans">Role Permissions</th>
+                    <th className="py-3 px-4 font-semibold text-right font-sans">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200/30 dark:divide-gray-800/30 font-sans">
@@ -1081,11 +1081,11 @@ export default function AdminPanel({
                     const isPassVisible = visibleTLPasswords[tl.id] || false;
                     return (
                       <tr key={tl.id} className="hover:bg-gray-50/40 dark:hover:bg-gray-900/30 transition-colors">
-                        <td className="py-3.5 px-4 font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <td className="py-3.5 px-4 font-bold text-gray-900 dark:text-white flex items-center gap-2 font-sans">
                           <div className="w-7 h-7 rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center font-bold text-xs shrink-0">
                             <UserCheck className="w-3.5 h-3.5" />
                           </div>
-                          <span>{tl.name}</span>
+                          <span className="font-sans">{tl.name}</span>
                         </td>
                         <td className="py-3.5 px-4 text-gray-600 dark:text-gray-400 font-medium">
                           {tl.district || 'Team A'}

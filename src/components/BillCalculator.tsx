@@ -16,7 +16,11 @@ import {
   ChevronUp, 
   BookOpen, 
   Printer,
-  Receipt
+  Receipt,
+  Home,
+  Building2,
+  Gauge,
+  CreditCard
 } from 'lucide-react';
 
 interface BlockCalculationRow {
@@ -529,37 +533,6 @@ export default function BillCalculator() {
   return (
     <div id="eeu-bill-calculator-root" className="max-w-7xl mx-auto space-y-6">
       
-      {/* Header Panel */}
-      <div className="relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl shadow-xs">
-        {/* Elegant top accent strip */}
-        <div className="absolute top-0 left-0 right-0 h-[3px] bg-white" />
-        
-        <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 text-[#5FA354] flex items-center justify-center shrink-0 border border-emerald-500/10 dark:border-emerald-500/20">
-            <Receipt className="w-5.5 h-5.5" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white font-sans tracking-tight">
-              EEU Energy Consumption Bill Calculator
-            </h1>
-            <p className="text-xs text-gray-400 dark:text-zinc-500 font-sans mt-0.5 font-medium">
-              Official Multi-Tariff Audit Engine (2017–2020)
-            </p>
-          </div>
-        </div>
-
-        <div>
-          <button
-            type="button"
-            onClick={() => setShowMatrixInfo(!showMatrixInfo)}
-            className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-gray-650 dark:text-gray-300 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 hover:border-gray-350 dark:hover:border-zinc-700 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-850 shadow-xs transition-all duration-200"
-          >
-            <BookOpen className="w-3.5 h-3.5 text-[#5FA354]" />
-            {showMatrixInfo ? 'Hide Rate Matrices' : 'View Tariff Matrices'}
-          </button>
-        </div>
-      </div>
-
       {/* Expanded Reference Sheets / Rates Matrices */}
       {showMatrixInfo && (
         <div className="p-6 bg-emerald-50/20 dark:bg-emerald-950/5 border border-emerald-500/20 rounded-2xl space-y-4 animate-in slide-in-from-top-3 duration-200">
@@ -646,13 +619,24 @@ export default function BillCalculator() {
               <Receipt className="w-4 h-4 text-[#5FA354]" />
               Bill Parameters
             </h2>
-            <button
-              onClick={handleReset}
-              className="text-xs font-semibold text-gray-500 hover:text-red-500 cursor-pointer flex items-center gap-1 transition-colors"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              Reset Form
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setShowMatrixInfo(!showMatrixInfo)}
+                className="text-xs font-semibold text-gray-500 dark:text-zinc-400 hover:text-[#5FA354] dark:hover:text-emerald-400 cursor-pointer flex items-center gap-1 transition-colors"
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                {showMatrixInfo ? 'Hide Rates' : 'Tariff Rates'}
+              </button>
+              <button
+                type="button"
+                onClick={handleReset}
+                className="text-xs font-semibold text-gray-500 hover:text-red-500 cursor-pointer flex items-center gap-1 transition-colors"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                Reset Form
+              </button>
+            </div>
           </div>
 
           <form onSubmit={handleCalculate} className="p-6 space-y-5">
@@ -665,24 +649,26 @@ export default function BillCalculator() {
                 <button
                   type="button"
                   onClick={() => setCategory('domestic')}
-                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer ${
+                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 ${
                     category === 'domestic'
-                      ? 'bg-[#5FA354] text-white shadow-xs'
+                      ? 'bg-[#078930] text-white shadow-xs'
                       : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
                   }`}
                 >
-                  Domestic
+                  <Home className="w-3.5 h-3.5 shrink-0" />
+                  <span>Domestic</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setCategory('commercial')}
-                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer ${
+                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 ${
                     category === 'commercial'
-                      ? 'bg-[#5FA354] text-white shadow-xs'
+                      ? 'bg-[#078930] text-white shadow-xs'
                       : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
                   }`}
                 >
-                  Commercial
+                  <Building2 className="w-3.5 h-3.5 shrink-0" />
+                  <span>Commercial</span>
                 </button>
               </div>
             </div>
@@ -696,24 +682,26 @@ export default function BillCalculator() {
                 <button
                   type="button"
                   onClick={() => setConnectionType('postpaid')}
-                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer ${
+                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 ${
                     connectionType === 'postpaid'
-                      ? 'bg-[#5FA354] text-white shadow-xs'
+                      ? 'bg-[#078930] text-white shadow-xs'
                       : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
                   }`}
                 >
-                  PostPaid
+                  <FileText className="w-3.5 h-3.5 shrink-0" />
+                  <span>PostPaid</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setConnectionType('prepaid')}
-                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer ${
+                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 ${
                     connectionType === 'prepaid'
-                      ? 'bg-[#5FA354] text-white shadow-xs'
+                      ? 'bg-[#078930] text-white shadow-xs'
                       : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
                   }`}
                 >
-                  PrePaid
+                  <CreditCard className="w-3.5 h-3.5 shrink-0" />
+                  <span>PrePaid</span>
                 </button>
               </div>
             </div>
@@ -799,24 +787,26 @@ export default function BillCalculator() {
                 <button
                   type="button"
                   onClick={() => setInputMode('direct')}
-                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer ${
+                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 ${
                     inputMode === 'direct'
-                      ? 'bg-[#5FA354] text-white shadow-xs'
+                      ? 'bg-[#078930] text-white shadow-xs'
                       : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
                   }`}
                 >
-                  Total kWh
+                  <Zap className="w-3.5 h-3.5 shrink-0" />
+                  <span>Total kWh</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setInputMode('readings')}
-                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer ${
+                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 ${
                     inputMode === 'readings'
-                      ? 'bg-[#5FA354] text-white shadow-xs'
+                      ? 'bg-[#078930] text-white shadow-xs'
                       : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
                   }`}
                 >
-                  Meter Readings
+                  <Gauge className="w-3.5 h-3.5 shrink-0" />
+                  <span>Meter Readings</span>
                 </button>
               </div>
             </div>
@@ -898,7 +888,7 @@ export default function BillCalculator() {
             {/* Action button */}
             <button
               type="submit"
-              className="w-full bg-[#5FA354] hover:bg-[#508b46] text-white py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-all shadow-xs hover:shadow-md active:scale-[0.98] font-sans"
+              className="w-full bg-[#078930] hover:bg-[#067227] text-white py-3 px-4 rounded-xl text-[15px] font-bold flex items-center justify-center gap-2 cursor-pointer transition-all shadow-xs hover:shadow-md active:scale-[0.98] font-sans"
             >
               <Calculator className="w-4 h-4" />
               Calculate
@@ -914,10 +904,7 @@ export default function BillCalculator() {
                 <FileText className="w-8 h-8" />
               </div>
               <div className="max-w-md">
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white">Awaiting Input Parameters</h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Adjust the Customer category, Connection type, Year period, and consumption details on the left, then click <strong>Calculate & Audit Bill</strong> to generate your detailed step-by-step audit summary.
-                </p>
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white">Waiting Input</h3>
               </div>
               <div className="pt-2 text-xs text-gray-400 flex items-center gap-1">
                 <Check className="w-3.5 h-3.5 text-eeu-green" /> Only Domestic & Commercial categories supported.

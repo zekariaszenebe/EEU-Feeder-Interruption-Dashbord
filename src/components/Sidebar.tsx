@@ -48,7 +48,7 @@ export default function Sidebar({
   const navItems: NavItem[] = [
     { id: 'dashboard', name: 'Interruption Dashboard', icon: LayoutDashboard },
     ...(canManageFeed ? [{ id: 'admin', name: feedTabName, icon: ShieldAlert }] : []),
-    { id: 'history', name: 'Resolution Archive', icon: History },
+    { id: 'history', name: 'Restored Feeders', icon: History },
     { id: 'calculator', name: 'Bill Calculator', icon: Calculator },
     { id: 'smartmeter', name: 'Smart Meter Calculator', icon: Gauge },
     { id: 'hub', name: 'CSC Address', icon: MapPin },
@@ -192,12 +192,6 @@ export default function Sidebar({
           </button>
         )}
       </div>
-
-      {!isMinimized && (
-        <div className="text-[10px] text-gray-400 dark:text-gray-500 text-center select-none pb-4 pt-1 font-sans">
-          Developed by <span className="text-eeu-green font-semibold">Zekarias Zenebe</span>
-        </div>
-      )}
     </aside>
   );
 }

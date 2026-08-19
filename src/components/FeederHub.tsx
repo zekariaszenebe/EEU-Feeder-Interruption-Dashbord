@@ -212,7 +212,21 @@ export function FeederHub({ isAdmin = false, hubRecords = HUB_RECORDS, onUpdateR
   const activeRecordsCount = hubRecords.length > 0 ? hubRecords.length : HUB_RECORDS.length;
 
   return (
-    <div className="space-y-6">
+    <div id="eeu-csc-address-panel" className="space-y-6">
+      {/* Header Banner */}
+      <div className="glass-card rounded-3xl p-6 relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="p-2 bg-eeu-green/10 text-eeu-green rounded-xl">
+              <MapPin className="w-5 h-5" />
+            </span>
+            <h2 className="text-lg font-display font-black text-gray-900 dark:text-white tracking-tight">
+              CSC Address
+            </h2>
+          </div>
+        </div>
+      </div>
+
       {/* Success Toast */}
       {showSuccessToast && (
         <div className="fixed bottom-6 right-6 p-4 rounded-2xl bg-eeu-green text-white shadow-2xl flex items-center gap-3 z-55 animate-in slide-in-from-bottom-5 duration-200">

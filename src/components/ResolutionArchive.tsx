@@ -25,7 +25,7 @@ export default function ResolutionArchive({ interruptions }: ResolutionArchivePr
         <div className="space-y-1">
           <h3 className="font-display font-semibold text-base text-gray-900 dark:text-white flex items-center gap-2">
             <CheckSquare className="w-5 h-5 text-eeu-green" />
-            <span>Feeder Resolution Archive</span>
+            <span>Restored Feeders</span>
           </h3>
         </div>
 

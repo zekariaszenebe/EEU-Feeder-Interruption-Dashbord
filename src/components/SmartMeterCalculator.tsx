@@ -14,7 +14,10 @@ import {
   ArrowRight,
   Sparkles,
   CreditCard,
-  History
+  History,
+  Calculator,
+  Home,
+  Building2
 } from 'lucide-react';
 
 // 2017 - 2020 EEU Tariff Matrices (Domestic)
@@ -278,29 +281,6 @@ export default function SmartMeterCalculator() {
   return (
     <div id="smart-meter-calculator-root" className="max-w-7xl mx-auto space-y-6">
       
-      {/* Header Banner - Clean & Uncluttered Layout */}
-      <div className="relative overflow-hidden p-6 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-900 rounded-2xl shadow-xs">
-        <div className="absolute top-0 left-0 right-0 h-[3px] bg-white" />
-        
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-xl bg-emerald-500/10 text-[#5FA354] dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/20">
-              <Gauge className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white font-sans tracking-tight">
-                  EEU Smart Meter Incremental Top-Up Calculator
-                </h1>
-              </div>
-              <p className="text-xs text-gray-600 dark:text-zinc-400 font-sans mt-1 font-medium">
-                Official Multi-Tariff Audit Engine (2017–2020)
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Main Grid: Inputs & Sequence on Left, Digital LCD Meter & Audit Breakdown on Right */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
@@ -311,7 +291,7 @@ export default function SmartMeterCalculator() {
           <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-900 rounded-2xl shadow-xs overflow-hidden">
             <div className="h-[58px] px-4 border-b border-gray-150 dark:border-zinc-900 bg-gray-50/50 dark:bg-zinc-900/20 flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-xs font-bold text-gray-800 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-2 font-sans">
-                <CreditCard className="w-4 h-4 text-[#5FA354] dark:text-emerald-400" />
+                <Gauge className="w-4 h-4 text-[#5FA354] dark:text-emerald-400" />
                 Tariff Period & Top-Ups
               </h2>
               <div className="flex items-center gap-2">
@@ -338,24 +318,26 @@ export default function SmartMeterCalculator() {
                   <button
                     type="button"
                     onClick={() => setCategory('domestic')}
-                    className={`py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    className={`py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                       category === 'domestic'
-                        ? 'bg-[#5FA354] text-white shadow-xs'
+                        ? 'bg-[#078930] text-white shadow-xs'
                         : 'text-gray-600 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white'
                     }`}
                   >
-                    Domestic
+                    <Home className="w-3.5 h-3.5 shrink-0" />
+                    <span>Domestic</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setCategory('commercial')}
-                    className={`py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    className={`py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                       category === 'commercial'
-                        ? 'bg-[#5FA354] text-white shadow-xs'
+                        ? 'bg-[#078930] text-white shadow-xs'
                         : 'text-gray-600 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white'
                     }`}
                   >
-                    Commercial
+                    <Building2 className="w-3.5 h-3.5 shrink-0" />
+                    <span>Commercial</span>
                   </button>
                 </div>
               </div>
@@ -425,7 +407,7 @@ export default function SmartMeterCalculator() {
                     id="add-topup-step-btn"
                     type="button"
                     onClick={handleAddTopUp}
-                    className="bg-[#5FA354] hover:bg-[#508b46] active:scale-95 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 cursor-pointer shadow-xs transition-all shrink-0"
+                    className="bg-[#078930] hover:bg-[#067227] active:scale-95 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 cursor-pointer shadow-xs transition-all shrink-0"
                   >
                     <Plus className="w-4 h-4" /> Add Step
                   </button>
@@ -504,75 +486,16 @@ export default function SmartMeterCalculator() {
             </div>
           </div>
 
-          {/* Reference Active Tariff Block Matrix */}
-          <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-900 rounded-2xl p-5 space-y-3 shadow-xs">
-            <h3 className="text-xs font-bold text-gray-800 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-2 font-sans">
-              <BookOpen className="w-4 h-4 text-[#5FA354] dark:text-emerald-400" />
-              Active {category === 'domestic' ? 'Domestic' : 'Commercial'} Tariff Matrix ({year} Q{quarter})
-            </h3>
-            {category === 'domestic' ? (
-              <div className="border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden text-xs font-sans">
-                <div className="grid grid-cols-2 bg-gray-50 dark:bg-zinc-900/80 px-3.5 py-3 border-b border-gray-200 dark:border-zinc-800 font-bold text-gray-600 dark:text-zinc-300">
-                  <span>Monthly kWh Range</span>
-                  <span className="text-right">Tariff Rate (ETB/kWh)</span>
-                </div>
-                <div className="divide-y divide-gray-150 dark:divide-zinc-850 font-sans text-xs">
-                  {TIER_RANGES.map((range, idx) => {
-                    const rate = currentRates[idx];
-                    const isCurrentActive = getTierIndex(totalKwhPurchased) === idx;
-                    return (
-                      <div
-                        key={range}
-                        className={`grid grid-cols-2 px-3.5 py-2.5 items-center transition-colors ${
-                          isCurrentActive ? 'bg-emerald-500/10 dark:bg-emerald-950/40 font-bold text-[#5FA354] dark:text-emerald-300' : 'text-gray-700 dark:text-zinc-300'
-                        }`}
-                      >
-                        <span className="flex items-center gap-1.5 font-medium">
-                          {range}
-                          {isCurrentActive && (
-                            <span className="text-[10px] font-extrabold bg-[#5FA354] text-white px-2 py-0.5 rounded-full font-mono">
-                              ACTIVE
-                            </span>
-                          )}
-                        </span>
-                        <span className="text-right font-mono font-bold">{rate.toFixed(4)} ETB</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : (
-              <div className="border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden text-xs font-sans p-4 space-y-3 bg-gray-50/50 dark:bg-zinc-900/50">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600 dark:text-zinc-400 font-medium">Commercial Flat Rate:</span>
-                  <span className="font-bold text-emerald-700 dark:text-emerald-400 font-sans text-sm">{currentCommercialRate.toFixed(4)} ETB/kWh</span>
-                </div>
-                <div className="flex justify-between items-center border-t border-gray-200 dark:border-zinc-800 pt-2.5">
-                  <span className="text-gray-600 dark:text-zinc-400 font-medium">Prepaid Service Charge:</span>
-                  <span className="font-bold text-gray-800 dark:text-zinc-200 font-sans">{PREPAID_SERVICE_CHARGES.commercial[year][quarter].toFixed(2)} ETB</span>
-                </div>
-                <div className="flex justify-between items-center border-t border-gray-200 dark:border-zinc-800 pt-2.5">
-                  <span className="text-gray-600 dark:text-zinc-400 font-medium">VAT Rate:</span>
-                  <span className="font-bold text-gray-800 dark:text-zinc-200 font-sans">15% (All kWh)</span>
-                </div>
-                <div className="flex justify-between items-center border-t border-gray-200 dark:border-zinc-800 pt-2.5">
-                  <span className="text-gray-600 dark:text-zinc-400 font-medium">TV (EBC) Fee:</span>
-                  <span className="font-bold text-gray-800 dark:text-zinc-200 font-sans">0.00 ETB (Exempt)</span>
-                </div>
-              </div>
-            )}
-          </div>
-
         </div>
 
-        {/* Right Column: Step-by-Step Audit Cards & Smart Meter Digital LCD Display */}
+        {/* Right Column: Step-by-Step Audit Cards & Total Monthly Top-Up Balance */}
         <div className="lg:col-span-7 space-y-6">
           
           {/* Step-By-Step Incremental Top-Up Calculation Breakdown */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-xs font-bold text-gray-800 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-2 font-sans">
-                <Receipt className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <Calculator className="w-4 h-4 text-[#5FA354] dark:text-emerald-400" />
                 Step-by-Step Calculation Audit ({calculatedSteps.length} Steps)
               </h2>
               <button
@@ -594,7 +517,7 @@ export default function SmartMeterCalculator() {
                     {/* Step Header */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-150 dark:border-zinc-900 pb-3">
                       <div className="flex items-center gap-2.5">
-                        <span className="w-7 h-7 rounded-xl bg-[#5FA354] text-white font-extrabold text-xs flex items-center justify-center shadow-xs">
+                        <span className="w-7 h-7 rounded-xl bg-[#078930] text-white font-extrabold text-xs flex items-center justify-center shadow-xs">
                           {step.stepNumber}
                         </span>
                         <div>
@@ -612,7 +535,7 @@ export default function SmartMeterCalculator() {
                       </div>
 
                       {/* Customer Pays Badge */}
-                      <div className="text-left sm:text-right bg-[#5FA354] p-2.5 px-3.5 rounded-xl shrink-0">
+                      <div className="text-left sm:text-right bg-[#078930] p-2.5 px-3.5 rounded-xl shrink-0">
                         <span className="text-[10px] font-bold text-white uppercase tracking-wider block">
                           Customer Purchased
                         </span>
@@ -622,105 +545,55 @@ export default function SmartMeterCalculator() {
                       </div>
                     </div>
 
-                    {/* Step Calculation Details Grid */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 bg-gray-50/70 dark:bg-zinc-900/40 rounded-xl border border-gray-150 dark:border-zinc-850 text-xs font-sans">
-                      <div>
-                        <span className="text-[10.5px] text-gray-500 dark:text-zinc-400 block font-medium font-sans">Applied Tariff Tier</span>
-                        <span className="font-bold text-gray-800 dark:text-zinc-200 mt-0.5 block font-sans">
-                          {step.tierRange}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-[10.5px] text-gray-500 dark:text-zinc-400 block font-medium font-sans">Tier Rate ({year} Q{quarter})</span>
-                        <span className="font-bold text-gray-800 dark:text-zinc-200 mt-0.5 block font-sans">
-                          {step.rate.toFixed(4)} ETB/kWh
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-[10.5px] text-gray-500 dark:text-zinc-400 block font-medium font-sans">Energy Charge</span>
-                        <span className="font-bold text-gray-800 dark:text-zinc-200 mt-0.5 block font-sans">
-                          {step.energyCharge.toFixed(2)} ETB
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-[10.5px] text-gray-500 dark:text-zinc-400 block font-medium font-sans">Prepaid Service Charge</span>
-                        <span className="font-bold text-gray-800 dark:text-zinc-200 mt-0.5 block font-sans">
-                          {step.serviceCharge.toFixed(2)} ETB
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-[10.5px] text-gray-500 dark:text-zinc-400 block font-medium font-sans">TV (EBC) Fee</span>
-                        <span className="font-bold text-gray-800 dark:text-zinc-200 mt-0.5 block font-sans">
-                          {step.ebcFee.toFixed(2)} ETB
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-[10.5px] text-gray-500 dark:text-zinc-400 block font-medium font-sans">Regulatory Fee (0.5%)</span>
-                        <span className="font-bold text-gray-800 dark:text-zinc-200 mt-0.5 block font-sans">
-                          {step.regulatoryFee.toFixed(3)} ETB
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-[10.5px] text-gray-500 dark:text-zinc-400 block font-medium font-sans">VAT (15%)</span>
-                        <span className="font-bold text-gray-800 dark:text-zinc-200 mt-0.5 block font-sans">
-                          {step.vatAmount > 0 ? `${step.vatAmount.toFixed(3)} ETB` : '0.00 ETB (Exempt)'}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-xs text-gray-500 dark:text-zinc-400 block font-medium font-sans">Cumulative Total Bill</span>
-                        <span className="font-bold text-emerald-700 dark:text-emerald-300 mt-0.5 block font-sans text-sm">
-                          {step.cumulativeTotalCost.toFixed(2)} ETB
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Mathematical Formula Walkthrough - Clean Sans Typography */}
+                    {/* Mathematical Formula Walkthrough */}
                     {showFormulaDetails && (
-                      <div className="p-4 bg-emerald-500/5 dark:bg-emerald-950/20 border border-emerald-500/20 rounded-xl space-y-2.5 text-xs font-sans text-gray-800 dark:text-zinc-200">
-                        <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-bold text-xs uppercase tracking-wider">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                          Step {step.stepNumber} EEU Billing Formula
-                        </div>
+                      <div className="animate-in fade-in-50 duration-200">
+                        <div className="p-4 bg-emerald-500/5 dark:bg-emerald-950/20 border border-emerald-500/20 rounded-xl space-y-2.5 text-xs font-sans text-gray-800 dark:text-zinc-200">
+                          <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-bold text-xs uppercase tracking-wider">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                            Step {step.stepNumber} EEU Billing Formula
+                          </div>
 
-                        <div className="space-y-1.5 text-xs leading-relaxed font-sans">
-                          <div>
-                            1. Cumulative Consumption: <span className="font-mono font-bold text-gray-900 dark:text-white">{step.previousKwh} + {step.kwhAdded} = {step.cumulativeKwh} kWh</span>
-                          </div>
-                          <div>
-                            2. Energy Charge: <span className="font-mono font-bold text-gray-900 dark:text-white">{step.cumulativeKwh} kWh × {step.rate.toFixed(4)} = {step.energyCharge.toFixed(3)} ETB</span>
-                          </div>
-                          <div>
-                            3. Service Charge (Prepaid): <span className="font-mono font-bold text-gray-900 dark:text-white">{step.serviceCharge.toFixed(2)} ETB</span>
-                          </div>
-                          <div>
-                            4. TV (EBC) Fee: <span className="font-mono font-bold text-gray-900 dark:text-white">{step.ebcFee.toFixed(2)} ETB</span> {step.cumulativeKwh > 50 ? '(> 50 kWh)' : '(≤ 50 kWh Exempt)'}
-                          </div>
-                          <div>
-                            5. Regulatory Fee (0.5%): <span className="font-mono font-bold text-gray-900 dark:text-white">({step.energyCharge.toFixed(3)} + {step.serviceCharge.toFixed(2)}) × 0.5% = {step.regulatoryFee.toFixed(6)} ETB</span>
-                          </div>
-                          <div>
-                            6. VAT (15%): <span className="font-mono font-bold text-gray-900 dark:text-white">{step.vatAmount > 0 ? `(${step.energyCharge.toFixed(3)} + ${step.serviceCharge.toFixed(2)}) × 15% = ${step.vatAmount.toFixed(6)} ETB` : '0.00 ETB (≤ 200 kWh Exempt)'}</span>
-                          </div>
-                          <div>
-                            7. Cumulative Total Bill: <span className="font-mono font-bold text-gray-900 dark:text-white">{step.cumulativeTotalCost.toFixed(6)} ETB</span>
-                          </div>
-                          {step.previousCumulativeTotalCost > 0 ? (
+                          <div className="space-y-1.5 text-xs leading-relaxed font-sans">
                             <div>
-                              8. Deduct previously paid amount ({step.previousCumulativeTotalCost.toFixed(6)} ETB):
-                              <br />
-                              <span className="font-mono font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-2.5 py-1 rounded-md mt-1.5 inline-block border border-emerald-500/20">
-                                {step.cumulativeTotalCost.toFixed(6)} – {step.previousCumulativeTotalCost.toFixed(6)} = {step.customerPaysNow.toFixed(6)} ETB
-                              </span>
+                              1. Cumulative Consumption: <span className="font-mono font-bold text-gray-900 dark:text-white">{step.previousKwh} + {step.kwhAdded} = {step.cumulativeKwh} kWh</span>
                             </div>
-                          ) : (
                             <div>
-                              8. Net amount payable for Step {step.stepNumber}:
-                              <br />
-                              <span className="font-mono font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-2.5 py-1 rounded-md mt-1.5 inline-block border border-emerald-500/20">
-                                {step.customerPaysNow.toFixed(6)} ETB
-                              </span>
+                              2. Energy Charge: <span className="font-mono font-bold text-gray-900 dark:text-white">{step.cumulativeKwh} kWh × {step.rate.toFixed(4)} = {step.energyCharge.toFixed(3)} ETB</span>
                             </div>
-                          )}
+                            <div>
+                              3. Service Charge (Prepaid): <span className="font-mono font-bold text-gray-900 dark:text-white">{step.serviceCharge.toFixed(2)} ETB</span>
+                            </div>
+                            <div>
+                              4. TV (EBC) Fee: <span className="font-mono font-bold text-gray-900 dark:text-white">{step.ebcFee.toFixed(2)} ETB</span> {step.cumulativeKwh > 50 ? '(> 50 kWh)' : '(≤ 50 kWh Exempt)'}
+                            </div>
+                            <div>
+                              5. Regulatory Fee (0.5%): <span className="font-mono font-bold text-gray-900 dark:text-white">({step.energyCharge.toFixed(3)} + {step.serviceCharge.toFixed(2)}) × 0.5% = {step.regulatoryFee.toFixed(6)} ETB</span>
+                            </div>
+                            <div>
+                              6. VAT (15%): <span className="font-mono font-bold text-gray-900 dark:text-white">{step.vatAmount > 0 ? `(${step.energyCharge.toFixed(3)} + {step.serviceCharge.toFixed(2)}) × 15% = ${step.vatAmount.toFixed(6)} ETB` : '0.00 ETB (≤ 200 kWh Exempt)'}</span>
+                            </div>
+                            <div>
+                              7. Cumulative Total Bill: <span className="font-mono font-bold text-gray-900 dark:text-white">{step.cumulativeTotalCost.toFixed(6)} ETB</span>
+                            </div>
+                            {step.previousCumulativeTotalCost > 0 ? (
+                              <div>
+                                8. Deduct previously paid amount ({step.previousCumulativeTotalCost.toFixed(6)} ETB):
+                                <br />
+                                <span className="font-mono font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-2.5 py-1 rounded-md mt-1.5 inline-block border border-emerald-500/20">
+                                  {step.cumulativeTotalCost.toFixed(6)} – {step.previousCumulativeTotalCost.toFixed(6)} = {step.customerPaysNow.toFixed(6)} ETB
+                                </span>
+                              </div>
+                            ) : (
+                              <div>
+                                8. Net amount payable for Step {step.stepNumber}:
+                                <br />
+                                <span className="font-mono font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-2.5 py-1 rounded-md mt-1.5 inline-block border border-emerald-500/20">
+                                  {step.customerPaysNow.toFixed(6)} ETB
+                                </span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     )}
@@ -730,7 +603,7 @@ export default function SmartMeterCalculator() {
             </div>
 
             {/* Total Monthly Summary Banner */}
-            <div className="p-6 bg-gradient-to-r from-[#078930] to-[#5FA354] text-white rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
+            <div className="px-5 sm:px-6 py-4 h-[115.5px] bg-gradient-to-r from-[#078930] to-[#5FA354] text-white rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
               <div>
                 <span className="text-xs uppercase font-sans font-bold text-emerald-100 block tracking-wider">
                   Total Monthly Top-Up Balance
@@ -751,53 +624,6 @@ export default function SmartMeterCalculator() {
               </div>
             </div>
 
-          </div>
-
-          {/* Smart Meter Digital Terminal Display */}
-          <div className="bg-white dark:bg-zinc-950 text-gray-900 dark:text-white rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-zinc-900 relative overflow-hidden space-y-5">
-            {/* Ambient Accent Glow */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
-            
-            <div className="flex items-center justify-between border-b border-gray-150 dark:border-zinc-900 pb-4 relative z-10">
-              <div className="flex items-center gap-2.5">
-                <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse shadow-sm shadow-emerald-500/50" />
-                <span className="text-xs font-sans font-bold text-gray-900 dark:text-white uppercase tracking-wider">
-                  EEU SMART METER DIGITAL INTERFACE
-                </span>
-              </div>
-              <span className="text-[11px] font-sans font-bold text-white bg-[#5FA354] px-3 py-1 rounded-full">
-                ONLINE • PREPAID LOGIC
-              </span>
-            </div>
-
-            {/* Main Meter Metrics */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 relative z-10">
-              <div className="p-4 bg-gray-50/80 dark:bg-zinc-900/60 rounded-xl border border-gray-200/80 dark:border-zinc-800 flex flex-col justify-between h-full">
-                <span className="text-[11px] font-sans font-medium uppercase text-gray-900 dark:text-zinc-200 block">Total Monthly kWh</span>
-                <span className="text-2xl font-black text-[#5FA354] dark:text-[#5FA354] font-sans tracking-tight mt-1.5 block">
-                  {totalKwhPurchased.toFixed(1)} <span className="text-xs font-normal text-gray-500 dark:text-zinc-400">kWh</span>
-                </span>
-              </div>
-
-              <div className="p-4 bg-gray-50/80 dark:bg-zinc-900/60 rounded-xl border border-gray-200/80 dark:border-zinc-800 flex flex-col justify-between h-full">
-                <span className="text-[11px] font-sans font-medium uppercase text-gray-900 dark:text-zinc-200 block">Total Spent This Month</span>
-                <span className="text-2xl font-black text-[#5FA354] dark:text-[#5FA354] font-sans tracking-tight mt-1.5 block">
-                  {totalPaidMonth.toFixed(2)} <span className="text-xs font-normal text-gray-500 dark:text-zinc-400">ETB</span>
-                </span>
-              </div>
-
-              <div className="p-4 bg-gray-50/80 dark:bg-zinc-900/60 rounded-xl border border-gray-200/80 dark:border-zinc-800 flex flex-col justify-between h-full">
-                <span className="text-[11px] font-sans font-medium uppercase text-gray-900 dark:text-zinc-200 block">Current Tariff Tier</span>
-                <span className="text-[20px] font-bold text-[#5FA354] dark:text-[#5FA354] font-sans tracking-tight mt-1.5 block leading-tight">
-                  {category === 'domestic' ? TIER_RANGES[getTierIndex(totalKwhPurchased)] : 'Commercial Flat Rate'}
-                </span>
-              </div>
-            </div>
-
-            <div className="text-xs font-sans text-gray-900 dark:text-zinc-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-t border-gray-150 dark:border-zinc-900 pt-3.5 relative z-10">
-              <span>Selected Tariff Matrix: <strong className="text-gray-900 dark:text-white font-mono">{year} Q{quarter}</strong></span>
-              <span>Active Tier Rate: <strong className="text-[#5FA354] dark:text-[#5FA354] font-mono">{currentRates[getTierIndex(totalKwhPurchased)].toFixed(4)} ETB/kWh</strong></span>
-            </div>
           </div>
 
         </div>

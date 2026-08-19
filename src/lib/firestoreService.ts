@@ -819,3 +819,44 @@ export async function deleteTeamLeaderDoc(id: string) {
   }
 }
 
+export interface FeedbackRecord {
+  id: string;
+  rating: number;
+  category: string;
+  feedbackText: string;
+  submittedBy: string;
+  targetEmail: string;
+  timestamp: string;
+}
+
+/**
+ * Stores feedback in Firestore
+ */
+export async function addFeedbackDoc(feedback: {
+  rating: number;
+  category: string;
+  feedbackText: string;
+  submittedBy: string;
+  targetEmail: string;
+}): Promise<FeedbackRecord> {
+  const newId = `fb_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+  const record: FeedbackRecord = {
+    id: newId,
+    rating: feedback.rating,
+    category: feedback.category,
+    feedbackText: feedback.feedbackText.trim(),
+    submittedBy: feedback.submittedBy.trim(),
+    targetEmail: feedback.targetEmail.trim(),
+    timestamp: new Date().toISOString()
+  };
+
+  try {
+    await setDoc(doc(db, 'feedbacks', newId), record);
+    return record;
+  } catch (error) {
+    console.warn('Firestore feedback storage error:', error);
+    return record;
+  }
+}
+
+
