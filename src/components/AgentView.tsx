@@ -4,12 +4,13 @@ import {
   Clock, CheckCircle, ArrowUpDown, Grid, List, 
   SlidersHorizontal, CheckSquare, Square, Bell, CalendarClock, Info,
   Columns, Rows, Zap, Settings, Compass, ArrowUp, ArrowDown, ArrowLeft, ArrowRight,
-  Trash2, Edit3, Plus, MessageSquare, AlertCircle,
+  Trash2, Edit3, Plus, MessageSquare, AlertCircle, Languages,
   Undo, Redo, Bold, Italic, Underline, Strikethrough, AlignLeft, AlignCenter, AlignRight, AlignJustify, Table, ChevronDown
 } from 'lucide-react';
 import { FeederInterruption, InterruptionType, InterruptionStatus, stripBrackets, TeamLeaderNote } from '../types';
 import { INITIAL_DISTRICTS } from '../data/mockData';
 import { addTeamLeaderNoteDoc, updateTeamLeaderNoteDoc, deleteTeamLeaderNoteDoc, subscribeToInterruptions } from '../lib/firestoreService';
+import { LanguageMode, translateAmharicLocation, formatLocationDisplay } from '../utils/locationLanguage';
 
 export function sanitizeHtml(html: string): string {
   if (!html) return '';
@@ -215,6 +216,7 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
   const [selectedDirection, setSelectedDirection] = useState<string>('All');
   const [showOnlyActive, setShowOnlyActive] = useState(true);
   const [sortBy, setSortBy] = useState<'latest' | 'oldest' | 'name'>('latest');
+  const [languageMode, setLanguageMode] = useState<LanguageMode>('en');
 
   // Affected Location Area Directory state controls
   const [locationSearchQuery, setLocationSearchQuery] = useState('');
@@ -671,10 +673,13 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
 
   // Process filters & search query
   const filteredItems = liveInterruptions.filter((item) => {
-    // 1. Search Query Match
-    const matchesSearch = item.feederName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          item.affectedArea.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          item.remark.toLowerCase().includes(searchQuery.toLowerCase());
+    const query = searchQuery.toLowerCase();
+    const englishArea = translateAmharicLocation(item.affectedArea).toLowerCase();
+    // 1. Search Query Match (matches Feeder name, Amharic affected area, English translated area, and remarks)
+    const matchesSearch = item.feederName.toLowerCase().includes(query) ||
+                          item.affectedArea.toLowerCase().includes(query) ||
+                          englishArea.includes(query) ||
+                          item.remark.toLowerCase().includes(query);
 
     // 2. District Filter Match
     const matchesDistrict = selectedDistrict === 'All' || item.district === selectedDistrict;
@@ -716,6 +721,7 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
   // This isolates neighborhood names and places them in an interactive directory map
   const uniqueLocations: Array<{
     name: string;
+    englishName: string;
     district: string;
     feederName: string;
     feederId: string;
@@ -742,13 +748,15 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
         !trimmed.endsWith('ያልቃል') &&
         !trimmed.startsWith('እና አካባቢው')
       ) {
+        const englishTrans = translateAmharicLocation(trimmed);
         // Prevent duplicate location tags for the same feeder
         const exists = uniqueLocations.some(
-          (loc) => loc.name.toLowerCase() === trimmed.toLowerCase() && loc.feederId === item.id
+          (loc) => (loc.name.toLowerCase() === trimmed.toLowerCase() || loc.englishName.toLowerCase() === englishTrans.toLowerCase()) && loc.feederId === item.id
         );
         if (!exists) {
           uniqueLocations.push({
             name: trimmed,
+            englishName: englishTrans,
             district: item.district,
             feederName: item.feederName,
             feederId: item.id,
@@ -761,8 +769,27 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
 
   // Filter unique locations by directory search query, selected district, and hide status
   const filteredUniqueLocations = uniqueLocations.filter((loc) => {
-    const matchesSearch = loc.name.toLowerCase().includes(locationSearchQuery.toLowerCase()) || 
-                          loc.district.toLowerCase().includes(locationSearchQuery.toLowerCase());
+    const locQuery = locationSearchQuery.trim().toLowerCase();
+    if (!locQuery) {
+      const matchesDistrict = selectedDistrict === 'All' || loc.district === selectedDistrict;
+      const matchesStatus = !showOnlyActive || loc.status !== InterruptionStatus.RESTORED;
+      return matchesDistrict && matchesStatus;
+    }
+
+    const cleanLocQuery = locQuery.replace(/[\s\-_.]/g, '');
+    const cleanEnglishName = loc.englishName.toLowerCase().replace(/[\s\-_.]/g, '');
+    const cleanAmharicName = loc.name.toLowerCase();
+    const cleanFeederName = loc.feederName.toLowerCase();
+    const cleanDistrict = loc.district.toLowerCase();
+
+    // Check direct match, English match, cleaned spaceless match, feeder, and district
+    const matchesSearch = 
+      cleanAmharicName.includes(locQuery) || 
+      loc.englishName.toLowerCase().includes(locQuery) ||
+      cleanEnglishName.includes(cleanLocQuery) ||
+      cleanFeederName.includes(locQuery) ||
+      cleanDistrict.includes(locQuery);
+
     const matchesDistrict = selectedDistrict === 'All' || loc.district === selectedDistrict;
     const matchesStatus = !showOnlyActive || loc.status !== InterruptionStatus.RESTORED;
     
@@ -870,7 +897,44 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Language Selector for Communities & Landmarks (2 Languages: English & Amharic) */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-sans text-gray-500 dark:text-gray-400 whitespace-nowrap flex items-center gap-1">
+                <Languages className="w-3.5 h-3.5 text-eeu-green" />
+                <span className="hidden sm:inline">Language:</span>
+              </span>
+              <div className="flex items-center p-1 bg-gray-100 dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800 text-xs font-semibold">
+                <button
+                  id="lang-en-btn"
+                  onClick={() => setLanguageMode('en')}
+                  className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 text-[11px] ${
+                    languageMode === 'en'
+                      ? 'bg-white dark:bg-gray-800 text-eeu-green shadow-sm font-bold'
+                      : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
+                  }`}
+                  title="English Spelling"
+                >
+                  <span>English</span>
+                  <span className="text-[9px] opacity-75 font-mono">EN</span>
+                </button>
+
+                <button
+                  id="lang-am-btn"
+                  onClick={() => setLanguageMode('am')}
+                  className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 text-[11px] ${
+                    languageMode === 'am'
+                      ? 'bg-white dark:bg-gray-800 text-eeu-green shadow-sm font-bold'
+                      : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
+                  }`}
+                  title="Amharic Only"
+                >
+                  <span>አማርኛ</span>
+                  <span className="text-[9px] opacity-75 font-mono">AM</span>
+                </button>
+              </div>
+            </div>
+
             {/* Layout view controls */}
             <div className="flex items-center p-1 bg-gray-100 dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800">
               <button
@@ -929,15 +993,21 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
               <input
                 id="directory-subsearch-input"
                 type="text"
-                placeholder="Search location (e.g. ለገሐር, ቦሌ)..."
+                placeholder="Search area (English / አማርኛ, e.g. Bole, ሜክሲኮ)..."
                 value={locationSearchQuery}
-                onChange={(e) => setLocationSearchQuery(e.target.value)}
-                className="pl-8 pr-7 py-1.5 text-xs rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1.5 focus:ring-[#5FA354] w-56 font-sans font-medium transition-all"
+                onChange={(e) => {
+                  setLocationSearchQuery(e.target.value);
+                  if (e.target.value && !isDirectoryExpanded) {
+                    setIsDirectoryExpanded(true);
+                  }
+                }}
+                className="pl-8 pr-7 py-1.5 text-xs rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1.5 focus:ring-[#5FA354] w-64 sm:w-72 font-sans font-medium transition-all"
               />
               {locationSearchQuery && (
                 <button 
                   onClick={() => setLocationSearchQuery('')}
                   className="absolute right-2 top-1.5 text-[11px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 font-bold px-1"
+                  title="Clear search"
                 >
                   ✕
                 </button>
@@ -969,7 +1039,7 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
                 {filteredUniqueLocations.map((loc, idx) => {
                   const isRestored = loc.status === InterruptionStatus.RESTORED;
                   const isUnderInvestigation = loc.status === InterruptionStatus.UNDER_INVESTIGATION;
-                  const isActiveSelection = searchQuery.toLowerCase() === loc.name.toLowerCase();
+                  const isActiveSelection = searchQuery.toLowerCase() === loc.name.toLowerCase() || searchQuery.toLowerCase() === loc.englishName.toLowerCase();
 
                   return (
                     <button
@@ -978,7 +1048,7 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
                         if (isActiveSelection) {
                           setSearchQuery('');
                         } else {
-                          setSearchQuery(loc.name);
+                          setSearchQuery(languageMode === 'en' ? loc.englishName : loc.name);
                         }
                       }}
                       className={`text-[11.5px] px-3 py-1.5 rounded-xl border flex items-center gap-2 transition-all text-left cursor-pointer ${
@@ -990,7 +1060,7 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
                           ? 'bg-amber-500/5 hover:bg-amber-500/10 border-amber-300/40 text-amber-700 dark:text-amber-400 font-medium'
                           : 'bg-red-500/5 hover:bg-red-500/10 border-red-200/50 dark:border-red-950/40 text-red-600 dark:text-red-400 font-medium'
                       }`}
-                      title={`Feeder Station: ${stripBrackets(loc.feederName)}`}
+                      title={`Feeder Station: ${stripBrackets(loc.feederName)} | EN: ${loc.englishName}`}
                     >
                       {/* Live flashing status pulse marker */}
                       <span className="relative flex h-1.5 w-1.5 shrink-0">
@@ -1006,7 +1076,11 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
                         }`} />
                       </span>
                       
-                      <span className="font-sans font-bold">{loc.name}</span>
+                      {languageMode === 'en' ? (
+                        <span className="font-sans font-bold">{loc.englishName}</span>
+                      ) : (
+                        <span className="font-sans font-bold">{loc.name}</span>
+                      )}
                       
                       <span className={`text-[8.5px] font-mono px-1 py-0.2 rounded uppercase ${
                         isActiveSelection 
@@ -1146,12 +1220,22 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
                               {/* Center Column: Affected Neighborhoods & Remark */}
                               <div className="flex-1 space-y-2">
                                 <div className="p-3.5 rounded-2xl bg-gray-100/40 dark:bg-gray-950/40 border border-gray-200/30 dark:border-gray-850/40 text-xs lg:w-[670px] w-full">
-                                  <div className="font-semibold text-gray-400 dark:text-gray-500 uppercase text-[9px] tracking-wider mb-1 font-sans">
-                                    Affected Area (H-Span Layout)
+                                  <div className="font-semibold text-gray-400 dark:text-gray-500 uppercase text-[9px] tracking-wider mb-1.5 font-sans flex items-center justify-between">
+                                    <span>Affected Communities & Landmark Areas</span>
+                                    <span className="font-mono text-[9px] text-eeu-green bg-eeu-green/10 px-1.5 py-0.2 rounded font-bold">
+                                      {languageMode === 'en' ? 'EN' : 'አማ'}
+                                    </span>
                                   </div>
-                                  <p className="font-georgia text-[15px] text-gray-800 dark:text-gray-200 leading-normal">
-                                    {item.affectedArea}
-                                  </p>
+                                  
+                                  {languageMode === 'en' ? (
+                                    <p className="font-sans text-[14px] text-gray-900 dark:text-gray-100 font-medium leading-relaxed">
+                                      {translateAmharicLocation(item.affectedArea)}
+                                    </p>
+                                  ) : (
+                                    <p className="font-sans text-[14.5px] text-gray-900 dark:text-gray-100 leading-relaxed">
+                                      {item.affectedArea}
+                                    </p>
+                                  )}
                                 </div>
 
                                 <div className="text-xs text-gray-500 dark:text-gray-400 italic pl-3 border-l-2 border-gray-200 dark:border-gray-800">
@@ -1251,12 +1335,22 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
 
                                 {/* Affected Area details */}
                                 <div className="p-3 rounded-xl bg-gray-100/50 dark:bg-gray-950/40 border border-gray-200/50 dark:border-gray-850/60 text-xs">
-                                  <div className="font-semibold text-gray-500 dark:text-gray-450 uppercase text-[9px] tracking-wider mb-1 font-mono">
-                                    Affected Neighborhood Area
+                                  <div className="font-semibold text-gray-500 dark:text-gray-450 uppercase text-[9px] tracking-wider mb-1.5 font-mono flex items-center justify-between">
+                                    <span>Affected Communities</span>
+                                    <span className="text-[8.5px] font-mono text-eeu-green font-bold">
+                                      {languageMode === 'en' ? 'EN' : 'አማ'}
+                                    </span>
                                   </div>
-                                  <p className="text-gray-800 dark:text-gray-200 leading-normal line-clamp-3">
-                                    {item.affectedArea}
-                                  </p>
+                                  
+                                  {languageMode === 'en' ? (
+                                    <p className="text-gray-900 dark:text-gray-100 font-medium leading-relaxed font-sans text-xs">
+                                      {translateAmharicLocation(item.affectedArea)}
+                                    </p>
+                                  ) : (
+                                    <p className="text-gray-850 dark:text-gray-200 leading-relaxed font-sans text-xs">
+                                      {item.affectedArea}
+                                    </p>
+                                  )}
                                 </div>
 
                                 {/* Remarks details */}
@@ -1350,11 +1444,17 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
                                       </div>
                                     </div>
                                   </td>
-                                  <td className="py-4 px-5 max-w-xs">
-                                    <div className="text-xs text-gray-700 dark:text-gray-300 font-medium whitespace-pre-wrap">
-                                      {item.affectedArea}
-                                    </div>
-                                    <div className="text-[10px] text-gray-400 dark:text-gray-500 italic truncate mt-0.5" title={item.remark}>
+                                  <td className="py-4 px-5 max-w-sm">
+                                    {languageMode === 'en' ? (
+                                      <div className="text-xs text-gray-800 dark:text-gray-200 font-medium">
+                                        {translateAmharicLocation(item.affectedArea)}
+                                      </div>
+                                    ) : (
+                                      <div className="text-xs text-gray-800 dark:text-gray-200 font-medium whitespace-pre-wrap">
+                                        {item.affectedArea}
+                                      </div>
+                                    )}
+                                    <div className="text-[10px] text-gray-400 dark:text-gray-500 italic truncate mt-1" title={item.remark}>
                                       Remark: {item.remark}
                                     </div>
                                   </td>

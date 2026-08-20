@@ -9,7 +9,7 @@ interface FeedbackModalProps {
   userName?: string;
 }
 
-export default function FeedbackModal({ isOpen, onClose, userRole = 'Call Agent', userName }: FeedbackModalProps) {
+export default function FeedbackModal({ isOpen, onClose, userRole = 'Contact Agent', userName }: FeedbackModalProps) {
   const [rating, setRating] = useState<number>(5);
   const [category, setCategory] = useState<string>('General Experience');
   const [feedbackText, setFeedbackText] = useState<string>('');
@@ -38,7 +38,7 @@ export default function FeedbackModal({ isOpen, onClose, userRole = 'Call Agent'
       `=============================`,
       `Rating: ${rating}/5 (${starDisplay})`,
       `Category: ${category}`,
-      `Submitted By: ${userName || userRole || 'Call Center User'}`,
+      `Submitted By: ${userName || userRole || 'Contact Center User'}`,
       `Date & Time: ${new Date().toLocaleString('en-US')}`,
       ``,
       `User Feedback & Comments:`,
@@ -46,7 +46,7 @@ export default function FeedbackModal({ isOpen, onClose, userRole = 'Call Agent'
       feedbackText.trim() ? feedbackText.trim() : '(No additional text provided)',
       ``,
       `-----------------------------`,
-      `Sent from Ethiopian Electric Utility (EEU) Feeder Interruption Call Center Portal`
+      `Sent from Ethiopian Electric Utility (EEU) Feeder Interruption Contact Center Portal`
     ].join('\n');
   };
 
@@ -62,7 +62,7 @@ export default function FeedbackModal({ isOpen, onClose, userRole = 'Call Agent'
         rating,
         category,
         feedbackText: feedbackText.trim(),
-        submittedBy: userName || userRole || 'Call Center User',
+        submittedBy: userName || userRole || 'Contact Center User',
         targetEmail
       });
     } catch (err) {

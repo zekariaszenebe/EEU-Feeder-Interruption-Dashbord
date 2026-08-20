@@ -604,7 +604,7 @@ export default function App() {
               onClick={() => { setCurrentTab('history'); setMobileMenuOpen(false); }}
               className={`w-full p-2.5 rounded-lg text-xs font-semibold flex items-center gap-2 ${currentTab === 'history' ? 'bg-eeu-green text-white' : 'text-gray-600 dark:text-gray-400'}`}
             >
-              Resolution Archive
+              Restored Feeders
             </button>
 
             <button
@@ -697,7 +697,7 @@ export default function App() {
                   የኢትዮጵያ ኤሌክትሪክ አገልግሎት <span className="text-gray-300 dark:text-gray-700">|</span> Ethiopian Electric Utility
                 </span>
                 <h1 className="text-[25px] font-display font-black tracking-tight text-gray-950 dark:text-white mt-1">
-                  Feeder Interruption For Call Center
+                  Feeder Interruption For Contact Center
                 </h1>
               </div>
 

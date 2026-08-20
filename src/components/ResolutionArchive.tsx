@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { History, ShieldCheck, CheckSquare, Search, Award, MapPin, Calendar, Compass, ShieldOff } from 'lucide-react';
+import { History, ShieldCheck, CheckSquare, Search, Award, MapPin, Calendar, Compass, ShieldOff, Languages } from 'lucide-react';
 import { FeederInterruption, InterruptionStatus, stripBrackets } from '../types';
+import { translateAmharicLocation } from '../utils/locationLanguage';
 
 interface ResolutionArchiveProps {
   interruptions: FeederInterruption[];
@@ -10,12 +11,17 @@ export default function ResolutionArchive({ interruptions }: ResolutionArchivePr
   const [query, setQuery] = useState('');
   
   // Filter for restored entries
-  const restoredItems = interruptions.filter(
-    item => item.status === InterruptionStatus.RESTORED &&
-    (item.feederName.toLowerCase().includes(query.toLowerCase()) || 
-     item.affectedArea.toLowerCase().includes(query.toLowerCase()) ||
-     item.remark.toLowerCase().includes(query.toLowerCase()))
-  ).slice(0, 20);
+  const restoredItems = interruptions.filter(item => {
+    if (item.status !== InterruptionStatus.RESTORED) return false;
+    const q = query.toLowerCase();
+    const englishArea = translateAmharicLocation(item.affectedArea).toLowerCase();
+    return (
+      item.feederName.toLowerCase().includes(q) || 
+      item.affectedArea.toLowerCase().includes(q) ||
+      englishArea.includes(q) ||
+      item.remark.toLowerCase().includes(q)
+    );
+  }).slice(0, 30);
 
   return (
     <div id="resolution-archive-tab" className="space-y-6">
@@ -34,7 +40,7 @@ export default function ResolutionArchive({ interruptions }: ResolutionArchivePr
           <input
             id="archive-search"
             type="text"
-            placeholder="Search restored feeders..."
+            placeholder="Search by feeder or location (Amharic / English)..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2 text-xs rounded-xl glass-input text-gray-900 dark:text-white focus:outline-none focus:ring-1.5 focus:ring-eeu-green"
@@ -70,11 +76,16 @@ export default function ResolutionArchive({ interruptions }: ResolutionArchivePr
                   {stripBrackets(item.feederName)}
                 </h4>
 
-                <div className="text-xs text-gray-700 dark:text-gray-300">
+                <div className="text-xs text-gray-700 dark:text-gray-300 space-y-1">
                   <span className="font-semibold text-gray-500 dark:text-gray-400 font-mono text-[9px] block uppercase">
-                    Affected Locations Disconnected
+                    Affected Communities (አማርኛ & English)
                   </span>
-                  <p className="leading-relaxed line-clamp-2 mt-0.5">{item.affectedArea}</p>
+                  <div className="p-2 rounded-xl bg-gray-50/50 dark:bg-gray-900/40 border border-gray-150/40 dark:border-gray-800/40 space-y-1">
+                    <p className="text-gray-850 dark:text-gray-200 text-xs leading-relaxed">{item.affectedArea}</p>
+                    <p className="text-emerald-850 dark:text-emerald-300 text-[11px] font-medium leading-relaxed pt-1 border-t border-gray-100 dark:border-gray-800/60">
+                      {translateAmharicLocation(item.affectedArea)}
+                    </p>
+                  </div>
                 </div>
               </div>
 

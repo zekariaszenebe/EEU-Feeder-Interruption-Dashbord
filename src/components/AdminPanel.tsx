@@ -7,6 +7,7 @@ import {
 import { FeederInterruption, InterruptionType, InterruptionStatus, stripBrackets, TeamLeaderUser, UserRole } from '../types';
 import { INITIAL_DISTRICTS, INITIAL_FEEDERS_LIST } from '../data/mockData';
 import { InterruptionTypeBadge, getCardinalDirection } from './AgentView';
+import { LanguageMode, translateAmharicLocation, formatLocationDisplay } from '../utils/locationLanguage';
 
 // Helper to parse feeder name and its Amharic location details
 const parseFeeder = (feederStr: string) => {
@@ -115,6 +116,7 @@ export default function AdminPanel({
 
   // Form state for managing master feeders list
   const [feederSearchQuery, setFeederSearchQuery] = useState('');
+  const [feederLangMode, setFeederLangMode] = useState<LanguageMode>('en');
   const [showFeederModal, setShowFeederModal] = useState(false);
   const [editingFeederIdx, setEditingFeederIdx] = useState<number | null>(null);
   const [feederFormSubstation, setFeederFormSubstation] = useState('');
@@ -641,9 +643,12 @@ export default function AdminPanel({
   // Authenticated State View
   const filteredFeeders = activeFeeders.filter((f) => {
     const { feederLine, amharicLocation } = parseFeeder(f);
+    const query = feederSearchQuery.toLowerCase();
+    const englishLocation = translateAmharicLocation(amharicLocation).toLowerCase();
     return (
-      feederLine.toLowerCase().includes(feederSearchQuery.toLowerCase()) ||
-      amharicLocation.toLowerCase().includes(feederSearchQuery.toLowerCase())
+      feederLine.toLowerCase().includes(query) ||
+      amharicLocation.toLowerCase().includes(query) ||
+      englishLocation.includes(query)
     );
   });
 
@@ -918,7 +923,7 @@ export default function AdminPanel({
       {/* Preset Feeder Lines Database Manager */}
       {adminSubTab === 'feeders' && (
         <div className="glass-card rounded-2xl overflow-hidden">
-          <div className="p-5 border-b border-gray-200/30 dark:border-gray-800/30 bg-transparent flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="p-5 border-b border-gray-200/30 dark:border-gray-800/30 bg-transparent flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div className="text-left flex-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="font-display font-semibold text-xs text-gray-600 dark:text-gray-400 uppercase tracking-wider">
@@ -929,20 +934,53 @@ export default function AdminPanel({
                 </span>
               </div>
               <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
-                Customize physical grid line naming templates and pre-populated community lists.
+                Customize physical grid line naming templates and pre-populated community lists in both Amharic and English.
               </p>
             </div>
 
-            {/* In-table Search Input */}
-            <div className="max-w-xs w-full">
-              <input
-                id="feeder-search-input"
-                type="text"
-                placeholder="Search preset feeders..."
-                value={feederSearchQuery}
-                onChange={(e) => setFeederSearchQuery(e.target.value)}
-                className="w-full text-xs rounded-xl glass-input px-3.5 py-1.5 text-gray-900 dark:text-white focus:outline-none focus:ring-1.5 focus:ring-eeu-green"
-              />
+            <div className="flex items-center gap-3 flex-wrap">
+              {/* Language Selector for Presets (2 Languages: English & Amharic) */}
+              <div className="flex items-center p-1 bg-gray-100 dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800 text-xs font-semibold">
+                <button
+                  id="admin-lang-en-btn"
+                  onClick={() => setFeederLangMode('en')}
+                  className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 text-[11px] ${
+                    feederLangMode === 'en'
+                      ? 'bg-white dark:bg-gray-800 text-eeu-green shadow-sm font-bold'
+                      : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
+                  }`}
+                  title="English Spelling"
+                >
+                  <span>English</span>
+                  <span className="text-[9px] opacity-75 font-mono">EN</span>
+                </button>
+
+                <button
+                  id="admin-lang-am-btn"
+                  onClick={() => setFeederLangMode('am')}
+                  className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 text-[11px] ${
+                    feederLangMode === 'am'
+                      ? 'bg-white dark:bg-gray-800 text-eeu-green shadow-sm font-bold'
+                      : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
+                  }`}
+                  title="Amharic Only"
+                >
+                  <span>አማርኛ</span>
+                  <span className="text-[9px] opacity-75 font-mono">AM</span>
+                </button>
+              </div>
+
+              {/* In-table Search Input */}
+              <div className="w-56">
+                <input
+                  id="feeder-search-input"
+                  type="text"
+                  placeholder="Search preset feeders..."
+                  value={feederSearchQuery}
+                  onChange={(e) => setFeederSearchQuery(e.target.value)}
+                  className="w-full text-xs rounded-xl glass-input px-3.5 py-1.5 text-gray-900 dark:text-white focus:outline-none focus:ring-1.5 focus:ring-eeu-green"
+                />
+              </div>
             </div>
           </div>
 
@@ -961,7 +999,14 @@ export default function AdminPanel({
                   <tr className="border-b border-gray-100 dark:border-gray-800 text-[11px] font-sans font-bold text-gray-500 dark:text-gray-400 uppercase bg-gray-50/30 dark:bg-gray-950/10">
                     <th className="py-3.5 px-5 w-1/5 font-sans">Substation Details</th>
                     <th className="py-3.5 px-5 w-1/5 font-sans">Feeder Identifier</th>
-                    <th className="py-3.5 px-5 font-sans">Default Associated Communities & Landmark Areas</th>
+                    <th className="py-3.5 px-5 font-sans">
+                      <div className="flex items-center justify-between">
+                        <span>Default Associated Communities & Landmark Areas</span>
+                        <span className="text-[9px] font-mono text-eeu-green normal-case font-bold">
+                          {feederLangMode === 'en' ? 'English Only' : 'አማርኛ Only'}
+                        </span>
+                      </div>
+                    </th>
                     <th className="py-3.5 px-5 text-right w-28 font-sans">Actions</th>
                   </tr>
                 </thead>
@@ -969,6 +1014,7 @@ export default function AdminPanel({
                   {filteredFeeders.map((feederStr, index) => {
                     const { feederLine, amharicLocation } = parseFeeder(feederStr);
                     const { substation, feederId } = parseFeederDetails(feederLine);
+                    const englishLocation = translateAmharicLocation(amharicLocation);
                     return (
                       <tr 
                         key={`${feederStr}-${index}`} 
@@ -990,11 +1036,19 @@ export default function AdminPanel({
                           </div>
                         </td>
 
-                        {/* Amharic Location Location area */}
+                        {/* Language formatted Default Location area */}
                         <td className="py-4 px-5">
-                          <div className="text-xs text-gray-600 dark:text-gray-300 text-left leading-relaxed max-w-none">
-                            {amharicLocation || <span className="text-gray-400 italic font-mono text-[11px]">[No default community mapped]</span>}
-                          </div>
+                          {!amharicLocation ? (
+                            <span className="text-gray-400 italic font-mono text-[11px]">[No default community mapped]</span>
+                          ) : feederLangMode === 'en' ? (
+                            <div className="text-xs text-gray-800 dark:text-gray-200 text-left leading-relaxed font-medium">
+                              {englishLocation}
+                            </div>
+                          ) : (
+                            <div className="text-xs text-gray-800 dark:text-gray-200 text-left leading-relaxed">
+                              {amharicLocation}
+                            </div>
+                          )}
                         </td>
 
                         {/* Actions */}
@@ -1475,17 +1529,34 @@ export default function AdminPanel({
 
               {/* Affected Areas */}
               <div>
-                <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase font-mono tracking-wider mb-1.5">
-                  Affected Communities / Areas
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase font-mono tracking-wider">
+                    Affected Communities & Landmark Areas
+                  </label>
+                  {affectedArea && (
+                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono font-semibold">
+                      Auto-Bilingual Support Active
+                    </span>
+                  )}
+                </div>
                 <textarea
                   id="form-affected-textarea"
                   rows={2}
                   value={affectedArea}
                   onChange={(e) => setAffectedArea(e.target.value)}
-                  placeholder="List neighborhoods, landmark buildings, or streets disconnected (separated by commas)"
+                  placeholder="List neighborhoods, landmark buildings, or streets disconnected (in Amharic or English, separated by commas)"
                   className="w-full text-xs rounded-xl glass-input p-2.5 text-gray-900 dark:text-white focus:outline-none focus:ring-1.5 focus:ring-eeu-green leading-relaxed text-left"
                 />
+                {affectedArea && (
+                  <div className="mt-1.5 p-2 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-900/40 rounded-xl text-left">
+                    <div className="text-[9px] font-mono font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider mb-0.5">
+                      English Spelling Preview:
+                    </div>
+                    <div className="text-[11.5px] text-emerald-900 dark:text-emerald-200 font-medium">
+                      {translateAmharicLocation(affectedArea)}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Remarks/Actions Taken */}
@@ -1593,17 +1664,34 @@ export default function AdminPanel({
 
               {/* Default communities field */}
               <div>
-                <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase font-mono tracking-wider mb-1.5">
-                  Associated Communities & Landmarks (Amharic/English)
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase font-mono tracking-wider">
+                    Associated Communities & Landmarks (Amharic/English)
+                  </label>
+                  {feederFormArea && (
+                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono font-semibold">
+                      Auto-Bilingual Support Active
+                    </span>
+                  )}
+                </div>
                 <textarea
                   id="feeder-form-area-textarea"
                   rows={4}
                   value={feederFormArea}
                   onChange={(e) => setFeederFormArea(e.target.value)}
-                  placeholder="Insert affected neighborhoods or landmarks separated by commas (e.g. ቃሊቲ፥ ቆሼ፥ ገላን ወረዳ)"
+                  placeholder="Insert affected neighborhoods or landmarks in Amharic or English separated by commas (e.g. ቃሊቲ፥ ቆሼ፥ ገላን ወረዳ)"
                   className="w-full text-xs rounded-xl glass-input p-2.5 text-gray-900 dark:text-white focus:outline-none focus:ring-1.5 focus:ring-eeu-green leading-relaxed text-left font-medium"
                 />
+                {feederFormArea && (
+                  <div className="mt-1.5 p-2.5 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-900/40 rounded-xl text-left">
+                    <div className="text-[9px] font-mono font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider mb-0.5">
+                      English Spelling Preview:
+                    </div>
+                    <div className="text-[11.5px] text-emerald-900 dark:text-emerald-200 font-medium">
+                      {translateAmharicLocation(feederFormArea)}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Footer */}
