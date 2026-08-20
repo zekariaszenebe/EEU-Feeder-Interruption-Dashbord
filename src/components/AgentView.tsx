@@ -815,25 +815,10 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
   return (
     <div id="agent-dashboard-view" className="flex flex-col gap-6">
       
-      {/* Search and Filters Drawer */}
-      <div className="glass-card rounded-3xl px-6 pt-6 pb-7 space-y-5 order-2">
-        {/* Top bar: Search Input */}
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <div className="relative flex-1 min-w-[280px]">
-            <Search className="absolute left-4 top-3.5 w-4 h-4 text-gray-400 dark:text-gray-500" />
-            <input
-              id="agent-search-bar"
-              type="text"
-              placeholder="Search feeder name, affected neighborhood, suburb, or log remarks..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 text-sm rounded-2xl glass-input text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-eeu-green placeholder-gray-400 dark:placeholder-gray-500 font-medium bg-white/50 dark:bg-gray-900/50 border border-gray-200/50 dark:border-gray-800/50"
-            />
-          </div>
-        </div>
-
+      {/* Filters Drawer */}
+      <div className="glass-card rounded-3xl px-6 py-5 order-2">
         {/* Filters and sorting row */}
-        <div className="flex items-center justify-between gap-6 flex-wrap pt-4 border-t border-gray-100 dark:border-gray-850">
+        <div className="flex items-center justify-between gap-6 flex-wrap">
           <div className="flex-1 min-w-[280px] grid grid-cols-1 sm:grid-cols-3 gap-4">
             {/* Direction Filter */}
             <div className="flex items-center gap-2 w-full">
