@@ -44,8 +44,11 @@ export interface FirestoreErrorInfo {
 }
 
 function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null): never {
+  const errMsg = error instanceof Error ? error.message : String(error);
+  const errCode = (error as { code?: string })?.code;
+  
   const errInfo: FirestoreErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
+    error: errMsg,
     authInfo: {
       userId: null,
       email: null,
@@ -57,7 +60,13 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
     operationType,
     path
   };
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
+
+  if (errCode === 'unavailable' || errMsg.includes('the client is offline') || errMsg.includes('unavailable')) {
+    console.warn(`Firestore [${operationType}] for path '${path}' is operating in offline mode:`, errMsg);
+  } else {
+    console.error('Firestore Error: ', JSON.stringify(errInfo));
+  }
+
   throw new Error(JSON.stringify(errInfo));
 }
 
@@ -182,7 +191,7 @@ export async function seedInitialDataIfEmpty() {
           id: 'tl-d',
           username: '@team_d',
           password: 'Tl@1234',
-          name: 'Team D Leader',
+          name: 'Zekarias Zenebe',
           district: 'Team D',
           createdAt: new Date().toISOString()
         }

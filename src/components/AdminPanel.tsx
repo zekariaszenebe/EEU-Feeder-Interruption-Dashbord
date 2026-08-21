@@ -234,15 +234,12 @@ export default function AdminPanel({
     setCustomFeederEnabled(false);
     setCustomFeederName('');
 
-    // Set initial district based on the feeder direction
-    const dir = getCardinalDirection('', parsed.feederLine);
-    let matchedDistrict = INITIAL_DISTRICTS[0];
-    if (dir === 'North') matchedDistrict = 'North Addis Ababa';
-    else if (dir === 'East') matchedDistrict = 'East Addis Ababa';
-    else if (dir === 'West') matchedDistrict = 'West Addis Ababa';
-    else if (dir === 'South') matchedDistrict = 'South Addis Ababa';
-    else if (dir === 'Sheger') matchedDistrict = 'Sheger Region';
-    setDistrict(matchedDistrict);
+    // Default district based on role: team leaders are locked to their assigned team (e.g. Team D for Zekarias Zenebe)
+    if (isTeamLeader || userRole === 'team_leader') {
+      setDistrict(currentTeamLeader?.district || 'Team D');
+    } else {
+      setDistrict(INITIAL_DISTRICTS[0]);
+    }
 
     setType(InterruptionType.EARTH_FAULT);
     setStatus(InterruptionStatus.ACTIVE);
@@ -450,9 +447,13 @@ export default function AdminPanel({
     const isEarthFaultOrShortCircuit = type === InterruptionType.EARTH_FAULT || type === InterruptionType.SHORT_CIRCUIT;
     const finalEstimatedRestoration = isEarthFaultOrShortCircuit ? 'N/A' : estimatedRestoration;
 
+    const finalDistrict = (isTeamLeader || userRole === 'team_leader')
+      ? (currentTeamLeader?.district || district || 'Team D')
+      : (district || INITIAL_DISTRICTS[0]);
+
     const payload = {
       feederName: finalFeederName,
-      district,
+      district: finalDistrict,
       type,
       status,
       startTime,
@@ -1279,19 +1280,6 @@ export default function AdminPanel({
                                 if (parsed.amharicLocation) {
                                   setAffectedArea(parsed.amharicLocation);
                                 }
-                                const dir = getCardinalDirection('', parsed.feederLine);
-                                if (dir) {
-                                  let matchedDistrict = '';
-                                  if (dir === 'North') matchedDistrict = 'North Addis Ababa';
-                                  else if (dir === 'East') matchedDistrict = 'East Addis Ababa';
-                                  else if (dir === 'West') matchedDistrict = 'West Addis Ababa';
-                                  else if (dir === 'South') matchedDistrict = 'South Addis Ababa';
-                                  else if (dir === 'Sheger') matchedDistrict = 'Sheger Region';
-
-                                  if (matchedDistrict && INITIAL_DISTRICTS.includes(matchedDistrict)) {
-                                    setDistrict(matchedDistrict);
-                                  }
-                                }
                               }
                             }
                           }}
@@ -1359,20 +1347,7 @@ export default function AdminPanel({
                                     // Auto fill Affected Communities / Areas
                                     setAffectedArea(parsed.amharicLocation);
 
-                                    // Auto-set District Region based on direction
-                                    const dir = getCardinalDirection('', parsed.feederLine);
-                                    if (dir) {
-                                      let matchedDistrict = '';
-                                      if (dir === 'North') matchedDistrict = 'North Addis Ababa';
-                                      else if (dir === 'East') matchedDistrict = 'East Addis Ababa';
-                                      else if (dir === 'West') matchedDistrict = 'West Addis Ababa';
-                                      else if (dir === 'South') matchedDistrict = 'South Addis Ababa';
-                                      else if (dir === 'Sheger') matchedDistrict = 'Sheger Region';
-
-                                      if (matchedDistrict && INITIAL_DISTRICTS.includes(matchedDistrict)) {
-                                        setDistrict(matchedDistrict);
-                                      }
-                                    }
+                                    // Feeder selection preserves assigned administrative team
                                   }}
                                   className={`w-full text-left px-3.5 py-2 text-xs transition-colors flex items-center justify-between gap-2 ${
                                     isSelected
@@ -1412,21 +1387,6 @@ export default function AdminPanel({
                         onChange={(e) => {
                           const val = e.target.value;
                           setCustomFeederName(val);
-
-                          // Auto-set District Region based on direction
-                          const dir = getCardinalDirection('', val);
-                          if (dir) {
-                            let matchedDistrict = '';
-                            if (dir === 'North') matchedDistrict = 'North Addis Ababa';
-                            else if (dir === 'East') matchedDistrict = 'East Addis Ababa';
-                            else if (dir === 'West') matchedDistrict = 'West Addis Ababa';
-                            else if (dir === 'South') matchedDistrict = 'South Addis Ababa';
-                            else if (dir === 'Sheger') matchedDistrict = 'Sheger Region';
-
-                            if (matchedDistrict && INITIAL_DISTRICTS.includes(matchedDistrict)) {
-                              setDistrict(matchedDistrict);
-                            }
-                          }
                         }}
                         className="w-full text-xs rounded-xl glass-input p-2.5 text-gray-900 dark:text-white font-medium focus:outline-none focus:ring-1.5 focus:ring-eeu-green"
                       />
@@ -1443,19 +1403,35 @@ export default function AdminPanel({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase font-mono tracking-wider mb-1.5 border-none">
-                    Administrative Team Leader
-                  </label>
-                  <select
-                    id="form-district-select"
-                    value={district}
-                    onChange={(e) => setDistrict(e.target.value)}
-                    className="w-full text-xs rounded-xl glass-input p-2.5 text-gray-900 dark:text-white focus:outline-none focus:ring-1.5 focus:ring-eeu-green"
-                  >
-                    {INITIAL_DISTRICTS.map((dist) => (
-                      <option key={dist} value={dist}>{dist}</option>
-                    ))}
-                  </select>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase font-mono tracking-wider">
+                      Administrative Team Leader
+                    </label>
+                  </div>
+                  {isTeamLeader || userRole === 'team_leader' ? (
+                    <select
+                      id="form-district-select"
+                      value={currentTeamLeader?.district || district || 'Team D'}
+                      disabled
+                      aria-readonly="true"
+                      className="w-full text-xs rounded-xl glass-input p-2.5 text-gray-900 dark:text-white font-semibold cursor-not-allowed opacity-90"
+                    >
+                      <option value={currentTeamLeader?.district || district || 'Team D'}>
+                        {currentTeamLeader?.district || district || 'Team D'} {currentTeamLeader?.name ? `— ${currentTeamLeader.name}` : ''}
+                      </option>
+                    </select>
+                  ) : (
+                    <select
+                      id="form-district-select"
+                      value={district}
+                      onChange={(e) => setDistrict(e.target.value)}
+                      className="w-full text-xs rounded-xl glass-input p-2.5 text-gray-900 dark:text-white focus:outline-none focus:ring-1.5 focus:ring-eeu-green"
+                    >
+                      {INITIAL_DISTRICTS.map((dist) => (
+                        <option key={dist} value={dist}>{dist}</option>
+                      ))}
+                    </select>
+                  )}
                 </div>
               </div>
 

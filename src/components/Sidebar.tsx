@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, ShieldAlert, Bell, History, Zap, User, AlertTriangle, ChevronLeft, ChevronRight, LogOut, MapPin, Phone, Calculator, Gauge, Headset, ShieldCheck, UserCheck } from 'lucide-react';
+import { LayoutDashboard, ShieldAlert, Bell, History, Zap, User, AlertTriangle, ChevronLeft, ChevronRight, LogOut, MapPin, Phone, Calculator, Gauge, Headset, ShieldCheck, UserCheck, FileSpreadsheet } from 'lucide-react';
 import EEULogo from './EEULogo';
 import { UserRole, TeamLeaderUser } from '../types';
 
@@ -51,6 +51,7 @@ export default function Sidebar({
     { id: 'history', name: 'Restored Feeders', icon: History },
     { id: 'calculator', name: 'Bill Calculator', icon: Calculator },
     { id: 'smartmeter', name: 'Smart Meter Calculator', icon: Gauge },
+    { id: 'tariff', name: 'EEU Bill Tarrif', icon: FileSpreadsheet },
     { id: 'hub', name: 'CSC Address', icon: MapPin },
     { id: 'contacts', name: 'Other Region Phone NO', icon: Phone }
   ];

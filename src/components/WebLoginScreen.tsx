@@ -87,15 +87,25 @@ export default function WebLoginScreen({ onLoginSuccess, teamLeaders = [] }: Web
         return;
       }
 
-      // Default hardcoded Team Leader fallback (Teams A, B, C, D)
+      // Default hardcoded Team Leader fallback (Teams A, B, C, D and named Team Leaders like Zekarias Zenebe)
       if (
-        (strippedUser === 'teamleader' || strippedUser === 'tl' || strippedUser === 'team_a' || strippedUser === 'team_b' || strippedUser === 'team_c' || strippedUser === 'team_d' || strippedUser === 'teama' || strippedUser === 'teamb' || strippedUser === 'teamc' || strippedUser === 'teamd') && 
+        (strippedUser === 'teamleader' || strippedUser === 'tl' || strippedUser === 'team_a' || strippedUser === 'team_b' || strippedUser === 'team_c' || strippedUser === 'team_d' || strippedUser === 'teama' || strippedUser === 'teamb' || strippedUser === 'teamc' || strippedUser === 'teamd' || strippedUser === 'zekarias' || strippedUser === 'zekariaszenebe' || strippedUser === 'zekarias_zenebe' || strippedUser === 'zenebe') && 
         (password === 'Tl@1234' || password === 'Eeu@1234')
       ) {
         let teamName = 'Team A Leader';
-        if (strippedUser === 'team_b' || strippedUser === 'teamb') teamName = 'Team B Leader';
-        if (strippedUser === 'team_c' || strippedUser === 'teamc') teamName = 'Team C Leader';
-        if (strippedUser === 'team_d' || strippedUser === 'teamd') teamName = 'Team D Leader';
+        let districtName = 'Team A';
+        if (strippedUser === 'team_b' || strippedUser === 'teamb') {
+          teamName = 'Team B Leader';
+          districtName = 'Team B';
+        }
+        if (strippedUser === 'team_c' || strippedUser === 'teamc') {
+          teamName = 'Team C Leader';
+          districtName = 'Team C';
+        }
+        if (strippedUser === 'team_d' || strippedUser === 'teamd' || strippedUser === 'zekarias' || strippedUser === 'zekariaszenebe' || strippedUser === 'zekarias_zenebe' || strippedUser === 'zenebe') {
+          teamName = 'Zekarias Zenebe';
+          districtName = 'Team D';
+        }
 
         saveCredentials();
         onLoginSuccess('team_leader', {
@@ -103,7 +113,7 @@ export default function WebLoginScreen({ onLoginSuccess, teamLeaders = [] }: Web
           username: rawUser,
           password: 'Tl@1234',
           name: teamName,
-          district: teamName.replace(' Leader', ''),
+          district: districtName,
           createdAt: new Date().toISOString()
         });
         return;
@@ -366,6 +376,16 @@ export default function WebLoginScreen({ onLoginSuccess, teamLeaders = [] }: Web
                 )}
               </button>
             </form>
+
+            {/* Bottom Credits & Copyright */}
+            <div id="login-card-credits-footer" className="mt-6 pt-4 border-t border-gray-150/70 text-center space-y-1 select-text">
+              <p className="text-[11.5px] font-medium text-gray-600">
+                Developed by <span className="font-bold text-[#0d4a2b]">Zekarias Zenebe</span>
+              </p>
+              <p className="text-[10px] text-gray-400 font-sans tracking-tight">
+                Copyright © {new Date().getFullYear()} Ethiopian Electric Utility. All rights reserved.
+              </p>
+            </div>
           </div>
         </div>
 

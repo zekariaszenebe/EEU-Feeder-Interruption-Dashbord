@@ -50,6 +50,7 @@ import NotificationCenter from './components/NotificationCenter';
 import ResolutionArchive from './components/ResolutionArchive';
 import BillCalculator from './components/BillCalculator';
 import SmartMeterCalculator from './components/SmartMeterCalculator';
+import EEUBillTariff from './components/EEUBillTariff';
 import { FeederHub } from './components/FeederHub';
 import CustomerContacts from './components/CustomerContacts';
 import EEULogo from './components/EEULogo';
@@ -624,6 +625,14 @@ export default function App() {
             </button>
 
             <button
+              id="mob-nav-tariff"
+              onClick={() => { setCurrentTab('tariff'); setMobileMenuOpen(false); }}
+              className={`w-full p-2.5 rounded-lg text-xs font-semibold flex items-center gap-2 ${currentTab === 'tariff' ? 'bg-eeu-green text-white' : 'text-gray-600 dark:text-gray-400'}`}
+            >
+              EEU Bill Tarrif
+            </button>
+
+            <button
               id="mob-nav-hub"
               onClick={() => { setCurrentTab('hub'); setMobileMenuOpen(false); }}
               className={`w-full p-2.5 rounded-lg text-xs font-semibold flex items-center gap-2 ${currentTab === 'hub' ? 'bg-eeu-green text-white' : 'text-gray-600 dark:text-gray-400'}`}
@@ -753,7 +762,7 @@ export default function App() {
             </div>
 
             {/* LIVE DATA STATISTICS ROW */}
-            {currentTab !== 'hub' && currentTab !== 'admin' && currentTab !== 'notifications' && currentTab !== 'history' && currentTab !== 'contacts' && currentTab !== 'calculator' && currentTab !== 'smartmeter' && <StatsGrid interruptions={interruptions} />}
+            {currentTab !== 'hub' && currentTab !== 'admin' && currentTab !== 'notifications' && currentTab !== 'history' && currentTab !== 'contacts' && currentTab !== 'calculator' && currentTab !== 'smartmeter' && currentTab !== 'tariff' && <StatsGrid interruptions={interruptions} />}
 
             {/* DETAILED VIEWS CONTAINER */}
             <div id="active-tab-container" className="pt-2 animate-in fade-in-40 duration-200">
@@ -808,6 +817,10 @@ export default function App() {
 
               {currentTab === 'smartmeter' && (
                 <SmartMeterCalculator />
+              )}
+
+              {currentTab === 'tariff' && (
+                <EEUBillTariff />
               )}
 
               {currentTab === 'hub' && (
