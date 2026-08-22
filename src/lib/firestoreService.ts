@@ -1,6 +1,7 @@
 import { 
   collection, 
   doc, 
+  getDoc,
   setDoc, 
   updateDoc, 
   deleteDoc, 
@@ -14,6 +15,7 @@ import {
 import { db } from './firebase';
 import { FeederInterruption, SystemNotification, InterruptionStatus, TeamLeaderNote, ContactItem, TeamLeaderUser } from '../types';
 import { INITIAL_INTERRUPTIONS, INITIAL_NOTIFICATIONS, INITIAL_FEEDERS_LIST, INITIAL_CUSTOMER_CONTACTS } from '../data/mockData';
+import { FEEDERS_VERSION } from '../data/feedersList';
 import { HubRecord, HUB_RECORDS } from '../data/hubData';
 
 // Operation types for FirestoreErrorInfo
@@ -113,19 +115,31 @@ export async function seedInitialDataIfEmpty() {
   }
 
   try {
-    const feedersSnap = await getDocs(query(presetFeedersCol, limit(1)));
-    if (feedersSnap.empty) {
-      console.log("Seeding initial preset feeders to Firestore...");
-      const batch = writeBatch(db);
-      INITIAL_FEEDERS_LIST.forEach((feederStr, idx) => {
-        const docId = `feeder-${idx}`;
-        const docRef = doc(db, 'presetFeeders', docId);
-        batch.set(docRef, { feederStr });
-      });
-      await batch.commit();
+    const versionRef = doc(db, 'systemSettings', 'feedersMasterVersion');
+    let versionMatch = false;
+    try {
+      const versionDoc = await getDoc(versionRef);
+      if (versionDoc.exists() && versionDoc.data()?.version === FEEDERS_VERSION) {
+        versionMatch = true;
+      }
+    } catch {
+      versionMatch = false;
+    }
+
+    const feedersSnap = await getDocs(presetFeedersCol);
+    const hasStaleFeeder = feedersSnap.docs.some(d => {
+      const s = d.data().feederStr || '';
+      return s.includes('ወንድይራድ') && s.includes('COT-01');
+    });
+    const hasChaka = feedersSnap.docs.some(d => (d.data().feederStr || '').includes('CHAKA - CHK-1'));
+
+    // If Firestore has outdated version, missing Chaka, stale Cotebe or wrong size, perform complete resync
+    if (!versionMatch || feedersSnap.empty || feedersSnap.size !== INITIAL_FEEDERS_LIST.length || hasStaleFeeder || !hasChaka) {
+      console.log("Synchronizing full master preset feeders list (v4) to Firestore...", INITIAL_FEEDERS_LIST.length);
+      await resetAllPresetFeedersToMaster();
     }
   } catch (error) {
-    handleFirestoreError(error, OperationType.WRITE, 'presetFeeders');
+    console.error('Preset feeders initialization check:', error);
   }
 
   try {
@@ -272,6 +286,11 @@ export function subscribeToNotifications(onUpdate: (items: SystemNotification[])
  */
 export function subscribeToFeedersList(onUpdate: (items: string[]) => void) {
   return onSnapshot(presetFeedersCol, (snapshot) => {
+    if (snapshot.empty) {
+      onUpdate(INITIAL_FEEDERS_LIST);
+      return;
+    }
+
     const list: string[] = [];
     snapshot.forEach((doc) => {
       const data = doc.data();
@@ -279,6 +298,16 @@ export function subscribeToFeedersList(onUpdate: (items: string[]) => void) {
         list.push(data.feederStr);
       }
     });
+
+    const hasStale = list.some(s => s.includes('ወንድይራድ') && s.includes('COT-01'));
+    const hasChaka = list.some(s => s.includes('CHAKA - CHK-1'));
+
+    if (hasStale || !hasChaka || list.length !== INITIAL_FEEDERS_LIST.length) {
+      console.log('Detected stale preset feeders in snapshot, syncing to master 248 list...');
+      resetAllPresetFeedersToMaster().catch(err => console.error('Error auto syncing feeders:', err));
+      onUpdate(INITIAL_FEEDERS_LIST);
+      return;
+    }
     
     list.sort();
     onUpdate(list);
@@ -518,6 +547,46 @@ export async function updatePresetFeederDoc(oldFeederStr: string, newFeederStr: 
     }
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, 'presetFeeders');
+  }
+}
+
+/**
+ * Resets and overwrites all preset feeders in Firestore with the complete 248 master feeder database.
+ */
+export async function resetAllPresetFeedersToMaster() {
+  try {
+    const feedersSnap = await getDocs(presetFeedersCol);
+    const existingDocs = feedersSnap.docs;
+    
+    // Clear old docs
+    for (let i = 0; i < existingDocs.length; i += 450) {
+      const batch = writeBatch(db);
+      existingDocs.slice(i, i + 450).forEach((d) => batch.delete(d.ref));
+      await batch.commit();
+    }
+
+    // Set full 248 master list
+    for (let i = 0; i < INITIAL_FEEDERS_LIST.length; i += 450) {
+      const batch = writeBatch(db);
+      INITIAL_FEEDERS_LIST.slice(i, i + 450).forEach((feederStr, index) => {
+        const docId = `feeder-${i + index}`;
+        const docRef = doc(db, 'presetFeeders', docId);
+        batch.set(docRef, { feederStr });
+      });
+      await batch.commit();
+    }
+
+    try {
+      await setDoc(doc(db, 'systemSettings', 'feedersMasterVersion'), {
+        version: FEEDERS_VERSION,
+        count: INITIAL_FEEDERS_LIST.length,
+        syncedAt: new Date().toISOString()
+      });
+    } catch (e) {
+      console.warn('Could not write feedersMasterVersion doc:', e);
+    }
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, 'presetFeeders');
   }
 }
 

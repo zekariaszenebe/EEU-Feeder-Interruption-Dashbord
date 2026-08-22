@@ -216,7 +216,7 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
   const [selectedDirection, setSelectedDirection] = useState<string>('All');
   const [showOnlyActive, setShowOnlyActive] = useState(true);
   const [sortBy, setSortBy] = useState<'latest' | 'oldest' | 'name'>('latest');
-  const [languageMode, setLanguageMode] = useState<LanguageMode>('en');
+  const [languageMode, setLanguageMode] = useState<LanguageMode>('am');
 
   // Affected Location Area Directory state controls
   const [locationSearchQuery, setLocationSearchQuery] = useState('');
@@ -906,20 +906,6 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
               </span>
               <div className="flex items-center p-1 bg-gray-100 dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800 text-xs font-semibold">
                 <button
-                  id="lang-en-btn"
-                  onClick={() => setLanguageMode('en')}
-                  className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 text-[11px] ${
-                    languageMode === 'en'
-                      ? 'bg-white dark:bg-gray-800 text-eeu-green shadow-sm font-bold'
-                      : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
-                  }`}
-                  title="English Spelling"
-                >
-                  <span>English</span>
-                  <span className="text-[9px] opacity-75 font-mono">EN</span>
-                </button>
-
-                <button
                   id="lang-am-btn"
                   onClick={() => setLanguageMode('am')}
                   className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 text-[11px] ${
@@ -931,6 +917,20 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
                 >
                   <span>አማርኛ</span>
                   <span className="text-[9px] opacity-75 font-mono">AM</span>
+                </button>
+
+                <button
+                  id="lang-en-btn"
+                  onClick={() => setLanguageMode('en')}
+                  className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 text-[11px] ${
+                    languageMode === 'en'
+                      ? 'bg-white dark:bg-gray-800 text-eeu-green shadow-sm font-bold'
+                      : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
+                  }`}
+                  title="English Spelling"
+                >
+                  <span>English</span>
+                  <span className="text-[9px] opacity-75 font-mono">EN</span>
                 </button>
               </div>
             </div>

@@ -53,6 +53,7 @@ interface AdminPanelProps {
   onDeleteInterruption: (id: string) => void;
   feedersList?: string[];
   onUpdateFeedersList?: (list: string[]) => void;
+  onResetMasterFeeders?: () => void;
   teamLeaders?: TeamLeaderUser[];
   onAddTeamLeader?: (tl: Omit<TeamLeaderUser, 'id' | 'createdAt'>) => void;
   onUpdateTeamLeader?: (tl: TeamLeaderUser) => void;
@@ -73,6 +74,7 @@ export default function AdminPanel({
   onDeleteInterruption,
   feedersList,
   onUpdateFeedersList,
+  onResetMasterFeeders,
   teamLeaders = [],
   onAddTeamLeader,
   onUpdateTeamLeader,
@@ -116,7 +118,7 @@ export default function AdminPanel({
 
   // Form state for managing master feeders list
   const [feederSearchQuery, setFeederSearchQuery] = useState('');
-  const [feederLangMode, setFeederLangMode] = useState<LanguageMode>('en');
+  const [feederLangMode, setFeederLangMode] = useState<LanguageMode>('am');
   const [showFeederModal, setShowFeederModal] = useState(false);
   const [editingFeederIdx, setEditingFeederIdx] = useState<number | null>(null);
   const [feederFormSubstation, setFeederFormSubstation] = useState('');
@@ -221,14 +223,7 @@ export default function AdminPanel({
   // Initialize form for adding
   const handleOpenAddForm = () => {
     setEditingItem(null);
-    const availableFeeder = activeFeeders.find((f) => {
-      const parsed = parseFeeder(f);
-      const norm = normalizeFeederName(parsed.feederLine);
-      return !interruptions.some((item) => normalizeFeederName(item.feederName) === norm && item.status !== InterruptionStatus.RESTORED);
-    }) || activeFeeders[0] || 'GENERIC FEEDER - 01 (Area)';
-
-    const parsed = parseFeeder(availableFeeder);
-    setFeederName(parsed.feederLine);
+    setFeederName('');
     setFormFeederSearchQuery('');
     setFormFeederDropdownOpen(false);
     setCustomFeederEnabled(false);
@@ -264,8 +259,7 @@ export default function AdminPanel({
       hour12: true
     }));
     
-    // Auto-fill active communities with the Amharic location parsing
-    setAffectedArea(parsed.amharicLocation);
+    setAffectedArea('');
     setRemark('');
     setFormError('');
     setShowFormModal(true);
@@ -704,14 +698,31 @@ export default function AdminPanel({
               <span>Add Interruption</span>
             </button>
           ) : adminSubTab === 'feeders' ? (
-            <button
-              id="admin-preset-add-btn"
-              onClick={handleOpenAddFeeder}
-              className="px-4 py-2.5 bg-eeu-green hover:bg-eeu-green-hover text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shadow-lg shadow-eeu-green/15 cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Add Feeder Preset</span>
-            </button>
+            <div className="flex items-center gap-2">
+              {onResetMasterFeeders && (
+                <button
+                  id="admin-preset-reset-btn"
+                  onClick={() => {
+                    if (window.confirm('Sync and restore all 248 official EEU feeder line database records? This will update any outdated or missing feeder lines.')) {
+                      onResetMasterFeeders();
+                    }
+                  }}
+                  className="px-3.5 py-2.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
+                  title="Force re-sync and restore the complete 248 master feeder line database to Firestore and local cache"
+                >
+                  <RefreshCw className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                  <span>Sync Master Database ({INITIAL_FEEDERS_LIST.length})</span>
+                </button>
+              )}
+              <button
+                id="admin-preset-add-btn"
+                onClick={handleOpenAddFeeder}
+                className="px-4 py-2.5 bg-eeu-green hover:bg-eeu-green-hover text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shadow-lg shadow-eeu-green/15 cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add Feeder Preset</span>
+              </button>
+            </div>
           ) : (
             <button
               id="admin-tl-add-btn"
@@ -940,22 +951,8 @@ export default function AdminPanel({
             </div>
 
             <div className="flex items-center gap-3 flex-wrap">
-              {/* Language Selector for Presets (2 Languages: English & Amharic) */}
+              {/* Language Selector for Presets (2 Languages: Amharic & English) */}
               <div className="flex items-center p-1 bg-gray-100 dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800 text-xs font-semibold">
-                <button
-                  id="admin-lang-en-btn"
-                  onClick={() => setFeederLangMode('en')}
-                  className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 text-[11px] ${
-                    feederLangMode === 'en'
-                      ? 'bg-white dark:bg-gray-800 text-eeu-green shadow-sm font-bold'
-                      : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
-                  }`}
-                  title="English Spelling"
-                >
-                  <span>English</span>
-                  <span className="text-[9px] opacity-75 font-mono">EN</span>
-                </button>
-
                 <button
                   id="admin-lang-am-btn"
                   onClick={() => setFeederLangMode('am')}
@@ -968,6 +965,20 @@ export default function AdminPanel({
                 >
                   <span>አማርኛ</span>
                   <span className="text-[9px] opacity-75 font-mono">AM</span>
+                </button>
+
+                <button
+                  id="admin-lang-en-btn"
+                  onClick={() => setFeederLangMode('en')}
+                  className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 text-[11px] ${
+                    feederLangMode === 'en'
+                      ? 'bg-white dark:bg-gray-800 text-eeu-green shadow-sm font-bold'
+                      : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
+                  }`}
+                  title="English Spelling"
+                >
+                  <span>English</span>
+                  <span className="text-[9px] opacity-75 font-mono">EN</span>
                 </button>
               </div>
 
@@ -998,11 +1009,11 @@ export default function AdminPanel({
               <table className="w-full text-left border-collapse font-sans">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-gray-800 text-[11px] font-sans font-bold text-gray-500 dark:text-gray-400 uppercase bg-gray-50/30 dark:bg-gray-950/10">
-                    <th className="py-3.5 px-5 w-1/5 font-sans">Substation Details</th>
-                    <th className="py-3.5 px-5 w-1/5 font-sans">Feeder Identifier</th>
+                    <th className="py-3.5 px-5 w-1/5 font-sans">Feeder Name</th>
+                    <th className="py-3.5 px-5 w-1/5 font-sans">Feeder Number</th>
                     <th className="py-3.5 px-5 font-sans">
                       <div className="flex items-center justify-between">
-                        <span>Default Associated Communities & Landmark Areas</span>
+                        <span>Affected Areas</span>
                         <span className="text-[9px] font-mono text-eeu-green normal-case font-bold">
                           {feederLangMode === 'en' ? 'English Only' : 'አማርኛ Only'}
                         </span>
@@ -1254,7 +1265,7 @@ export default function AdminPanel({
                         <input
                           id="form-feeder-select"
                           type="text"
-                          placeholder={feederName ? `Selected: ${feederName} — type code to search (e.g. ADC-11)...` : "Search feeder (e.g. ADC-11, ADDIS CENTER)..."}
+                          placeholder={feederName ? `Selected: ${feederName} — type to change...` : "Search feeder code, substation or area (e.g. ADC-11, 22)..."}
                           value={formFeederSearchQuery}
                           onFocus={(e) => {
                             setFormFeederDropdownOpen(true);
@@ -1267,11 +1278,16 @@ export default function AdminPanel({
 
                             const q = val.trim().toLowerCase();
                             if (q) {
-                              const match = activeFeeders.find((f) => {
+                              const exactMatch = activeFeeders.find((f) => {
+                                const parsed = parseFeeder(f);
+                                return parsed.feederLine.toLowerCase() === q;
+                              });
+                              const match = exactMatch || activeFeeders.find((f) => {
                                 const parsed = parseFeeder(f);
                                 return (
-                                  parsed.feederLine.toLowerCase() === q ||
-                                  parsed.feederLine.toLowerCase().includes(q)
+                                  parsed.feederLine.toLowerCase().includes(q) ||
+                                  parsed.amharicLocation.toLowerCase().includes(q) ||
+                                  f.toLowerCase().includes(q)
                                 );
                               });
                               if (match) {
@@ -1283,7 +1299,7 @@ export default function AdminPanel({
                               }
                             }
                           }}
-                          className="w-full text-xs rounded-xl glass-input pl-9 pr-8 py-2.5 text-gray-900 dark:text-white focus:outline-none focus:ring-1.5 focus:ring-eeu-green bg-white dark:bg-gray-950 font-medium"
+                          className="w-full text-xs rounded-xl glass-input pl-9 pr-8 py-2.5 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-eeu-green/40 focus:border-eeu-green bg-white dark:bg-gray-950 font-medium transition-all shadow-sm border border-gray-200 dark:border-gray-800"
                         />
                         {formFeederSearchQuery && (
                           <button
@@ -1292,13 +1308,20 @@ export default function AdminPanel({
                               setFormFeederSearchQuery('');
                               setFormFeederDropdownOpen(true);
                             }}
-                            className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-white"
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-white rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                             title="Clear search"
                           >
                             <X className="w-3.5 h-3.5" />
                           </button>
                         )}
                       </div>
+
+                      {feederName && (
+                        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/40 rounded-lg text-[11px] text-emerald-800 dark:text-emerald-300">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          <span className="font-semibold truncate">Active Selection: {feederName}</span>
+                        </div>
+                      )}
 
                       {/* Dropdown Options */}
                       {formFeederDropdownOpen && (
@@ -1346,8 +1369,6 @@ export default function AdminPanel({
 
                                     // Auto fill Affected Communities / Areas
                                     setAffectedArea(parsed.amharicLocation);
-
-                                    // Feeder selection preserves assigned administrative team
                                   }}
                                   className={`w-full text-left px-3.5 py-2 text-xs transition-colors flex items-center justify-between gap-2 ${
                                     isSelected
@@ -1605,11 +1626,11 @@ export default function AdminPanel({
                 </div>
               )}
 
-              {/* Separated Substation & Feeder Identifier Fields */}
+              {/* Separated Feeder Name & Feeder Number Fields */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase font-mono tracking-wider mb-1.5">
-                    Substation Details
+                    Feeder Name
                   </label>
                   <input
                     id="feeder-form-substation-input"
@@ -1624,7 +1645,7 @@ export default function AdminPanel({
 
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase font-mono tracking-wider mb-1.5">
-                    Feeder Identifier
+                    Feeder Number
                   </label>
                   <input
                     id="feeder-form-code-input"
@@ -1642,7 +1663,7 @@ export default function AdminPanel({
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase font-mono tracking-wider">
-                    Associated Communities & Landmarks (Amharic/English)
+                    Affected Areas (Amharic/English)
                   </label>
                   {feederFormArea && (
                     <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono font-semibold">

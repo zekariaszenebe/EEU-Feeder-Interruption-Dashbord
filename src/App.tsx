@@ -8,6 +8,7 @@ import {
 // Types and mock data
 import { FeederInterruption, InterruptionType, InterruptionStatus, SystemNotification, TeamLeaderNote, ContactItem, TeamLeaderUser, UserRole } from './types';
 import { INITIAL_INTERRUPTIONS, INITIAL_NOTIFICATIONS, INITIAL_DISTRICTS, INITIAL_FEEDERS_LIST } from './data/mockData';
+import { FEEDERS_VERSION } from './data/feedersList';
 
 // Firestore Services
 import { 
@@ -23,6 +24,7 @@ import {
   clearAllNotificationsDoc,
   addPresetFeederDoc,
   deletePresetFeederDoc,
+  resetAllPresetFeedersToMaster,
   subscribeToHubRecords,
   updateHubRecordDoc,
   subscribeToTeamLeaderNotes,
@@ -116,17 +118,24 @@ export default function App() {
   });
 
   const [feedersList, setFeedersList] = useState<string[]>(() => {
-    const saved = localStorage.getItem('eeu-feeders-list');
-    if (saved) {
+    const savedVer = localStorage.getItem('eeu-feeders-version');
+    const saved = localStorage.getItem('eeu-feeders-list-v4');
+    if (saved && savedVer === FEEDERS_VERSION) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+        if (Array.isArray(parsed) && parsed.length === INITIAL_FEEDERS_LIST.length) {
+          const hasStale = parsed.some((s: string) => s.includes('ወንድይራድ') && s.includes('COT-01'));
+          const hasChaka = parsed.some((s: string) => s.includes('CHAKA - CHK-1'));
+          if (!hasStale && hasChaka) {
+            return parsed;
+          }
         }
       } catch (e) {
         console.error('Failed to load feeders list from localStorage', e);
       }
     }
+    localStorage.setItem('eeu-feeders-version', FEEDERS_VERSION);
+    localStorage.setItem('eeu-feeders-list-v4', JSON.stringify(INITIAL_FEEDERS_LIST));
     return INITIAL_FEEDERS_LIST;
   });
 
@@ -196,7 +205,8 @@ export default function App() {
       });
       unsubFeeders = subscribeToFeedersList((items) => {
         setFeedersList(items);
-        localStorage.setItem('eeu-feeders-list', JSON.stringify(items));
+        localStorage.setItem('eeu-feeders-version', FEEDERS_VERSION);
+        localStorage.setItem('eeu-feeders-list-v4', JSON.stringify(items));
       });
       unsubHubRecords = subscribeToHubRecords((items) => {
         setHubRecords(items);
@@ -365,6 +375,19 @@ export default function App() {
     } catch (e) {
       console.error(e);
       triggerToast('Sync Error', 'Error updating preset feeder lists', 'warn');
+    }
+  };
+
+  const handleResetMasterFeeders = async () => {
+    try {
+      localStorage.setItem('eeu-feeders-version', FEEDERS_VERSION);
+      localStorage.setItem('eeu-feeders-list-v4', JSON.stringify(INITIAL_FEEDERS_LIST));
+      setFeedersList(INITIAL_FEEDERS_LIST);
+      await resetAllPresetFeedersToMaster();
+      triggerToast('Master Feeder Database Synced', `Restored all ${INITIAL_FEEDERS_LIST.length} EEU feeder lines`, 'success');
+    } catch (e) {
+      console.error(e);
+      triggerToast('Sync Error', 'Could not reset master feeders', 'warn');
     }
   };
 
@@ -790,6 +813,7 @@ export default function App() {
                   onDeleteInterruption={handleDeleteInterruption}
                   feedersList={feedersList}
                   onUpdateFeedersList={handleUpdateFeedersList}
+                  onResetMasterFeeders={handleResetMasterFeeders}
                   teamLeaders={teamLeaders}
                   onAddTeamLeader={handleAddTeamLeader}
                   onUpdateTeamLeader={handleUpdateTeamLeader}
