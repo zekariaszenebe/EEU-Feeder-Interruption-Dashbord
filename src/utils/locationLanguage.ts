@@ -1,103 +1,142 @@
 // Dictionary and helper utilities for bilingual (Amharic & English)
 // EEU Feeder Landmarks, Substation Communities, and Neighborhood names
+// Translates/transliterates Amharic locations into natural Ethiopian Latin phonetics
+// (e.g. "ቤተ መንግስት ጊቡ ውስጥ በከፊል" -> "Bete Mengst Gibi Wust Bekefil")
 
 export type LanguageMode = 'en' | 'am';
 
-// Comprehensive dictionary of Amharic landmark names to English spelling
+// Comprehensive dictionary of Amharic landmark names to English/Latin phonetic spelling
 export const AMHARIC_TO_ENGLISH_DICT: Record<string, string> = {
-  // Common Structural Words & Suffixes
-  'ሕንጻ': 'Building',
-  'ሕንፃ': 'Building',
-  'ሆቴል': 'Hotel',
-  'ሆል': 'Hotel',
-  'ሆስፒታል': 'Hospital',
-  'ክሊኒክ': 'Clinic',
-  'ት/ቤት': 'School',
-  'ትምህርት ቤት': 'School',
-  'ዩኒቨርስቲ': 'University',
-  'ዩኒቨርሲቲ': 'University',
-  'ኮሌጅ': 'College',
-  'ቤ/ክ': 'Church',
-  'ቤ/ክርስቲያን': 'Church',
-  'ቤተክርስቲያን': 'Church',
-  'መስጊድ': 'Mosque',
-  'ኮንዶሚኒየም': 'Condominium',
-  'ኮንዶሚንየም': 'Condominium',
-  'ኮንዶኒየም': 'Condominium',
-  'ፋብሪካ': 'Factory',
-  'ፋበሪካ': 'Factory',
-  'መናፈሻ': 'Park',
-  'ፓርክ': 'Park',
-  'ገበያ': 'Market',
-  'አደባባይ': 'Square',
-  'መንደር': 'Village',
-  'ሰፈር': 'Neighborhood',
-  'ሰፈራ': 'Settlement',
-  'መንገድ': 'Road / Street',
+  // Key Operational & Positional Terms
+  'ቤተመንግስት': 'Bete Mengst',
+  'ቤተ መንግስት': 'Bete Mengst',
+  'ቤ/መንግስት': 'Bete Mengst',
+  'ቤተ መንግስት ጊቡ ውስጥ በከፊል': 'Bete Mengst Gibi Wust Bekefil',
+  'ቤተ መንግስት ጊቢ ውስጥ በከፊል': 'Bete Mengst Gibi Wust Bekefil',
+  'ቤተ መንግስት ጊቢ ውስጥ ሙሉ': 'Bete Mengst Gibi Wust Mulu',
+  'ቤተመንግስት ጊቢ ውስጥ ሙሉ': 'Bete Mengst Gibi Wust Mulu',
+  'ጊቢ ውስጥ በከፊል': 'Gibi Wust Bekefil',
+  'ጊቡ ውስጥ በከፊል': 'Gibu Wust Bekefil',
+  'ጊቢ ውስጥ ሙሉ': 'Gibi Wust Mulu',
+  'ጊቢ ውስጥ': 'Gibi Wust',
+  'ጊቡ ውስጥ': 'Gibu Wust',
+  'ጊቢ': 'Gibi',
+  'ጊቡ': 'Gibu',
+  'ውስጥ': 'Wust',
+  'በከፊል': 'Bekefil',
+  'ሙሉ': 'Mulu',
+  'ሙሉ በሙሉ': 'Mulu Bemulu',
   'አካባቢ': 'Akababi',
   'አካባቢው': 'Akababiw',
   'አካባቢዎች': 'Akababiwoch',
   'አክባቢ': 'Akababi',
   'አከባቢ': 'Akababi',
   'አከባቢው': 'Akababiw',
-  'እና አካባቢው': 'and Akababiw',
-  'እናአካባቢው': 'and Akababiw',
-  'እና አከባቢው': 'and Akababiw',
-  'ጀርባ': 'Behind',
-  'በስተጀርባ': 'Behind',
-  'ፊትለፊት': 'In front of',
-  'ፊትላፊት': 'In front of',
-  'ጎን': 'Beside',
-  'አጠገብ': 'Near',
-  'ድልድይ': 'Bridge',
-  'ወፍጮ': 'Mill',
-  'ቄራ': 'Abattoir (Kera)',
-  'በረንዳ': 'Veranda / Market',
-  'ተራ': 'Row / Market',
-  'ማዞሪያ': 'Turning / Roundabout',
-  'ማዕከል': 'Center',
-  'መጋዘን': 'Warehouse',
+  'እና አካባቢው': 'Ena Akababiw',
+  'እናአካባቢው': 'Ena Akababiw',
+  'እና አከባቢው': 'Ena Akababiw',
+  'ጀርባ': 'Jerba',
+  'በስተጀርባ': 'Bestejerba',
+  'ፊት ለፊት': 'Fit Lefit',
+  'ፊትለፊት': 'Fit Lefit',
+  'ፊትላፊት': 'Fit Lefit',
+  'አጠገብ': 'Ategeb',
+  'ጎን': 'Gon',
+  'ጋር': 'Gar',
+  'ድረስ': 'Dres',
+  'ላይ': 'Lay',
+  'ታች': 'Tach',
+  'በላይ': 'Belay',
+  'በታች': 'Betach',
+  'በስተግራ': 'Bestegra',
+  'በስተቀኝ': 'Besteken',
+  'እና': 'Ena',
+  'ወደ': 'Wede',
+  'ከ': 'Ke',
+  'በ': 'Be',
+  'ለ': 'Le',
+
+  // Common Facilities & Structural Words
+  'ሕንጻ': 'Hntsa',
+  'ሕንፃ': 'Hntsa',
+  'ህንጻ': 'Hntsa',
+  'ህንፃ': 'Hntsa',
+  'ሆቴል': 'Hotel',
+  'ሆል': 'Hotel',
+  'ሆስፒታል': 'Hospital',
+  'ክሊኒክ': 'Clinic',
+  'ት/ቤት': 'T/Bet',
+  'ትምህርት ቤት': 'Tmhert Bet',
+  '2ተኛ ደረጃ ት/ቤት': '2tenga Dereja T/Bet',
+  '2ኛ ደረጃ ት/ቤት': '2tenga Dereja T/Bet',
+  '1ኛ ደረጃ ት/ቤት': '1nga Dereja T/Bet',
+  'ዩኒቨርስቲ': 'University',
+  'ዩኒቨርሲቲ': 'University',
+  'ኮሌጅ': 'College',
+  'ቤ/ክ': 'B/K',
+  'ቤ/ክርስቲያን': 'Betekrstiyan',
+  'ቤተክርስቲያን': 'Betekrstiyan',
+  'መስጊድ': 'Mesgid',
+  'ኮንዶሚኒየም': 'Condominium',
+  'ኮንዶሚንየም': 'Condominium',
+  'ኮንዶኒየም': 'Condominium',
+  'ፋብሪካ': 'Fabrika',
+  'ፋበሪካ': 'Fabrika',
+  'መናፈሻ': 'Menafesha',
+  'ፓርክ': 'Park',
+  'ገበያ': 'Gebeya',
+  'አደባባይ': 'Adebabay',
+  'መንደር': 'Mender',
+  'ሰፈር': 'Sefer',
+  'ሰፈራ': 'Sefera',
+  'መንገድ': 'Menged',
+  'ድልድይ': 'Dildiy',
+  'ወፍጮ': 'Wefcho',
+  'ቄራ': 'Kera',
+  'በረንዳ': 'Berenda',
+  'ተራ': 'Tera',
+  'ማዞሪያ': 'Mazoriya',
+  'ማዕከል': 'Maekel',
+  'መጋዘን': 'Megazen',
   'ጋራዥ': 'Garage',
-  'ጋራጨዥ': 'Garage',
-  'ጣቢያ': 'Station',
-  'ጣቢ': 'Station',
+  'ጋራጅ': 'Garage',
+  'ጣቢያ': 'Tabiya',
+  'ጤና ጣቢያ': 'Tena Tabiya',
   'ሴንተር': 'Center',
-  'ፍርድ ቤት': 'Court',
-  'መኖሪያ': 'Residence',
-  'ቤቶች': 'Houses',
-  'ማህበር': 'Association',
-  'ማሕበር': 'Association',
-  'ማህበራት': 'Associations',
-  'ክበብ': 'Club',
-  'መከላከያ': 'Defense',
+  'ፍርድ ቤት': 'Frd Bet',
+  'መኖሪያ': 'Menoriya',
+  'ቤቶች': 'Betoch',
+  'ማህበር': 'Mahber',
+  'ማሕበር': 'Mahber',
+  'ማህበራት': 'Mahberat',
+  'ክበብ': 'Kebeb',
+  'መከላከያ': 'Mekelakeya',
   'ካምፕ': 'Camp',
   'ፖሊስ': 'Police',
-  'እሳት አደጋ': 'Fire Emergency',
-  'ውኃ': 'Water',
-  'ውሀ': 'Water',
-  'ውሃ': 'Water',
-  'ግድብ': 'Dam',
-  'ፍሳሽ': 'Sewerage',
-  'ማጣሪያ': 'Treatment Plant',
-  'ቆዳ': 'Leather',
-  'ብረታ ብረት': 'Metal Works',
-  'ዳቦ': 'Bakery',
-  'ቡና': 'Coffee',
+  'እሳት አደጋ': 'Esat Adega',
+  'ውኃ': 'Wuha',
+  'ውሀ': 'Wuha',
+  'ውሃ': 'Wuha',
+  'ግድብ': 'Gidib',
+  'ዳቦ': 'Dabo',
+  'ዶቦ': 'Dabo',
+  'ቡና': 'Buna',
   'ባንክ': 'Bank',
-  'ቴሌ': 'Telecom',
-  'መብራት ኃይል': 'Electric Utility',
+  'ቴሌ': 'Tele',
+  'መብራት ኃይል': 'Mebrat Hayil',
   'ሰብስቴሽን': 'Substation',
-  'ሰብስቴ': 'Substation',
-  'ማከፋፈያ': 'Distribution',
-  'መናኸሪያ': 'Bus Station',
+  'ማከፋፈያ': 'Makefafeya',
+  'መናኸሪያ': 'Menahariya',
+  'መናሀሪያ': 'Menahariya',
   'ኤምባሲ': 'Embassy',
   'ኤምበሲ': 'Embassy',
-  'ከተማ': 'Town / City',
-  'ማዘጋጃ': 'Municipality',
-  'ማዘጋጃ ቤት': 'City Hall',
-  'መስተዳደር': 'Administration',
+  'ኢምባሲ': 'Embassy',
+  'ኢንባሲ': 'Embassy',
+  'ከተማ': 'Ketema',
+  'ማዘጋጃ': 'Mazegaja',
+  'ማዘጋጃ ቤት': 'Mazegaja Bet',
+  'መስተዳደር': 'Mestedader',
   'ኢንዱስትሪ': 'Industry',
-  'ኢንዱስት': 'Industry',
   'ሪል እስቴት': 'Real Estate',
   'ሪልኤስቴት': 'Real Estate',
   'ሪልስቴት': 'Real Estate',
@@ -106,16 +145,10 @@ export const AMHARIC_TO_ENGLISH_DICT: Record<string, string> = {
   'ካፌ': 'Cafe',
   'ሬስቶራንት': 'Restaurant',
   'ዳታ ሴንተር': 'Data Center',
-  'ስቶር': 'Store',
-  'ዴዲኬትድ': 'Dedicated Line',
   'ስታዲየም': 'Stadium',
-  'ኦቨርፓስ': 'Overpass',
-  'ቤተመንግስት': 'Palace',
-  'ቤተ መንግስት': 'Palace',
-  'ቤ/መንግስት': 'Palace',
-  'ፓርላማ': 'Parliament',
-  'ኬላ': 'Checkpoint',
-  'እርባታ': 'Farm',
+  'ፓርላማ': 'Parlama',
+  'ኬላ': 'Kela',
+  'እርባታ': 'Erbata',
 
   // Major Sub-cities & Neighborhoods
   'ሜክሲኮ': 'Mexico',
@@ -132,8 +165,7 @@ export const AMHARIC_TO_ENGLISH_DICT: Record<string, string> = {
   'ሳርቤት': 'Sar Bet',
   'ቂርቆስ': 'Kirkos',
   'ጨርቆስ': 'Cherkos',
-  'ፖፖላሬ': 'Popolare',
-  'ካሳንቺስ': 'Kazanchis',
+  'ካሳንቺስ': 'Kasanchis',
   'ካዛንቺስ': 'Kazanchis',
   'ሾላ': 'Shola',
   'የካ': 'Yeka',
@@ -154,18 +186,19 @@ export const AMHARIC_TO_ENGLISH_DICT: Record<string, string> = {
   'ስድስት ኪሎ': '6 Kilo',
   '4 ኪሎ': '4 Kilo',
   'አራት ኪሎ': '4 Kilo',
+  '5 ኪሎ': '5 Kilo',
+  '5ኪሎ': '5 Kilo',
   '10 ኪሎ': '10 Kilo',
   'አፍንጮ በር': 'Afincho Ber',
   'ደጃች ውቤ': 'Dejach Wube',
-  'ጊዮርጊስ': 'St. George (Giorgis)',
-  'ሰሜን': 'North',
-  'ደቡብ': 'South',
-  'ምስራቅ': 'East',
-  'ምሥራቅ': 'East',
-  'ምዕራብ': 'West',
+  'ጊዮርጊስ': 'Giorgis',
+  'ሰሜን': 'Semen',
+  'ደቡብ': 'Debub',
+  'ምስራቅ': 'Misrak',
+  'ምሥራቅ': 'Misrak',
+  'ምዕራብ': 'Mirab',
   'ሸገር': 'Sheger',
-  'ዕንቁላል': 'Enkulal',
-  'ሩፋኤል': 'St. Rufael',
+  'ሩፋኤል': 'Rufael',
   'ፓስተር': 'Pasteur',
   'አቤት': 'AaBET',
   'አራብሳ': 'Arabsa',
@@ -173,17 +206,13 @@ export const AMHARIC_TO_ENGLISH_DICT: Record<string, string> = {
   'ሰሚት': 'Summit',
   'ኮልፌ': 'Kolfe',
   'ታይዋን': 'Taiwan',
-  'እህል': 'Grain',
-  'አውቶብስ': 'Autobus',
   'አዲስ ከተማ': 'Addis Ketema',
   'አማኑኤል': 'Amanuel',
-  'አማኔኤል': 'Amanuel',
-  'ብርጭቆ': 'Birchiko (Glass)',
   'አስኮ': 'Asko',
   'ቀራንዮ': 'Keranyo',
   'ቀራኒዮ': 'Keranyo',
   'ቤተል': 'Bethel',
-  'ጦር ኃሎች': 'Tor Hailoch (Armed Forces)',
+  'ጦር ኃሎች': 'Tor Hailoch',
   'ጦርኃይሎች': 'Tor Hailoch',
   'ወይራ': 'Weyra',
   'አንፎ': 'Anfo',
@@ -196,30 +225,29 @@ export const AMHARIC_TO_ENGLISH_DICT: Record<string, string> = {
   'መሪ': 'Meri',
   'ጀርመን': 'German',
   'ቤላ': 'Bella',
-  'ሚኒሊክ': 'Menelik II',
-  'ፈረንሳይ': 'French / Ferensay',
+  'ሚኒሊክ': 'Menelik',
+  'ፈረንሳይ': 'Ferensay',
   'ጉራራ': 'Gurara',
   'ጉለሌ': 'Gullele',
   'እንጦጦ': 'Entoto',
   'መርካቶ': 'Merkato',
   'አብነት': 'Abnet',
-  'ተ/ኃይማኖት': 'Teklehaimanot',
-  'ተ/ሃይማኖት': 'Teklehaimanot',
-  'ተክለሃይማኖት': 'Teklehaimanot',
-  'አትክልት': 'Vegetable (Atkilt)',
-  'ጣሊያን': 'Italy / Italian',
+  'ተ/ኃይማኖት': 'Tekle Haimanot',
+  'ተ/ሃይማኖት': 'Tekle Haimanot',
+  'ተክለሃይማኖት': 'Tekle Haimanot',
+  'ተክለ ሀይማኖት': 'Tekle Haimanot',
+  'ጣሊያን': 'Italian',
   'ፒያሳ': 'Piazza',
   'ሰንጋተራ': 'Senga Tera',
   'ሰንጋ ተራ': 'Senga Tera',
-  'ጥቁር አንበሳ': 'Tikur Anbessa (Black Lion)',
+  'ጥቁር አንበሳ': 'Tikur Anbessa',
   'ኩባ': 'Cuba',
   'አምባሳደር': 'Ambassador',
   'ሸራተን': 'Sheraton',
   'ባሻወልዴ': 'Basha Wolde',
-  'ቱሪስት': 'Tourist',
-  'ባላቻ': 'Balcha',
   'ኮተቤ': 'Kotebe',
   'ላምበረት': 'Lamberet',
+  'ላም በረት': 'Lamberet',
   'ጉርድ ሾላ': 'Gurd Shola',
   'ሲቪል ሰርቪስ': 'Civil Service',
   'ፊጋ': 'Figa',
@@ -228,11 +256,12 @@ export const AMHARIC_TO_ENGLISH_DICT: Record<string, string> = {
   'አባዶ': 'Abado',
   'ሳሊተ ምሕረት': 'Salite Mehret',
   'ሳሊተምሕረት': 'Salite Mehret',
+  'ሳሊተ ምህረት': 'Salite Mehret',
   'ሲኤምሲ': 'CMC',
+  'ሲኤም ሲ': 'CMC',
   'ገፈርሳ': 'Gefersa',
   'ታጠቅ': 'Tatek',
   'ቡራዩ': 'Burayu',
-  'ቡራዪ': 'Burayu',
   'ገላን': 'Gelan',
   'ቱሉዲምቱ': 'Tulu Dimtu',
   'ቱሉ ዲምቱ': 'Tulu Dimtu',
@@ -242,7 +271,6 @@ export const AMHARIC_TO_ENGLISH_DICT: Record<string, string> = {
   'ላፍቶ': 'Lafto',
   'መካኒሳ': 'Mekanisa',
   'ባቱ': 'Batu',
-  'ቄሊንጦ': 'Kilinto',
   'ቂሊንጦ': 'Kilinto',
   'ጨፌ': 'Chefe',
   'ቡልቡላ': 'Bulbula',
@@ -258,11 +286,10 @@ export const AMHARIC_TO_ENGLISH_DICT: Record<string, string> = {
   'ሐና ማርያም': 'Hana Maryam',
   'ለቡ': 'Lebu',
   'ጀሞ': 'Jemo',
+  'ጀሞ 3': 'Jemo 3',
   'ቆሼ': 'Koshe',
   'ኃይሌ ጋርመንት': 'Haile Garment',
-  'ሐይሌ ጋርመንት': 'Haile Garment',
   'ንፋስ ስልክ': 'Nifas Silk',
-  'ንፋስልክ': 'Nifas Silk',
   'ጎተራ': 'Gotera',
   'ወሎ ሰፈር': 'Wollo Sefer',
   'ላንቻ': 'Lancha',
@@ -277,367 +304,212 @@ export const AMHARIC_TO_ENGLISH_DICT: Record<string, string> = {
   'ገርጂ': 'Gerji',
   'ጃክሮስ': 'Jackros',
   'አየር ጤና': 'Ayer Tena',
-  'አየርጤና': 'Ayer Tena',
-  'አየር መንገድ': 'Airlines / Airport',
-  'ዊጃን': 'Wijan',
+  'አየር መንገድ': 'Airlines',
   'ሰባተኛ': 'Sebategna',
-  'አጠና': 'Atena',
   'አሸዋ': 'Ashewa',
-  'አሸዋ ሜዳ': 'Ashewa Meda',
-  'ቀይ ባህር': 'Red Sea',
+  'አሸዋ ተራ': 'Ashewa Tera',
   'ዘነበወርቅ': 'Zenebework',
   'ፉሪ': 'Furi',
   'ወለቴ': 'Welete',
-  'ካራቆ': 'Karakore',
   'ካራቆሬ': 'Karakore',
 
-  // Landmark names & Specific buildings
+  // Landmark names & Specific areas
   'ደብረወርቅ': 'Debrework',
   'ኤግዝቢሽን': 'Exhibition',
   'ፐርፕል': 'Purple',
   'አስቴር': 'Aster',
-  'አይናለም በዜ': 'Aynalem Beze',
   'ኮካኮላ': 'Coca-Cola',
   'ኮካ': 'Coca-Cola',
-  'ኢዩበልዩ': 'Jubilee',
   'ኢትዮጵያ': 'Ethiopia',
-  'ኢቢሲ': 'EBC',
-  'አፍሪካ ሕብረት': 'African Union (AU)',
-  'መቻሬ': 'Mechare',
-  'ላምሮት': 'Lamrot',
-  'ቤተዛታ': 'Bethzatha',
+  'ቤተዛታ': 'Betezata',
   'ኦሮሚያ': 'Oromia',
-  'ባሕል': 'Cultural',
+  'ባሕል': 'Bahel',
+  'ባህል': 'Bahel',
   'ጊዮን': 'Ghion',
-  'እስጢፋኖስ': 'St. Stephen (Estifanos)',
+  'እስጢፋኖስ': 'Estifanos',
   'ኃይለ ዓለም': 'Haile Alem',
   'ዘፍመሽ': 'Zefmesh',
-  'መክሊት': 'Meklit',
   'ዳውን ታውን': 'Downtown',
   'አውራሪስ': 'Awraris',
-  'ካልዲስ': 'Kaldi\'s',
+  'ካልዲስ': 'Kaldis',
   'መድሓኒዓለም': 'Medhanialem',
   'መድኃኔዓለም': 'Medhanialem',
-  'ሲግናል': 'Signal',
-  'ሳንፎርድ': 'Sandford',
-  'ኤስኦኤስ': 'SOS',
-  'ደሳለኝ': 'Desalegn',
-  'ፕሬዚደንሺያል': 'Presidential',
-  'ሴቶች': 'Women\'s (Setoch)',
+  'መድሀኒአለም': 'Medhanialem',
+  'ሴቶች': 'Setoch',
   'ሂልተን': 'Hilton',
-  'ኢንተርኮንትኔንታል': 'Intercontinental',
-  'ሐናን': 'Hanan',
-  'ኢሊሌ': 'Elilly',
   'እናት': 'Enat',
   'ማርቆስ': 'Markos',
-  'ጵጥሮስ': 'St. Peter',
-  'ጸሐይ ጮራ': 'Tsehay Chora',
-  'ስፓኒሽ': 'Spanish',
-  'ተፈሪ መኮንን': 'Teferi Mekonnen',
   'ዳዊት': 'Dawit',
-  'አባዲና': 'Abadina',
-  'ቀለመወርቅ': 'Kelemework',
   'ራስ ደስታ': 'Ras Desta',
-  'አርበኞች': 'Arbegnoch (Patriots)',
+  'አርበኞች': 'Arbegnoch',
   'ሀግቤስ': 'Hagbes',
   'ጎጃም': 'Gojjam',
+  'ጎጃም በረንዳ': 'Gojjam Berenda',
   'ጅንአድ': 'Jinad',
   'አበበች ጎበና': 'Abebech Gobena',
-  'ዮሐንስ': 'St. John (Yohannes)',
+  'ዮሐንስ': 'Yohannes',
   'ሰን': 'Sun',
-  'አይ.ሲ.ቲ.': 'ICT',
-  'ፔፕሲ': 'Pepsi',
-  'ሰንራይዝ': 'Sunrise',
-  'አትለቶች': 'Athletes',
-  'ኢትዮ ጠቢብ': 'Ethio Tebib',
-  'ሻወል ደማ': 'Shawel Dema',
-  'ፊሊጶስ': 'St. Philippos',
-  'እስላም': 'Muslim',
-  'መቃብር': 'Cemetery',
-  'ሎሚ ሜዳ': 'Lomi Meda',
-  'ጠሮ': 'Tero',
-  'መኮንኖች': 'Officers',
-  'ገዳመ ኢየሱስ': 'Gedame Eyesus',
-  'ወይብላ ማርያም': 'Weybla Maryam',
-  'አውጉስታ': 'Augusta',
-  'ሞቢል': 'Mobil',
-  'ራሺያ': 'Russia',
-  'ተዘንአ': 'Tezena',
-  'ዲያስፖራ': 'Diaspora',
-  'ፊሊደሮ': 'Filidero',
-  'ተኩሼ': 'Tekushe',
-  'ቤጂንግ': 'Beijing',
-  'አበበ ጎንፋ': 'Abebe Gonfa',
-  'ብሩህ ተስፋ': 'Biruh Tesfa',
-  'ኮፊ ሲቲ': 'Coffee City',
-  'ኢንዲያና': 'Indiana',
-  'ኢነዲያና': 'Indiana',
-  'ፀሐይ': 'Tsehay',
-  'አሉላ': 'Alula',
-  'ጎህ': 'Goh',
-  'ፋኑኤል': 'St. Fanuel',
-  'ኬንያ': 'Kenya',
-  'እንግሊዝ': 'British',
-  'ጣሊያን ኤምባሲ': 'Italian Embassy',
-  'ፈረንሳይ ኤምባሲ': 'French Embassy',
-  'ኪዩር': 'CURE',
-  'አቦ': 'Abbo',
-  'ኪዳነምሕረት': 'Kidanemehret',
-  'ኪዳነምህረት': 'Kidanemehret',
-  'ኪደነምህረት': 'Kidanemehret',
-  'ግብፅ': 'Egyptian',
-  'የካቲት 12': 'Yekatit 12',
-  'ኤፍቢ': 'FBI',
-  'ናይጄሪያ': 'Nigerian',
-  'ሞላ ማሩ': 'Molla Maru',
-  'በርበሬ': 'Berbere (Pepper)',
-  'ዲአፍሪካ': 'D\'Afrique',
-  'ደሴ': 'Dessie',
-  'ደቡብ አፍሪካ': 'South Africa',
-  'ኢፋርም': 'Epharm',
-  'ጆሳንሰን': 'Johnson',
-  'ፍየል ቤት': 'Fiyel Bet',
-  'ጆርጅ': 'George',
-  'ሜታ': 'Meta',
-  'ሰንሻይን': 'Sunshine',
-  'አይ.ሲ.ኤም .ሲ': 'ICMC',
-  'አይሲኤምሲ': 'ICMC',
-  'መንገሻ': 'Mengesha',
-  'ቶፕ': 'Top',
-  'ሙገር': 'Muger',
-  'ሲሚንቶ': 'Cement',
-  'አኔ ዲማ': 'Ane Dima',
-  'ወጣቢቻ': 'Wetabicha',
-  'ጉዱ': 'Gudu',
-  'ሙሎ': 'Mulo',
-  'ከሚሴ': 'Kemise',
-  'ሪፍት ቫሊ': 'Rift Valley',
-  'ፀርሐ ፅዮን': 'Tserha Tsion',
-  'ወለጋ': 'Wollega',
-  'ቶልቻ': 'Tolcha',
-  'ሲሊ': 'Sili',
-  'ከረላ': 'Kerela',
-  'መናገሻ': 'Menagesha',
-  'ባቡር': 'Train / Railway',
-  'ሐዲድ': 'Track',
-  'ሲዳሞ አዋሽ': 'Sidamo Awash',
-  'ገንደ ቆሬ': 'Gende Kore',
-  'ገመዳ': 'Gemeda',
-  'ወሰርቢ': 'Woserbi',
-  'በላይነህ ክንዴ': 'Belayneh Kinde',
-  'ካፍ': 'KAF',
-  'አባሳሙኤል': 'Abba Samuel',
-  'አቡሴራ': 'Abusera',
-  'ሉግና': 'Lugna',
-  'ደበራ ጢኖ': 'Debera Tino',
-  'ሻሸመኔ': 'Shashemene',
-  'አርትስቲ': 'Artisti',
-  'ነጮ': 'Necho',
-  'ኖክ': 'NOC',
-  'ማንጎ': 'Mango',
-  'ማረሚያ': 'Correctional (Prisons)',
-  'አልማዝዬ': 'Almaziye',
-  'ሶፊያ': 'Sofia',
-  'ሐመልማል': 'Hamelmal',
-  'በረት': 'Beret (Corral)',
-  'ሶፉመር': 'Sofumar',
-  'ብሎኬት': 'Block (Hollow Block)',
-  'መካነ ኢየሱስ': 'Mekane Yesus',
-  'አረቄ': 'Areke',
-  'አሚጎ': 'Amigo',
-  'ቫቲካን': 'Vatican',
-  'ጥቁር አባይ': 'Tikur Abay (Blue Nile)',
-  'ሰላም አስከባሪ': 'Peacekeeping',
-  'ጥቃቅንና አነስተኛ': 'Micro & Small Enterprise',
-  'ዶምቦስኮ': 'Don Bosco',
-  'ዩኒቲ': 'Unity',
-  'አንበሳ': 'Anbessa',
-  'ጉራጌ': 'Gurage',
-  'ትግሬ': 'Tigray / Tigre',
-  'ኔዳጅ': 'Fuel',
-  'ቼራሊያ': 'Cheralia',
-  'ዩሮ ኬብል': 'Euro Cable',
-  'መኮድ': 'Mekod',
-  'ብሔራዊ': 'National',
-  'ኬኬ': 'KK',
-  'ብርድ ልብስ': 'Blanket',
-  'አስቱ': 'ASTU',
-  'ዋልያ': 'Walia',
-  'ቢራ': 'Beer',
-  'ማሩ': 'Maru',
-  'ቁስቋም': 'Kuskuam',
-  'ደራርቱ': 'Derartu',
-  'አየር ኃይል': 'Air Force',
-  'ወርቁ': 'Worku',
-  'ትራንስፖርት': 'Transport',
-  'ጣና': 'Tana',
-  'ድርሊንግ': 'Drilling',
-  'ኢትዮቤቶን': 'Ethio Beton',
-  'ግንቦት 20': 'Ginbot 20',
-  'ስላሴ': 'Holy Trinity (Selassie)',
-  'ነጋ ቦንገር': 'Nega Bonger',
-  'ጀሶ': 'Gypsum / Gesso',
-  'ብሔረፅጌ': 'Bihere Tsige',
-  'ፓስታና መኮረኒ': 'Pasta & Macaroni',
-  'አዲስ ጎማ': 'Addis Tyre',
-  'ሸራና ፕላስቲክ': 'Canvas & Plastic',
-  'ማርያም': 'St. Mary (Maryam)',
-  'አዋሽ': 'Awash',
-  'ባሌስትራ': 'Spring (Balestra)',
-  'ቅመማ ቅመም': 'Spices',
-  'ልማት ተነሺዎች': 'Resettlement Area',
-  'ኔትዎርክ': 'Network',
-  'ፋንታ': 'Fanta',
-  'ፈጬ': 'Feche',
-  'ክፍያ ጣቢያ': 'Toll Gate',
-  'ጂፕሰም': 'Gypsum',
-  'ጣፎ': 'Tafo',
-  'ፈረስ ቤት': 'Feres Bet',
-  'መቄዶኒያ': 'Macedonia (Mekedonia)',
-  'መቄዶኒ': 'Macedonia',
-  'ፀበል': 'Holy Water (Tsebel)',
-  'ወሰን': 'Wesen',
-  'ካራሎ': 'Karalo',
-  'ዙሪያሽ': 'Zuriash',
-  'ለሚ ኩራ': 'Lemi Kura',
-  'ንቡ ሚካኤል': 'Nibu Michael',
-  'የካሰዴ': 'Yekasede',
-  'ጥሩ': 'Tiru',
-  'ኤሞሌስ': 'Emoles',
-  'አብርሃሙ': 'Abrihamu',
-  'ምስራቀ ገብርኤል': 'Misrake Gabriel',
-  'ናሆም': 'Nahom',
-  'ካቶሊክ': 'Catholic',
-  'የሺ': 'Yeshi',
-  'ቡ ሙዚቃ': 'Bu Muzika',
-  'ሶል': 'Sole',
-  'ዮበክ': 'Yobek',
-  'መምሪያ': 'Department / HQ',
-  'አርባምንጭ': 'Arba Minch',
-  'አሳ': 'Fish',
-  'ፏፏቴ': 'Fwafwate',
-  'ክትፎ': 'Kitfo',
-  'ዕውቀት ፋና': 'Ewket Fana',
-  'ወንጌላዊት': 'Wongelawit',
-  'ዩኒማክ': 'Unimac',
-  'መስቀል ፍላውር': 'Meskel Flower',
-  'መስቀል': 'Meskel',
-  'ተሻላ': 'Teshale',
-  'ዳኞችና አቃቢ ሕግ': 'Judges & Prosecutors Office',
-  'ኮስሞስ': 'Cosmos',
-  'ድሪም ላይነር': 'Dreamliner',
-  'አይቤክስ': 'Ibex',
-  'ተባበር በርታ': 'Tebaber Berta',
-  'ጃፓን': 'Japan',
-  'መስማት የተሳናቸው': 'Deaf Association',
-  'ዓለም': 'Alem',
-  'ሲኒማ': 'Cinema',
-  'ፍሬንድሺፕ': 'Friendship',
-  'ለንደን': 'London',
-  'ሚሊኒየም': 'Millennium',
-  'አዳራሽ': 'Hall',
-  'ሚክዌር': 'Micware',
-  'ማንዴላ': 'Mandela',
-  'ፈለገ ዮርዳኖስ': 'Felege Yordanos',
-  'ቡና ቦርድ': 'Coffee Board',
-  'ዳቺያ': 'Dacia',
-  'ያኮር': 'Yakor',
-  'ካርታ ስራዎች': 'Mapping Agency',
-  'ራዳር': 'Radar',
-  'ቻይና': 'China / Chinese',
-  'ከሬሸር': 'Crusher',
-  'ገስላ': 'Gesla',
-  'ካዲስኮ': 'Kadisco',
-  'ቀለሞች': 'Paints',
-  'ዮሴፍ': 'St. Joseph',
-  'ጃማይካ': 'Jamaica',
-  'ጫማ': 'Shoes',
-  'ሼል': 'Shell',
-  'ዲፖ': 'Depot',
-  'ቱቦ': 'Pipe',
-  'ፋና': 'Fana',
-  'ሬዲዮ': 'Radio',
-  'ኖህ': 'Noah',
-  'ካፒታል': 'Capital',
-  'ሳሚ': 'Sami',
-  'መሐንዲስ': 'Engineers',
-  'ስልጤ': 'Silte',
-  'አጃንባ': 'Ajanba',
-  'አይካ': 'Ayka',
-  'ሃጂ': 'Haji',
-  'ወርዶፋ': 'Wordofa',
-  'ሎጅ': 'Lodge',
-  'ዳርፉር': 'Darfur',
-  'ስላ': 'Sila',
-  'ናትራን': 'Natran',
-  'ለማ ነገዎ': 'Lema Negewo',
-  'ግራር': 'Grar',
-  'የስ': 'Yes',
-  'ማርስ': 'Mars',
-  'ብስኩት': 'Biscuit',
-  'ቢኤምቲ': 'BMT',
-  'አልሳም': 'Alsam',
-  'አቀበና': 'Akebena',
-  'ዲማ': 'Dima',
-  'ተፍኪ': 'Tefki',
-  'ተጂ': 'Teji',
-  'ሁላሳ': 'Hulasa',
-  'ኩምቴክ': 'Kumtek',
+  'ጋቦን': 'Gabon',
+  'ቻድ': 'Chad',
+  'ስፖርት ኮሚሽን': 'Sport Commission',
+  'ጨጨሆ': 'Checheho',
+  'መሶብ': 'Mesob',
+  'ሬድዋን': 'Redwan',
+  'ሞኪንኮ': 'Mokinko',
+  'ሰላም': 'Selam',
+  'ኦሮሚያ ታወር': 'Oromia Tower',
+  'ዮጎ ቸርች': 'Yogo Church',
+  'ቀነኒሳ': 'Kenenisa',
+  'ብርሀነ አደሬ': 'Berhane Adere',
+  'አርመን': 'Armen',
+  'ሞሞና': 'Momona',
+  'ካሌብ': 'Kaleb',
   'ጌጃ': 'Geja',
-  'ዋን': 'One (Wan)',
-  'አባሃዋ': 'Abahawa',
-  'አወልያ': 'Awoliya',
-  'ካኦጄጄ': 'KOJJ',
-  'አበነሃብተማርያም': 'Abene Habtemaryam',
-  'ሳንሱሲ': 'Sans Souci',
-  'እያሱ': 'Eyasu',
-  'ኢራን': 'Iran',
-  'ጋዝ': 'Gas',
+  'ብሔራዊ': 'Biherawi',
+  'ብሔራርዊ': 'Biherawi',
+  'ቄጤማ ተራ': 'Ketema Tera',
+  'ጳውሎስ': 'Pawlos',
+  'ዳትሰን': 'Datsun',
+  'ሳሚ': 'Sami',
+  'ስካይ ላይት': 'Skylight',
+  'ሚሊኒየም': 'Millennium',
+  'አለም ሲኒማ': 'Alem Cinema',
+  'ጁፒተር': 'Jupiter',
+  'ቫርኔሮ': 'Varnero',
+  'ሁጃድ ቻይና': 'Hujad China',
   'ድሬ': 'Dire',
-  'በረኪና': 'Bleach (Berekina)',
-  'ሾሌ': 'Shole',
-  'አበበ ቢቂላ': 'Abebe Bikila',
-  'ኳስ ሜዳ': 'Football Field',
-  'ፊናንስ': 'Finance',
-  'ፅዮን': 'Tsion',
-  'መርሐቤቴ': 'Merhabete',
-  'በላይ ዘለቀ': 'Belay Zeleke',
-  'ድልበር': 'Dilber',
-  'አትሌት': 'Athletes',
-  'ሚዛን': 'Mizan',
-  'ስፔስ ሳይንስ': 'Space Science',
-  'ሽንቁሩ': 'Shinkuru',
-  'አካኮ': 'Akako',
-  'ቀንብሬ': 'Kenbire',
-  'አርኪ': 'Arki',
-  'ጫንጮ': 'Chancho',
-  'ኮሶ በር': 'Koso Ber',
-  'አብሽሮ': 'Abshiro',
-  'ኤድናሞል': 'Edna Mall',
-  'ቶቶት': 'Totot',
-  'ኢምፔርያል': 'Imperial',
-  'ኢምፔሪያል': 'Imperial',
-  'ኮከብ': 'Kokeb (Star)',
-  'ብሉ ስካይ': 'Blue Sky',
-  'ፍሊንት ስቶን': 'Flintstone',
-  'ዓለማየሁ': 'Alemayehu',
-  'አጣና': 'Timber (Atana)',
-  'መምህራን': 'Teachers',
-  'እንጦጦ ፓርክ': 'Entoto Park',
-  'አዋሽ ወይን': 'Awash Wine'
+  'ጉዳ': 'Guda',
+  'ጉዮ': 'Guyo',
+  'ቶልቻ': 'Tolcha',
+  'ሰሪፊ': 'Serifi',
+  'ጉጄ': 'Guje',
+  'ፌስቱላ': 'Fistula',
+  'ራሽያ': 'Russia',
+  'ራሺያ': 'Russia',
+  'እንግሊዝ': 'English',
+  'ኬንያ': 'Kenya',
+  'ሚናሮል': 'Minarol',
+  'ቹቹ ሜዳ': 'Chuchu Meda',
+  'ደረጄ': 'Dereje',
+  'አርሴማ': 'Arsema',
+  'ዳንሴ': 'Danse',
+  'ጨለለቆ': 'Cheleleko',
+  'አንቆርጫ': 'Ankorcha',
+  'ወረዳ': 'Woreda',
+  'ወታደር': 'Wetader',
+  'ኪዳነ ምህረት': 'Kidane Mehret',
+  'መሳለሚያ': 'Mesalemiya',
+  'ዘርፌ ቦኖ': 'Zerfe Bono',
+  'ፍናን ዶቦ': 'Finan Dabo',
+  'ፍናን ዳቦ': 'Finan Dabo',
+  'ቀርሳ': 'Qersa',
+  'ወንድይራድ': 'Wondyirad',
+  'ወንዲራድ': 'Wendrad',
+  'ክህሎት ሚኒስቴር': 'Khilot Ministry',
+  'ማዕድን ሚኒስቴር': 'Maeden Ministry',
+  'ኢትዮ ቻይና': 'Ethio China',
+  'አራራት': 'Ararat',
+  'ሀይሌ ሪዞርት': 'Haile Resort',
+  'እስራኤል': 'Israel',
+  'ኖህ': 'Noah',
+  'ወሰን': 'Wesen',
+  'ጆርጅ ዘይት': 'George Zeyt',
+  'ሰንሻይን': 'Sunshine',
+  'ቴዲ አፍሮ': 'Teddy Afro',
+  'ባድሜ': 'Badme'
 };
 
-// Clean Amharic punctuation and helper terms
+// Clean Amharic punctuation and helper characters
 export function cleanAmharicItem(text: string): string {
   return text
-    .replace(/[፣、፤,;።]+/g, '')
-    .replace(/^(እና|ወደ|በ|ከ|ለ)\s+/g, '')
+    .replace(/[፣、፤,;።፦:·•]+/g, '')
     .trim();
 }
 
+// Phonetic fallback for Ethiopic Fidel syllables to Latin script
+// Standard Ethiopian Latin phonetic mapping
+const FIDEL_PHONETIC: Record<string, string> = {
+  // 1st: e, 2nd: u, 3rd: i, 4th: a, 5th: e, 6th: consonant/e, 7th: o
+  'ሀ': 'he', 'ሁ': 'hu', 'ሂ': 'hi', 'ሃ': 'ha', 'ሄ': 'he', 'ህ': 'h', 'ሆ': 'ho',
+  'ለ': 'le', 'ሉ': 'lu', 'ሊ': 'li', 'ላ': 'la', 'ሌ': 'le', 'ል': 'l', 'ሎ': 'lo',
+  'ሐ': 'he', 'ሑ': 'hu', 'ሒ': 'hi', 'ሓ': 'ha', 'ሔ': 'he', 'ሕ': 'h', 'ሖ': 'ho',
+  'መ': 'me', 'ሙ': 'mu', 'ሚ': 'mi', 'ማ': 'ma', 'ሜ': 'me', 'ም': 'm', 'ሞ': 'mo',
+  'ሠ': 'se', 'ሡ': 'su', 'ሢ': 'si', 'ሣ': 'sa', 'ሤ': 'se', 'ሥ': 's', 'ሦ': 'so',
+  'ረ': 're', 'ሩ': 'ru', 'ሪ': 'ri', 'ራ': 'ra', 'ሬ': 're', 'ር': 'r', 'ሮ': 'ro',
+  'ሰ': 'se', 'ሱ': 'su', 'ሲ': 'si', 'ሳ': 'sa', 'ሴ': 'se', 'ስ': 's', 'ሶ': 'so',
+  'ሸ': 'she', 'ሹ': 'shu', 'ሺ': 'shi', 'ሻ': 'sha', 'ሼ': 'she', 'ሽ': 'sh', 'ሾ': 'sho',
+  'ቀ': 'ke', 'ቁ': 'ku', 'ቂ': 'ki', 'ቃ': 'ka', 'ቄ': 'ke', 'ቅ': 'k', 'ቆ': 'ko',
+  'በ': 'be', 'ቡ': 'bu', 'ቢ': 'bi', 'ባ': 'ba', 'ቤ': 'be', 'ብ': 'b', 'ቦ': 'bo',
+  'ተ': 'te', 'ቱ': 'tu', 'ቲ': 'ti', 'ታ': 'ta', 'ቴ': 'te', 'ት': 't', 'ቶ': 'to',
+  'ቸ': 'che', 'ቹ': 'chu', 'ቺ': 'chi', 'ቻ': 'cha', 'ቼ': 'che', 'ች': 'ch', 'ቾ': 'cho',
+  'ኀ': 'he', 'ኁ': 'hu', 'ኂ': 'hi', 'ኃ': 'ha', 'ኄ': 'he', 'ኅ': 'h', 'ኆ': 'ho',
+  'ነ': 'ne', 'ኑ': 'nu', 'ኒ': 'ni', 'ና': 'na', 'ኔ': 'ne', 'ን': 'n', 'ኖ': 'no',
+  'ኘ': 'gne', 'ኙ': 'gnu', 'ኚ': 'gni', 'ኛ': 'gna', 'ኜ': 'gne', 'ኝ': 'gn', 'ኞ': 'gno',
+  'አ': 'a', 'ኡ': 'u', 'ኢ': 'i', 'ኣ': 'a', 'ኤ': 'e', 'እ': 'e', 'ኦ': 'o',
+  'ከ': 'ke', 'ኩ': 'ku', 'ኪ': 'ki', 'ካ': 'ka', 'ኬ': 'ke', 'ክ': 'k', 'ኮ': 'ko',
+  'ኸ': 'he', 'ኹ': 'hu', 'ኺ': 'hi', 'ኻ': 'ha', 'ኼ': 'he', 'ኽ': 'h', 'ኾ': 'ho',
+  'ወ': 'we', 'ዉ': 'wu', 'ዊ': 'wi', 'ዋ': 'wa', 'ዌ': 'we', 'ው': 'w', 'ዎ': 'wo',
+  'ዐ': 'a', 'ዑ': 'u', 'ዒ': 'i', 'ዓ': 'a', 'ዔ': 'e', 'ዕ': 'e', 'ዖ': 'o',
+  'ዘ': 'ze', 'ዙ': 'zu', 'ዚ': 'zi', 'ዛ': 'za', 'ዜ': 'ze', 'ዝ': 'z', 'ዞ': 'zo',
+  'ዠ': 'zhe', 'ዡ': 'zhu', 'ዢ': 'zhi', 'ዣ': 'zha', 'ዤ': 'zhe', 'ዥ': 'zh', 'ዦ': 'zho',
+  'የ': 'ye', 'ዩ': 'yu', 'ዪ': 'yi', 'ያ': 'ya', 'ዬ': 'ye', 'ይ': 'y', 'ዮ': 'yo',
+  'ደ': 'de', 'ዱ': 'du', 'ዲ': 'di', 'ዳ': 'da', 'ዴ': 'de', 'ድ': 'd', 'ዶ': 'do',
+  'ጀ': 'je', 'ጁ': 'ju', 'ጂ': 'ji', 'ጃ': 'ja', 'ጄ': 'je', 'ጅ': 'j', 'ጆ': 'jo',
+  'ገ': 'ge', 'ጉ': 'gu', 'ጊ': 'gi', 'ጋ': 'ga', 'ጌ': 'ge', 'ግ': 'g', 'ጎ': 'go',
+  'ጠ': 'te', 'ጡ': 'tu', 'ጢ': 'ti', 'ጣ': 'ta', 'ጤ': 'te', 'ጥ': 't', 'ጦ': 'to',
+  'ጨ': 'che', 'ጩ': 'chu', 'ጪ': 'chi', 'ጫ': 'cha', 'ጬ': 'che', 'ጭ': 'ch', 'ጮ': 'cho',
+  'ጰ': 'pe', 'ጱ': 'pu', 'ጲ': 'pi', 'ጳ': 'pa', 'ጴ': 'pe', 'ጵ': 'p', 'ጶ': 'po',
+  'ጸ': 'tse', 'ጹ': 'tsu', 'ጺ': 'tsi', 'ጻ': 'tsa', 'ጼ': 'tse', 'ጽ': 'ts', 'ጾ': 'tso',
+  'ፀ': 'tse', 'ፁ': 'tsu', 'ፂ': 'tsi', 'ፃ': 'tsa', 'ፄ': 'tse', 'ፅ': 'ts', 'ፆ': 'tso',
+  'ፈ': 'fe', 'ፉ': 'fu', 'ፊ': 'fi', 'ፋ': 'fa', 'ፌ': 'fe', 'ፍ': 'f', 'ፎ': 'fo',
+  'ፐ': 'pe', 'ፑ': 'pu', 'ፒ': 'pi', 'ፓ': 'pa', 'ፔ': 'pe', 'ፕ': 'p', 'ፖ': 'po',
+  'ቨ': 've', 'ቩ': 'vu', 'ቪ': 'vi', 'ቫ': 'va', 'ቬ': 've', 'ቭ': 'v', 'ቮ': 'vo',
+
+  // Labialized Diphthongs
+  'ሏ': 'lwa', 'ሟ': 'mwa', 'ሯ': 'rwa', 'ሷ': 'swa', 'ሿ': 'shwa', 'ቧ': 'bwa',
+  'ቷ': 'twa', 'ቿ': 'chwa', 'ኗ': 'nwa', 'ኟ': 'gnwa', 'ዟ': 'zwa', 'ዧ': 'zhwa',
+  'ዷ': 'dwa', 'ጇ': 'jwa', 'ጧ': 'twa', 'ጯ': 'chwa', 'ጷ': 'pwa', 'ጿ': 'tswa', 'ፏ': 'fwa',
+  'ቋ': 'kwa', 'ቈ': 'kwe', 'ቊ': 'kwi', 'ቌ': 'kwe', 'ቍ': 'kw',
+  'ኳ': 'kwa', 'ኰ': 'kwe', 'ኲ': 'kwi', 'ኴ': 'kwe', 'ኵ': 'kw',
+  'ጓ': 'gwa', 'ጐ': 'gwe', 'ጒ': 'gwi', 'ጔ': 'gwe', 'ጕ': 'gw',
+  'ኋ': 'hwa', 'ኈ': 'hwe', 'ኊ': 'hwi', 'ኌ': 'hwe', 'ኍ': 'hw',
+
+  // Ethiopic Numerals
+  '፩': '1', '፪': '2', '፫': '3', '፬': '4', '፭': '5',
+  '፮': '6', '፯': '7', '፰': '8', '፱': '9', '፲': '10',
+  '፳': '20', '፴': '30', '፵': '40', '፶': '50', '፷': '60',
+  '፸': '70', '፹': '80', '፺': '90', '፻': '100'
+};
+
+export function phoneticTransliterate(str: string): string {
+  if (!str) return '';
+  const clean = cleanAmharicItem(str);
+  if (!clean) return '';
+
+  let out = '';
+  for (let i = 0; i < clean.length; i++) {
+    const char = clean[i];
+    if (FIDEL_PHONETIC[char]) {
+      // Special fix for 'ው' at beginning of word when followed by a consonant (e.g. ውስጥ -> wust)
+      if (char === 'ው' && (i === 0 || i === 1) && clean.length > 2) {
+        out += 'wu';
+      } else {
+        out += FIDEL_PHONETIC[char];
+      }
+    } else {
+      out += char;
+    }
+  }
+
+  if (out.length > 0) {
+    return out.charAt(0).toUpperCase() + out.slice(1);
+  }
+  return out;
+}
+
 /**
- * Translates an Amharic location or sentence to English spelling.
- * If the input already contains Latin/English letters, it handles it smoothly.
+ * Translates an Amharic location or sentence to natural Ethiopian Latin phonetics.
+ * e.g. "ቤተ መንግስት ጊቡ ውስጥ በከፊል" -> "Bete Mengst Gibi Wust Bekefil"
  */
 export function translateAmharicLocation(rawText: string): string {
   if (!rawText || !rawText.trim()) return '';
@@ -650,162 +522,117 @@ export function translateAmharicLocation(rawText: string): string {
     }
   }
 
-  // Split by common delimiters (Amharic comma, Ethiopic semicolon, English comma)
-  const segments = rawText.split(/[፣、፤,;]+/);
-  const translatedSegments: string[] = [];
+  // Split by major punctuation separators (Ethiopic semicolon, comma, newlines, English delimiters)
+  const rawSegments = rawText.split(/[፤\n\r]+/).filter(s => s.trim().length > 0);
+  const finalSegments: string[] = [];
 
-  for (let segment of segments) {
-    let cleanSeg = segment.trim();
-    if (!cleanSeg) continue;
+  for (const rawSeg of rawSegments) {
+    // Within each segment, handle sub-clauses split by commas
+    const subSegments = rawSeg.split(/[፣,]+/).filter(s => s.trim().length > 0);
+    const subTranslated: string[] = [];
 
-    // Check if segment is purely Latin/English already
-    if (!/[\u1200-\u137F]/.test(cleanSeg)) {
-      translatedSegments.push(cleanSeg);
-      continue;
-    }
+    for (const seg of subSegments) {
+      let cleanSeg = seg.trim();
+      if (!cleanSeg) continue;
 
-    // Direct dictionary lookup for exact or sub-phrases
-    let translated = cleanSeg;
-    let matchFound = false;
+      // If segment is already pure Latin/English
+      if (!/[\u1200-\u137F]/.test(cleanSeg)) {
+        subTranslated.push(cleanSeg);
+        continue;
+      }
 
-    // Check full phrase match
-    const lookupKey = cleanSeg.replace(/።+$/, '').trim();
-    if (AMHARIC_TO_ENGLISH_DICT[lookupKey]) {
-      translatedSegments.push(AMHARIC_TO_ENGLISH_DICT[lookupKey]);
-      continue;
-    }
+      // Check full segment dictionary match
+      const strippedFull = cleanAmharicItem(cleanSeg);
+      if (AMHARIC_TO_ENGLISH_DICT[strippedFull]) {
+        subTranslated.push(AMHARIC_TO_ENGLISH_DICT[strippedFull]);
+        continue;
+      }
 
-    // Replace known multi-word phrases and words within the segment
-    const words = cleanSeg.split(/\s+/);
-    const translatedWords: string[] = [];
-    let i = 0;
+      // Break segment into words and phrase match
+      const words = cleanSeg.split(/\s+/).filter(w => w.trim().length > 0);
+      const translatedWords: string[] = [];
+      let i = 0;
 
-    while (i < words.length) {
-      let matched = false;
+      while (i < words.length) {
+        // Try 4-word match
+        if (i + 3 < words.length) {
+          const four = `${cleanAmharicItem(words[i])} ${cleanAmharicItem(words[i+1])} ${cleanAmharicItem(words[i+2])} ${cleanAmharicItem(words[i+3])}`;
+          if (AMHARIC_TO_ENGLISH_DICT[four]) {
+            translatedWords.push(AMHARIC_TO_ENGLISH_DICT[four]);
+            i += 4;
+            continue;
+          }
+        }
 
-      // Try 3-word match
-      if (i + 2 < words.length) {
-        const threeWords = `${cleanAmharicItem(words[i])} ${cleanAmharicItem(words[i+1])} ${cleanAmharicItem(words[i+2])}`;
-        if (AMHARIC_TO_ENGLISH_DICT[threeWords]) {
-          translatedWords.push(AMHARIC_TO_ENGLISH_DICT[threeWords]);
-          i += 3;
-          matched = true;
-          matchFound = true;
+        // Try 3-word match
+        if (i + 2 < words.length) {
+          const three = `${cleanAmharicItem(words[i])} ${cleanAmharicItem(words[i+1])} ${cleanAmharicItem(words[i+2])}`;
+          if (AMHARIC_TO_ENGLISH_DICT[three]) {
+            translatedWords.push(AMHARIC_TO_ENGLISH_DICT[three]);
+            i += 3;
+            continue;
+          }
+        }
+
+        // Try 2-word match
+        if (i + 1 < words.length) {
+          const two = `${cleanAmharicItem(words[i])} ${cleanAmharicItem(words[i+1])}`;
+          if (AMHARIC_TO_ENGLISH_DICT[two]) {
+            translatedWords.push(AMHARIC_TO_ENGLISH_DICT[two]);
+            i += 2;
+            continue;
+          }
+        }
+
+        // Try 1-word match
+        const single = cleanAmharicItem(words[i]);
+        if (AMHARIC_TO_ENGLISH_DICT[single]) {
+          translatedWords.push(AMHARIC_TO_ENGLISH_DICT[single]);
+          i += 1;
           continue;
         }
-      }
 
-      // Try 2-word match
-      if (i + 1 < words.length) {
-        const twoWords = `${cleanAmharicItem(words[i])} ${cleanAmharicItem(words[i+1])}`;
-        if (AMHARIC_TO_ENGLISH_DICT[twoWords]) {
-          translatedWords.push(AMHARIC_TO_ENGLISH_DICT[twoWords]);
-          i += 2;
-          matched = true;
-          matchFound = true;
+        // Check common Amharic prefixes: በ (Be-), ከ (Ke-), ወደ (Wede-), ለ (Le-)
+        if (single.startsWith('በ') && single.length > 2 && AMHARIC_TO_ENGLISH_DICT[single.substring(1)]) {
+          translatedWords.push(`Be ${AMHARIC_TO_ENGLISH_DICT[single.substring(1)]}`);
+          i += 1;
           continue;
         }
+        if (single.startsWith('ከ') && single.length > 2 && AMHARIC_TO_ENGLISH_DICT[single.substring(1)]) {
+          translatedWords.push(`Ke ${AMHARIC_TO_ENGLISH_DICT[single.substring(1)]}`);
+          i += 1;
+          continue;
+        }
+        if (single.startsWith('ወደ') && single.length > 3 && AMHARIC_TO_ENGLISH_DICT[single.substring(2)]) {
+          translatedWords.push(`Wede ${AMHARIC_TO_ENGLISH_DICT[single.substring(2)]}`);
+          i += 1;
+          continue;
+        }
+        if (single.startsWith('ለ') && single.length > 2 && AMHARIC_TO_ENGLISH_DICT[single.substring(1)]) {
+          translatedWords.push(`Le ${AMHARIC_TO_ENGLISH_DICT[single.substring(1)]}`);
+          i += 1;
+          continue;
+        }
+
+        // Fallback: Fidel character transliteration
+        const transliterated = phoneticTransliterate(words[i]);
+        if (transliterated) {
+          translatedWords.push(transliterated);
+        }
+        i += 1;
       }
 
-      // Try 1-word match
-      const oneWord = cleanAmharicItem(words[i]);
-      if (AMHARIC_TO_ENGLISH_DICT[oneWord]) {
-        translatedWords.push(AMHARIC_TO_ENGLISH_DICT[oneWord]);
-        i += 1;
-        matched = true;
-        matchFound = true;
-        continue;
+      if (translatedWords.length > 0) {
+        subTranslated.push(translatedWords.join(' '));
       }
-
-      // Handle common Amharic prefix prepositions: በ (in/at), ከ (from), ወደ (towards), ለ (for)
-      if (oneWord.startsWith('በ') && oneWord.length > 2 && AMHARIC_TO_ENGLISH_DICT[oneWord.substring(1)]) {
-        translatedWords.push(`At ${AMHARIC_TO_ENGLISH_DICT[oneWord.substring(1)]}`);
-        i += 1;
-        matched = true;
-        matchFound = true;
-        continue;
-      }
-      if (oneWord.startsWith('ከ') && oneWord.length > 2 && AMHARIC_TO_ENGLISH_DICT[oneWord.substring(1)]) {
-        translatedWords.push(`From ${AMHARIC_TO_ENGLISH_DICT[oneWord.substring(1)]}`);
-        i += 1;
-        matched = true;
-        matchFound = true;
-        continue;
-      }
-      if (oneWord.startsWith('ወደ') && oneWord.length > 3 && AMHARIC_TO_ENGLISH_DICT[oneWord.substring(2)]) {
-        translatedWords.push(`Towards ${AMHARIC_TO_ENGLISH_DICT[oneWord.substring(2)]}`);
-        i += 1;
-        matched = true;
-        matchFound = true;
-        continue;
-      }
-
-      // Fallback: Transliterate word using phonetic character mapping
-      const transliterated = phoneticTransliterate(words[i]);
-      translatedWords.push(transliterated);
-      i += 1;
     }
 
-    if (translatedWords.length > 0) {
-      translatedSegments.push(translatedWords.join(' '));
+    if (subTranslated.length > 0) {
+      finalSegments.push(subTranslated.join(', '));
     }
   }
 
-  return translatedSegments.join(', ');
-}
-
-// Phonetic fallback for Ethiopic Fidel syllables to Latin script
-const FIDEL_PHONETIC: Record<string, string> = {
-  'ሀ': 'he', 'ሁ': 'hu', 'ሂ': 'hi', 'ሃ': 'ha', 'ሄ': 'hie', 'ህ': 'h', 'ሆ': 'ho',
-  'ለ': 'le', 'ሉ': 'lu', 'ሊ': 'li', 'ላ': 'la', 'ሌ': 'lie', 'ል': 'l', 'ሎ': 'lo',
-  'ሐ': 'he', 'ሑ': 'hu', 'ሒ': 'hi', 'ሓ': 'ha', 'ሔ': 'hie', 'ሕ': 'h', 'ሖ': 'ho',
-  'መ': 'me', 'ሙ': 'mu', 'ሚ': 'mi', 'ማ': 'ma', 'ሜ': 'mie', 'ም': 'm', 'ሞ': 'mo',
-  'ሠ': 'se', 'ሡ': 'su', 'ሢ': 'si', 'ሣ': 'sa', 'ሤ': 'sie', 'ሥ': 's', 'ሦ': 'so',
-  'ረ': 're', 'ሩ': 'ru', 'ሪ': 'ri', 'ራ': 'ra', 'ሬ': 'rie', 'ር': 'r', 'ሮ': 'ro',
-  'ሰ': 'se', 'ሱ': 'su', 'ሲ': 'si', 'ሳ': 'sa', 'ሴ': 'sie', 'ስ': 's', 'ሶ': 'so',
-  'ሸ': 'she', 'ሹ': 'shu', 'ሺ': 'shi', 'ሻ': 'sha', 'ሼ': 'shie', 'ሽ': 'sh', 'ሾ': 'sho',
-  'ቀ': 'ke', 'ቁ': 'ku', 'ቂ': 'ki', 'ቃ': 'ka', 'ቄ': 'kie', 'ቅ': 'k', 'ቆ': 'ko',
-  'በ': 'be', 'ቡ': 'bu', 'ቢ': 'bi', 'ባ': 'ba', 'ቤ': 'bie', 'ብ': 'b', 'ቦ': 'bo',
-  'ተ': 'te', 'ቱ': 'tu', 'ቲ': 'ti', 'ታ': 'ta', 'ቴ': 'tie', 'ት': 't', 'ቶ': 'to',
-  'ቸ': 'che', 'ቹ': 'chu', 'ቺ': 'chi', 'ቻ': 'cha', 'ቼ': 'chie', 'ች': 'ch', 'ቾ': 'cho',
-  'ኀ': 'he', 'ኁ': 'hu', 'ኂ': 'hi', 'ኃ': 'ha', 'ኄ': 'hie', 'ኅ': 'h', 'ኆ': 'ho',
-  'ነ': 'ne', 'ኑ': 'nu', 'ኒ': 'ni', 'ና': 'na', 'ኔ': 'nie', 'ን': 'n', 'ኖ': 'no',
-  'ኘ': 'gne', 'ኙ': 'gnu', 'ኚ': 'gni', 'ኛ': 'gna', 'ኜ': 'gnie', 'ኝ': 'gn', 'ኞ': 'gno',
-  'አ': 'a', 'ኡ': 'u', 'ኢ': 'i', 'ኣ': 'a', 'ኤ': 'e', 'እ': 'e', 'ኦ': 'o',
-  'ከ': 'ke', 'ኩ': 'ku', 'ኪ': 'ki', 'ካ': 'ka', 'ኬ': 'kie', 'ክ': 'k', 'ኮ': 'ko',
-  'ኸ': 'he', 'ኹ': 'hu', 'ኺ': 'hi', 'ኻ': 'ha', 'ኼ': 'hie', 'ኽ': 'h', 'ኾ': 'ho',
-  'ወ': 'we', 'ዉ': 'wu', 'ዊ': 'wi', 'ዋ': 'wa', 'ዌ': 'wie', 'ው': 'w', 'ዎ': 'wo',
-  'ዐ': 'a', 'ዑ': 'u', 'ዒ': 'i', 'ዓ': 'a', 'ዔ': 'e', 'ዕ': 'e', 'ዖ': 'o',
-  'ዘ': 'ze', 'ዙ': 'zu', 'ዚ': 'zi', 'ዛ': 'za', 'ዜ': 'zie', 'ዝ': 'z', 'ዞ': 'zo',
-  'ዠ': 'zhe', 'ዡ': 'zhu', 'ዢ': 'zhi', 'ዣ': 'zha', 'ዤ': 'zhie', 'ዥ': 'zh', 'ዦ': 'zho',
-  'የ': 'ye', 'ዩ': 'yu', 'ዪ': 'yi', 'ያ': 'ya', 'ዬ': 'yie', 'ይ': 'y', 'ዮ': 'yo',
-  'ደ': 'de', 'ዱ': 'du', 'ዲ': 'di', 'ዳ': 'da', 'ዴ': 'die', 'ድ': 'd', 'ዶ': 'do',
-  'ጀ': 'je', 'ጁ': 'ju', 'ጂ': 'ji', 'ጃ': 'ja', 'ጄ': 'jie', 'ጅ': 'j', 'ጆ': 'jo',
-  'ገ': 'ge', 'ጉ': 'gu', 'ጊ': 'gi', 'ጋ': 'ga', 'ጌ': 'gie', 'ግ': 'g', 'ጎ': 'go',
-  'ጠ': 'te', 'ጡ': 'tu', 'ጢ': 'ti', 'ጣ': 'ta', 'ጤ': 'tie', 'ጥ': 't', 'ጦ': 'to',
-  'ጨ': 'che', 'ጩ': 'chu', 'ጪ': 'chi', 'ጫ': 'cha', 'ጬ': 'chie', 'ጭ': 'ch', 'ጮ': 'cho',
-  'ጰ': 'pe', 'ጱ': 'pu', 'ጲ': 'pi', 'ጳ': 'pa', 'ጴ': 'pie', 'ጵ': 'p', 'ጶ': 'po',
-  'ጸ': 'tse', 'ጹ': 'tsu', 'ጺ': 'tsi', 'ጻ': 'tsa', 'ጼ': 'tsie', 'ጽ': 'ts', 'ጾ': 'tso',
-  'ፀ': 'tse', 'ፁ': 'tsu', 'ፂ': 'tsi', 'ፃ': 'tsa', 'ፄ': 'tsie', 'ፅ': 'ts', 'ፆ': 'tso',
-  'ፈ': 'fe', 'ፉ': 'fu', 'ፊ': 'fi', 'ፋ': 'fa', 'ፌ': 'fie', 'ፍ': 'f', 'ፎ': 'fo',
-  'ፐ': 'pe', 'ፑ': 'pu', 'ፒ': 'pi', 'ፓ': 'pa', 'ፔ': 'pie', 'ፕ': 'p', 'ፖ': 'po'
-};
-
-export function phoneticTransliterate(str: string): string {
-  let out = '';
-  for (let i = 0; i < str.length; i++) {
-    const char = str[i];
-    if (FIDEL_PHONETIC[char]) {
-      out += FIDEL_PHONETIC[char];
-    } else {
-      out += char;
-    }
-  }
-  // Capitalize first letter of word
-  if (out.length > 0) {
-    return out.charAt(0).toUpperCase() + out.slice(1);
-  }
-  return out;
+  return finalSegments.join(', ');
 }
 
 /**
