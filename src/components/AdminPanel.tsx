@@ -11,32 +11,49 @@ import { LanguageMode, translateAmharicLocation, formatLocationDisplay } from '.
 
 // Helper to parse feeder name and its Amharic location details
 const parseFeeder = (feederStr: string) => {
-  const parenIndex = feederStr.indexOf('(');
-  if (parenIndex !== -1) {
-    const feederLine = feederStr.substring(0, parenIndex).trim();
-    const closeIndex = feederStr.lastIndexOf(')');
-    const amharicLocation = closeIndex !== -1 
-      ? feederStr.substring(parenIndex + 1, closeIndex).trim() 
-      : feederStr.substring(parenIndex + 1).trim();
-    return { feederLine, amharicLocation };
+  try {
+    if (!feederStr) return { feederLine: '', amharicLocation: '' };
+    const parenIndex = feederStr.indexOf('(');
+    if (parenIndex !== -1) {
+      const feederLine = feederStr.substring(0, parenIndex).trim();
+      const closeIndex = feederStr.lastIndexOf(')');
+      const amharicLocation = closeIndex !== -1 
+        ? feederStr.substring(parenIndex + 1, closeIndex).trim() 
+        : feederStr.substring(parenIndex + 1).trim();
+      return { feederLine, amharicLocation };
+    }
+    return { feederLine: feederStr, amharicLocation: '' };
+  } catch (err) {
+    console.error('Failed to parse feeder string:', feederStr, err);
+    return { feederLine: feederStr || '', amharicLocation: '' };
   }
-  return { feederLine: feederStr, amharicLocation: '' };
 };
 
 export const normalizeFeederName = (name: string) => {
-  if (!name) return '';
-  const parsed = parseFeeder(name);
-  return (parsed.feederLine || name).trim().toLowerCase();
+  try {
+    if (!name) return '';
+    const parsed = parseFeeder(name);
+    return (parsed.feederLine || name).trim().toLowerCase();
+  } catch (err) {
+    console.error('Failed to normalize feeder name:', name, err);
+    return (name || '').trim().toLowerCase();
+  }
 };
 
 export const parseFeederDetails = (feederLine: string) => {
-  const parts = feederLine.split(' - ');
-  if (parts.length >= 2) {
-    const substation = parts[0].trim();
-    const feederId = parts.slice(1).join(' - ').trim();
-    return { substation, feederId };
+  try {
+    if (!feederLine) return { substation: 'N/A', feederId: '' };
+    const parts = feederLine.split(' - ');
+    if (parts.length >= 2) {
+      const substation = parts[0].trim();
+      const feederId = parts.slice(1).join(' - ').trim();
+      return { substation, feederId };
+    }
+    return { substation: 'N/A', feederId: feederLine };
+  } catch (err) {
+    console.error('Failed to parse feeder details:', feederLine, err);
+    return { substation: 'N/A', feederId: feederLine || '' };
   }
-  return { substation: 'N/A', feederId: feederLine };
 };
 
 interface AdminPanelProps {
@@ -703,12 +720,12 @@ export default function AdminPanel({
                 <button
                   id="admin-preset-reset-btn"
                   onClick={() => {
-                    if (window.confirm('Sync and restore all 248 official EEU feeder line database records? This will update any outdated or missing feeder lines.')) {
+                    if (window.confirm(`Sync and restore all ${INITIAL_FEEDERS_LIST.length} official EEU feeder line database records? This will update any outdated or missing feeder lines.`)) {
                       onResetMasterFeeders();
                     }
                   }}
                   className="px-3.5 py-2.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
-                  title="Force re-sync and restore the complete 248 master feeder line database to Firestore and local cache"
+                  title={`Force re-sync and restore the complete ${INITIAL_FEEDERS_LIST.length} master feeder line database to Firestore and local cache`}
                 >
                   <RefreshCw className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                   <span>Sync Master Database ({INITIAL_FEEDERS_LIST.length})</span>
@@ -717,7 +734,7 @@ export default function AdminPanel({
               <button
                 id="admin-preset-add-btn"
                 onClick={handleOpenAddFeeder}
-                className="px-4 py-2.5 bg-eeu-green hover:bg-eeu-green-hover text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shadow-lg shadow-eeu-green/15 cursor-pointer"
+                className="px-4 py-2.5 bg-eeu-green hover:bg-eeu-green-hover active:scale-[0.98] text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shadow-lg shadow-eeu-green/20 hover:shadow-eeu-green/30 cursor-pointer focus:outline-none focus:ring-2 focus:ring-eeu-green focus:ring-offset-2 dark:focus:ring-offset-gray-900"
               >
                 <Plus className="w-4 h-4" />
                 <span>Add Feeder Preset</span>

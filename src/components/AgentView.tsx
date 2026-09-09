@@ -671,8 +671,17 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
     setActiveEditorTab('write');
   };
 
-  // Process filters & search query
-  const filteredItems = liveInterruptions.filter((item) => {
+  // Direct source of truth for interruptions: use passed interruptions prop if provided
+  const displayInterruptions = interruptions !== undefined ? interruptions : liveInterruptions;
+
+  // Process filters & search query - The Interruption Dashboard only displays ACTIVE / UNDER_INVESTIGATION outages.
+  // Restored outages are automatically cleared from the dashboard and archived in the Restored Feeders tab.
+  const filteredItems = displayInterruptions.filter((item) => {
+    // Exclude restored items from the active interruption dashboard
+    if (item.status === InterruptionStatus.RESTORED) {
+      return false;
+    }
+
     const query = searchQuery.toLowerCase();
     const englishArea = translateAmharicLocation(item.affectedArea).toLowerCase();
     // 1. Search Query Match (matches Feeder name, Amharic affected area, English translated area, and remarks)
@@ -687,14 +696,11 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
     // 3. Type Filter Match
     const matchesType = selectedType === 'All' || item.type === selectedType;
 
-    // 4. Status Filter Match (If showOnlyActive is true, hide RESTORED)
-    const matchesStatus = !showOnlyActive || item.status !== InterruptionStatus.RESTORED;
-
-    // 5. Cardinal Direction Filter Match
+    // 4. Cardinal Direction Filter Match
     const itemDir = getCardinalDirection(item.district, item.feederName);
     const matchesDirection = selectedDirection === 'All' || itemDir === selectedDirection;
 
-    return matchesSearch && matchesDistrict && matchesType && matchesStatus && matchesDirection;
+    return matchesSearch && matchesDistrict && matchesType && matchesDirection;
   });
 
   // Process Sorting
@@ -703,22 +709,16 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
       return a.feederName.localeCompare(b.feederName);
     }
     
-    // Fallback/standard comparison: Parse times to compare chronologically
-    const parseTime = (timeStr: string) => {
-      // Return a simulated weight from mock helper labels or typical dates
-      // If of identical length, normal descending sort is good
-      return timeStr;
-    };
-
+    // Chronological comparison
     if (sortBy === 'latest') {
-      return b.lastUpdated.localeCompare(a.lastUpdated);
+      return (b.lastUpdated || '').localeCompare(a.lastUpdated || '');
     } else {
-      return a.lastUpdated.localeCompare(b.lastUpdated);
+      return (a.lastUpdated || '').localeCompare(b.lastUpdated || '');
     }
   });
 
-  // Extract unique granular locations beautifully from current active/investigated/restored feeders
-  // This isolates neighborhood names and places them in an interactive directory map
+  // Extract unique granular locations only from current active/investigating feeders
+  // Restored locations are cleared from this active directory map
   const uniqueLocations: Array<{
     name: string;
     englishName: string;
@@ -728,52 +728,52 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
     status: InterruptionStatus;
   }> = [];
 
-  liveInterruptions.forEach((item) => {
-    // Split the affectedArea on typical Amharic and English delimiter characters
-    const rawParts = item.affectedArea.split(/[፣、፤,;]+/);
-    
-    rawParts.forEach((part) => {
-      let trimmed = part.trim();
+  displayInterruptions
+    .filter((item) => item.status !== InterruptionStatus.RESTORED)
+    .forEach((item) => {
+      // Split the affectedArea on typical Amharic and English delimiter characters
+      const rawParts = item.affectedArea.split(/[፣、፤,;]+/);
       
-      // Clear final punctuation or helper phrases
-      if (trimmed.endsWith('።')) {
-        trimmed = trimmed.replace(/።+$/, '');
-      }
-      
-      // Let's filter out short texts, pure English or Amharic helper terms that aren't locations
-      if (
-        trimmed.length > 2 && 
-        !trimmed.startsWith('በክፊል') && 
-        !trimmed.startsWith('በከፊል') &&
-        !trimmed.endsWith('ያልቃል') &&
-        !trimmed.startsWith('እና አካባቢው')
-      ) {
-        const englishTrans = translateAmharicLocation(trimmed);
-        // Prevent duplicate location tags for the same feeder
-        const exists = uniqueLocations.some(
-          (loc) => (loc.name.toLowerCase() === trimmed.toLowerCase() || loc.englishName.toLowerCase() === englishTrans.toLowerCase()) && loc.feederId === item.id
-        );
-        if (!exists) {
-          uniqueLocations.push({
-            name: trimmed,
-            englishName: englishTrans,
-            district: item.district,
-            feederName: item.feederName,
-            feederId: item.id,
-            status: item.status
-          });
+      rawParts.forEach((part) => {
+        let trimmed = part.trim();
+        
+        // Clear final punctuation or helper phrases
+        if (trimmed.endsWith('።')) {
+          trimmed = trimmed.replace(/።+$/, '');
         }
-      }
+        
+        // Filter out short texts, pure English or Amharic helper terms that aren't locations
+        if (
+          trimmed.length > 2 && 
+          !trimmed.startsWith('በክፊል') && 
+          !trimmed.startsWith('በከፊል') &&
+          !trimmed.endsWith('ያልቃል') &&
+          !trimmed.startsWith('እና አካባቢው')
+        ) {
+          const englishTrans = translateAmharicLocation(trimmed);
+          // Prevent duplicate location tags for the same feeder
+          const exists = uniqueLocations.some(
+            (loc) => (loc.name.toLowerCase() === trimmed.toLowerCase() || loc.englishName.toLowerCase() === englishTrans.toLowerCase()) && loc.feederId === item.id
+          );
+          if (!exists) {
+            uniqueLocations.push({
+              name: trimmed,
+              englishName: englishTrans,
+              district: item.district,
+              feederName: item.feederName,
+              feederId: item.id,
+              status: item.status
+            });
+          }
+        }
+      });
     });
-  });
 
-  // Filter unique locations by directory search query, selected district, and hide status
+  // Filter unique locations by directory search query and selected district
   const filteredUniqueLocations = uniqueLocations.filter((loc) => {
     const locQuery = locationSearchQuery.trim().toLowerCase();
     if (!locQuery) {
-      const matchesDistrict = selectedDistrict === 'All' || loc.district === selectedDistrict;
-      const matchesStatus = !showOnlyActive || loc.status !== InterruptionStatus.RESTORED;
-      return matchesDistrict && matchesStatus;
+      return selectedDistrict === 'All' || loc.district === selectedDistrict;
     }
 
     const cleanLocQuery = locQuery.replace(/[\s\-_.]/g, '');
@@ -791,12 +791,11 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
       cleanDistrict.includes(locQuery);
 
     const matchesDistrict = selectedDistrict === 'All' || loc.district === selectedDistrict;
-    const matchesStatus = !showOnlyActive || loc.status !== InterruptionStatus.RESTORED;
     
-    return matchesSearch && matchesDistrict && matchesStatus;
+    return matchesSearch && matchesDistrict;
   });
 
-  // Compute direction statistics based on all current interruptions
+  // Compute direction statistics based on all current active interruptions
   const directionStats = {
     North: { active: 0, restored: 0, total: 0, areas: [] as string[] },
     East: { active: 0, restored: 0, total: 0, areas: [] as string[] },
@@ -805,38 +804,38 @@ export default function AgentView({ interruptions, onTriggerMockIncident, isAdmi
     Sheger: { active: 0, restored: 0, total: 0, areas: [] as string[] },
   };
 
-  liveInterruptions.forEach((item) => {
+  displayInterruptions.forEach((item) => {
     const dir = getCardinalDirection(item.district, item.feederName);
     const isActive = item.status !== InterruptionStatus.RESTORED;
     
-    directionStats[dir].total += 1;
     if (isActive) {
+      directionStats[dir].total += 1;
       directionStats[dir].active += 1;
+
+      // Capture unique clean location names for preview inside direction card only for active outages
+      const rawParts = item.affectedArea.split(/[፣、፤,;]+/);
+      rawParts.forEach((part) => {
+        let trimmed = part.trim();
+        
+        if (trimmed.endsWith('።')) {
+          trimmed = trimmed.replace(/።+$/, '');
+        }
+        
+        if (
+          trimmed.length > 2 && 
+          !trimmed.startsWith('በክፊል') && 
+          !trimmed.startsWith('በከፊል') && 
+          !trimmed.endsWith('ያልቃል') && 
+          !trimmed.startsWith('እና አካባቢው')
+        ) {
+          if (!directionStats[dir].areas.includes(trimmed)) {
+            directionStats[dir].areas.push(trimmed);
+          }
+        }
+      });
     } else {
       directionStats[dir].restored += 1;
     }
-
-    // Capture unique clean location names for preview inside direction card
-    const rawParts = item.affectedArea.split(/[፣、፤,;]+/);
-    rawParts.forEach((part) => {
-      let trimmed = part.trim();
-      
-      if (trimmed.endsWith('።')) {
-        trimmed = trimmed.replace(/።+$/, '');
-      }
-      
-      if (
-        trimmed.length > 2 && 
-        !trimmed.startsWith('በክፊል') && 
-        !trimmed.startsWith('በከፊል') && 
-        !trimmed.endsWith('ያልቃል') && 
-        !trimmed.startsWith('እና አካባቢው')
-      ) {
-        if (!directionStats[dir].areas.includes(trimmed)) {
-          directionStats[dir].areas.push(trimmed);
-        }
-      }
-    });
   });
 
   return (

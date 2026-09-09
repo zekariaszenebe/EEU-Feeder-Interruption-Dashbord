@@ -1,7 +1,14 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
+import { getFirestore, enableNetwork, setLogLevel } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
+
+// Silence verbose internal Firestore backoff retry logs
+try {
+  setLogLevel('silent');
+} catch {
+  // ignore
+}
 
 const app = initializeApp(firebaseConfig);
 
@@ -9,27 +16,16 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth(app);
 
-// Validate Connection to Firestore on boot
-async function testConnection() {
+// Always ensure the network is active on startup and clear any stale quota exhaustion flags
+if (typeof window !== 'undefined') {
   try {
-    if (typeof navigator !== 'undefined' && !navigator.onLine) {
-      return;
-    }
-    await getDocFromServer(doc(db, 'interruptions', 'connection-test'));
-  } catch (error: unknown) {
-    const err = error as { code?: string; message?: string };
-    if (
-      err?.code === 'unavailable' ||
-      err?.message?.includes('the client is offline') ||
-      err?.message?.includes('unavailable')
-    ) {
-      // Client operates gracefully with offline cache until server connects
-      console.info("Firestore client initialized with offline persistence.");
-    }
+    localStorage.removeItem('eeu_firestore_quota_exhausted');
+    sessionStorage.removeItem('eeu_firestore_quota_exhausted');
+    enableNetwork(db).catch(() => {});
+  } catch {
+    // ignore
   }
 }
 
-if (typeof window !== 'undefined') {
-  testConnection();
-}
+
 

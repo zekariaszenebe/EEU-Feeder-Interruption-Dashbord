@@ -5,6 +5,9 @@ import {
   Headset, ShieldCheck, UserCheck, KeyRound, Eye, EyeOff, MessageCircle 
 } from 'lucide-react';
 
+// Context
+import { useInterruptions } from './context/InterruptionContext';
+
 // Types and mock data
 import { FeederInterruption, InterruptionType, InterruptionStatus, SystemNotification, TeamLeaderNote, ContactItem, TeamLeaderUser, UserRole } from './types';
 import { INITIAL_INTERRUPTIONS, INITIAL_NOTIFICATIONS, INITIAL_DISTRICTS, INITIAL_FEEDERS_LIST } from './data/mockData';
@@ -70,27 +73,16 @@ export default function App() {
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState<boolean>(false);
 
   // 2. Data State
-  const [interruptions, setInterruptions] = useState<FeederInterruption[]>(() => {
-    const saved = localStorage.getItem('eeu-interruptions');
-    let loaded: FeederInterruption[] = [];
-    if (saved) {
-      try {
-        loaded = JSON.parse(saved);
-      } catch (e) {
-        console.error('Failed to load interruptions from localStorage', e);
-      }
-    }
-    // Deep deduplication safeguard and filter out legacy mock IDs
-    const seen = new Set<string>();
-    const legacyMockIds = new Set(['f-1', 'f-2', 'f-3', 'f-4', 'f-5', 'f-6', 'f-7', 'f-8', 'f-9']);
-    return loaded.filter((item) => {
-      if (!item || !item.id || seen.has(item.id) || legacyMockIds.has(item.id)) {
-        return false;
-      }
-      seen.add(item.id);
-      return true;
-    });
-  });
+  const {
+    interruptions,
+    setInterruptions,
+    addInterruption: handleAddInterruption,
+    updateInterruption: handleUpdateInterruption,
+    deleteInterruption: handleDeleteInterruption,
+    triggerToast,
+    liveToast,
+    setLiveToast
+  } = useInterruptions();
 
   const [notifications, setNotifications] = useState<SystemNotification[]>(() => {
     const saved = localStorage.getItem('eeu-notifications');
@@ -118,24 +110,24 @@ export default function App() {
   });
 
   const [feedersList, setFeedersList] = useState<string[]>(() => {
-    const savedVer = localStorage.getItem('eeu-feeders-version');
     const saved = localStorage.getItem('eeu-feeders-list-v4');
-    if (saved && savedVer === FEEDERS_VERSION) {
+    if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length === INITIAL_FEEDERS_LIST.length) {
-          const hasStale = parsed.some((s: string) => s.includes('ወንድይራድ') && s.includes('COT-01'));
-          const hasChaka = parsed.some((s: string) => s.includes('CHAKA - CHK-1'));
-          if (!hasStale && hasChaka) {
-            return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const combined = [...parsed];
+          for (const item of INITIAL_FEEDERS_LIST) {
+            const prefix = item.split(' (')[0].trim();
+            if (!combined.some((s: string) => s.startsWith(prefix))) {
+              combined.push(item);
+            }
           }
+          return combined;
         }
       } catch (e) {
         console.error('Failed to load feeders list from localStorage', e);
       }
     }
-    localStorage.setItem('eeu-feeders-version', FEEDERS_VERSION);
-    localStorage.setItem('eeu-feeders-list-v4', JSON.stringify(INITIAL_FEEDERS_LIST));
     return INITIAL_FEEDERS_LIST;
   });
 
@@ -182,7 +174,6 @@ export default function App() {
 
   // Seed initial data if needed and subscribe to Firestore updates in real-time
   useEffect(() => {
-    let unsubInterruptions = () => {};
     let unsubNotifications = () => {};
     let unsubFeeders = () => {};
     let unsubHubRecords = () => {};
@@ -190,14 +181,7 @@ export default function App() {
     let unsubCustomerContacts = () => {};
     let unsubTeamLeaders = () => {};
 
-    seedInitialDataIfEmpty().then(async () => {
-      // Clear notes on reload/mount so the board starts empty as requested
-      await clearTeamLeaderNotes();
-
-      unsubInterruptions = subscribeToInterruptions((items) => {
-        setInterruptions(items);
-        localStorage.setItem('eeu-interruptions', JSON.stringify(items));
-      });
+    seedInitialDataIfEmpty().then(() => {
       unsubNotifications = subscribeToNotifications((items) => {
         const filtered = items.filter(item => item && item.title !== 'Emergency Diagnostics Launched');
         setNotifications(filtered);
@@ -223,7 +207,6 @@ export default function App() {
     });
 
     return () => {
-      unsubInterruptions();
       unsubNotifications();
       unsubFeeders();
       unsubHubRecords();
@@ -238,42 +221,6 @@ export default function App() {
     localStorage.removeItem('eeu-theme');
   }, []);
 
-  // Automated cleanup of restored reports: keep only the 20 most recent and delete the rest
-  useEffect(() => {
-    const restored = interruptions.filter(item => item.status === InterruptionStatus.RESTORED);
-    if (restored.length > 20) {
-      const sortedRestored = [...restored].sort((a, b) => {
-        // Try comparing based on timestamp in ID if it looks like f-TIMESTAMP-suffix
-        const matchA = a.id.match(/^f-(\d+)-/);
-        const matchB = b.id.match(/^f-(\d+)-/);
-        if (matchA && matchB) {
-          return Number(matchB[1]) - Number(matchA[1]); // Descending (newest first)
-        }
-        return b.lastUpdated.localeCompare(a.lastUpdated);
-      });
-      
-      const toDelete = sortedRestored.slice(20);
-      toDelete.forEach(async (item) => {
-        try {
-          await deleteInterruptionDoc(item.id);
-          console.log(`Automatically pruned excess restored report: ${item.id}`);
-        } catch (err) {
-          console.error(`Failed to prune excess report: ${item.id}`, err);
-        }
-      });
-    }
-  }, [interruptions]);
-
-  // Highlight toast notification for active feedback
-  const [liveToast, setLiveToast] = useState<{ title: string; desc: string; type: 'info' | 'success' | 'warn' } | null>(null);
-
-  const triggerToast = (title: string, desc: string, type: 'info' | 'success' | 'warn' = 'info') => {
-    setLiveToast({ title, desc, type });
-    setTimeout(() => {
-      setLiveToast(null);
-    }, 4500);
-  };
-
   // Administrative functions
   const handleLoginAdmin = (pin: string): boolean => {
     if (pin === '1234') {
@@ -285,52 +232,6 @@ export default function App() {
       return true;
     }
     return false;
-  };
-
-  // Create interruption
-  const handleAddInterruption = async (entry: Omit<FeederInterruption, 'id' | 'lastUpdated'>) => {
-    try {
-      await addInterruptionDoc(entry);
-      triggerToast('New Outage Added', `${entry.feederName} has been synchronized across agent terminals`, 'warn');
-    } catch (e) {
-      console.error(e);
-      triggerToast('Failed to Add Outage', 'Error occurred while saving to database', 'warn');
-    }
-  };
-
-  // Update interruption
-  const handleUpdateInterruption = async (id: string, entry: Partial<FeederInterruption>) => {
-    try {
-      const existing = interruptions.find(item => item.id === id);
-      if (!existing) return;
-      await updateInterruptionDoc(id, entry, existing);
-      if (entry.status && entry.status !== existing.status) {
-        const titleText = entry.status === InterruptionStatus.RESTORED ? 'Feeder Line Cleared' : 'Operational Status Changed';
-        const messageText = entry.status === InterruptionStatus.RESTORED 
-          ? `${existing.feederName} restored to active grid status and re-energized successfully.`
-          : `${existing.feederName} reassessed as ${entry.status}.`;
-        triggerToast(titleText, messageText, entry.status === InterruptionStatus.RESTORED ? 'success' : 'info');
-      } else {
-        triggerToast('Record Updated', `Successfully updated grid data for ${existing.feederName}`, 'success');
-      }
-    } catch (e) {
-      console.error(e);
-      triggerToast('Update Failed', 'Error occurred while updating record', 'warn');
-    }
-  };
-
-  // Delete interruption
-  const handleDeleteInterruption = async (id: string) => {
-    try {
-      const target = interruptions.find(i => i.id === id);
-      await deleteInterruptionDoc(id);
-      if (target) {
-        triggerToast('Record Removed', `${target.feederName} interruption cleared from dispatch lists.`, 'info');
-      }
-    } catch (e) {
-      console.error(e);
-      triggerToast('Deletion Failed', 'Error occurred while deleting record', 'warn');
-    }
   };
 
   // Notifications operational state
@@ -363,14 +264,26 @@ export default function App() {
   // Syncing feeders list updates to Firestore
   const handleUpdateFeedersList = async (newList: string[]) => {
     try {
-      const added = newList.filter(x => !feedersList.includes(x));
-      const removed = feedersList.filter(x => !newList.includes(x));
+      const prevList = [...feedersList];
+      setFeedersList(newList);
+      localStorage.setItem('eeu-feeders-list-v4', JSON.stringify(newList));
+      
+      const added = newList.filter(x => !prevList.includes(x));
+      const removed = prevList.filter(x => !newList.includes(x));
 
       for (const item of removed) {
         await deletePresetFeederDoc(item);
       }
       for (const item of added) {
         await addPresetFeederDoc(item);
+      }
+      if (added.length > 0) {
+        const addedName = added[0].split(' (')[0];
+        triggerToast('Feeder Preset Added', `New feeder "${addedName}" registered to database`, 'success');
+      } else if (removed.length > 0) {
+        triggerToast('Feeder Preset Removed', 'Feeder line removed from database', 'info');
+      } else {
+        triggerToast('Feeder Preset Updated', 'Feeder line database updated', 'success');
       }
     } catch (e) {
       console.error(e);
