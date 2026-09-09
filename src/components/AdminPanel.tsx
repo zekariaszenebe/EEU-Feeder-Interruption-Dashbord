@@ -484,20 +484,28 @@ export default function AdminPanel({
     setShowFormModal(false);
   };
 
+  const [resolvingId, setResolvingId] = useState<string | null>(null);
+
   // Quick Resolve feeder toggler
-  const handleQuickResolve = (item: FeederInterruption) => {
-    const now = new Date();
-    onUpdateInterruption(item.id, {
-      status: InterruptionStatus.RESTORED,
-      remark: `Restored: Power flow stable. verified active transmission grid. [Log updated at Admin Cabinet].`,
-      estimatedRestorationTime: now.toLocaleString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-      })
-    });
+  const handleQuickResolve = async (item: FeederInterruption) => {
+    if (resolvingId) return;
+    setResolvingId(item.id);
+    try {
+      const now = new Date();
+      await onUpdateInterruption(item.id, {
+        status: InterruptionStatus.RESTORED,
+        remark: `Restored: Power flow stable. verified active transmission grid. [Log updated at Admin Cabinet].`,
+        estimatedRestorationTime: now.toLocaleString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        })
+      });
+    } finally {
+      setResolvingId(null);
+    }
   };
 
   // Export current interruption records as a CSV file for reporting
@@ -907,10 +915,15 @@ export default function AdminPanel({
                             <button
                               id={`admin-resolve-btn-${item.id}`}
                               onClick={() => handleQuickResolve(item)}
+                              disabled={resolvingId === item.id}
                               title="Mark as Restored"
-                              className="p-2 text-eeu-green hover:bg-eeu-green/10 rounded-lg transition-all"
+                              className="p-2 text-eeu-green hover:bg-eeu-green/10 rounded-lg transition-all disabled:opacity-50"
                             >
-                              <CheckCircle2 className="w-4 h-4" />
+                              {resolvingId === item.id ? (
+                                <RefreshCw className="w-4 h-4 animate-spin text-eeu-green" />
+                              ) : (
+                                <CheckCircle2 className="w-4 h-4" />
+                              )}
                             </button>
                           )}
                           

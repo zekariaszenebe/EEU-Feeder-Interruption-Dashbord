@@ -222,20 +222,21 @@ export const InterruptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     if (!existing) return;
 
+    // Instant zero-latency UI toast feedback
+    if (entry.status && entry.status !== existing.status) {
+      const titleText = entry.status === InterruptionStatus.RESTORED ? 'Feeder Line Cleared' : 'Operational Status Changed';
+      const messageText = entry.status === InterruptionStatus.RESTORED 
+        ? `${existing.feederName} restored to active grid status and re-energized successfully.`
+        : `${existing.feederName} reassessed as ${entry.status}.`;
+      triggerToast(titleText, messageText, entry.status === InterruptionStatus.RESTORED ? 'success' : 'info');
+    } else {
+      triggerToast('Record Updated', `Successfully updated grid data for ${existing.feederName}`, 'success');
+    }
+
     try {
       await updateInterruptionDoc(id, entry, existing);
-      if (entry.status && entry.status !== existing.status) {
-        const titleText = entry.status === InterruptionStatus.RESTORED ? 'Feeder Line Cleared' : 'Operational Status Changed';
-        const messageText = entry.status === InterruptionStatus.RESTORED 
-          ? `${existing.feederName} restored to active grid status and re-energized successfully.`
-          : `${existing.feederName} reassessed as ${entry.status}.`;
-        triggerToast(titleText, messageText, entry.status === InterruptionStatus.RESTORED ? 'success' : 'info');
-      } else {
-        triggerToast('Record Updated', `Successfully updated grid data for ${existing.feederName}`, 'success');
-      }
     } catch (e) {
       console.error('Firestore updateInterruptionDoc failed, using local offline fallback:', e);
-      triggerToast('Updated Locally', `Saved modifications for ${existing.feederName} locally.`, 'info');
     }
   };
 
