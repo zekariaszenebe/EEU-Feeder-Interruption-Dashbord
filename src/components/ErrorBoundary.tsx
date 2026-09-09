@@ -10,12 +10,21 @@ interface State {
   errorInfo: ErrorInfo | null;
 }
 
+export interface ErrorBoundary {
+  state: State;
+  props: Props;
+  setState: (state: Partial<State> | ((prevState: State) => Partial<State>)) => void;
+}
+
 export class ErrorBoundary extends Component<Props, State> {
-  public state: State = {
-    hasError: false,
-    error: null,
-    errorInfo: null
-  };
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      hasError: false,
+      error: null,
+      errorInfo: null
+    };
+  }
 
   public static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error, errorInfo: null };

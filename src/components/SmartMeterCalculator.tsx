@@ -17,7 +17,8 @@ import {
   History,
   Calculator,
   Home,
-  Building2
+  Building2,
+  AlertTriangle
 } from 'lucide-react';
 
 // 2017 - 2020 EEU Tariff Matrices (Domestic)
@@ -200,8 +201,11 @@ export default function SmartMeterCalculator() {
     return stepResult;
   });
 
+  const MAX_ALLOWED_KWH = 3000;
+
   const totalKwhPurchased = accumulatedKwh;
   const totalPaidMonth = previousCumulativeTotalCost;
+  const isOver3000Kwh = totalKwhPurchased > MAX_ALLOWED_KWH;
 
   // Add new top-up step
   const handleAddTopUp = (e?: React.FormEvent | React.MouseEvent) => {
@@ -423,9 +427,19 @@ export default function SmartMeterCalculator() {
                     Monthly Top-Up Sequence ({topUpSteps.length})
                   </span>
                   <span className="text-[11px] text-gray-500 dark:text-zinc-400 font-medium">
-                    Total: <strong className="text-emerald-600 dark:text-emerald-400 font-bold">{totalKwhPurchased} kWh</strong>
+                    Total: <strong className={isOver3000Kwh ? "text-amber-600 dark:text-amber-400 font-bold" : "text-emerald-600 dark:text-emerald-400 font-bold"}>{totalKwhPurchased} kWh</strong>
                   </span>
                 </div>
+
+                {isOver3000Kwh && (
+                  <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-start gap-2 text-xs text-amber-800 dark:text-amber-300">
+                    <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+                    <div>
+                      <strong className="font-semibold block">3,000 kWh Calculation Limit Exceeded</strong>
+                      <span>Total consumption ({totalKwhPurchased.toLocaleString()} kWh) exceeds the 3,000 kWh limit. Calculations are not shown above 3,000 kWh. Please adjust your top-up amounts.</span>
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-2.5 max-h-80 overflow-y-auto pr-1">
                   {topUpSteps.map((step, idx) => {
@@ -491,140 +505,173 @@ export default function SmartMeterCalculator() {
         {/* Right Column: Step-by-Step Audit Cards & Total Monthly Top-Up Balance */}
         <div className="lg:col-span-7 space-y-6">
           
-          {/* Step-By-Step Incremental Top-Up Calculation Breakdown */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xs font-bold text-gray-800 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-2 font-sans">
-                <Calculator className="w-4 h-4 text-[#5FA354] dark:text-emerald-400" />
-                Step-by-Step Calculation Audit ({calculatedSteps.length} Steps)
-              </h2>
-              <button
-                type="button"
-                onClick={() => setShowFormulaDetails(!showFormulaDetails)}
-                className="text-xs font-semibold text-emerald-600 hover:underline cursor-pointer"
-              >
-                {showFormulaDetails ? 'Hide Formulas' : 'Show Formulas'}
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {calculatedSteps.map((step) => {
-                return (
-                  <div
-                    key={`audit-step-${step.id}`}
-                    className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-900 rounded-2xl p-5 shadow-xs space-y-4 transition-all hover:border-emerald-500/30"
-                  >
-                    {/* Step Header */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-150 dark:border-zinc-900 pb-3">
-                      <div className="flex items-center gap-2.5">
-                        <span className="w-7 h-7 rounded-xl bg-[#078930] text-white font-extrabold text-xs flex items-center justify-center shadow-xs">
-                          {step.stepNumber}
-                        </span>
-                        <div>
-                          <h3 className="text-sm font-bold text-gray-900 dark:text-white font-sans">
-                            Step {step.stepNumber}: Customer tops up {step.kwhAdded} kWh
-                          </h3>
-                          <p className="text-[11px] text-gray-500 dark:text-zinc-400 font-sans mt-0.5">
-                            {step.previousKwh === 0 ? (
-                              <span>First top-up of the month = <strong className="font-mono text-gray-700 dark:text-zinc-300">{step.kwhAdded} kWh</strong></span>
-                            ) : (
-                              <span>Previous {step.previousKwh} kWh + new {step.kwhAdded} kWh = <strong className="font-mono text-gray-700 dark:text-zinc-300">{step.cumulativeKwh} kWh Total Cumulative</strong></span>
-                            )}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Customer Pays Badge */}
-                      <div className="text-left sm:text-right bg-[#078930] p-2.5 px-3.5 rounded-xl shrink-0">
-                        <span className="text-[10px] font-bold text-white uppercase tracking-wider block">
-                          Customer Purchased
-                        </span>
-                        <span className="text-lg font-extrabold text-white font-sans">
-                          {step.customerPaysNow.toFixed(2)} ETB
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Mathematical Formula Walkthrough */}
-                    {showFormulaDetails && (
-                      <div className="animate-in fade-in-50 duration-200">
-                        <div className="p-4 bg-emerald-500/5 dark:bg-emerald-950/20 border border-emerald-500/20 rounded-xl space-y-2.5 text-xs font-sans text-gray-800 dark:text-zinc-200">
-                          <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-bold text-xs uppercase tracking-wider">
-                            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                            Step {step.stepNumber} EEU Billing Formula
-                          </div>
-
-                          <div className="space-y-1.5 text-xs leading-relaxed font-sans">
-                            <div>
-                              1. Cumulative Consumption: <span className="font-mono font-bold text-gray-900 dark:text-white">{step.previousKwh} + {step.kwhAdded} = {step.cumulativeKwh} kWh</span>
-                            </div>
-                            <div>
-                              2. Energy Charge: <span className="font-mono font-bold text-gray-900 dark:text-white">{step.cumulativeKwh} kWh × {step.rate.toFixed(4)} = {step.energyCharge.toFixed(3)} ETB</span>
-                            </div>
-                            <div>
-                              3. Service Charge (Prepaid): <span className="font-mono font-bold text-gray-900 dark:text-white">{step.serviceCharge.toFixed(2)} ETB</span>
-                            </div>
-                            <div>
-                              4. TV (EBC) Fee: <span className="font-mono font-bold text-gray-900 dark:text-white">{step.ebcFee.toFixed(2)} ETB</span> {step.cumulativeKwh > 50 ? '(> 50 kWh)' : '(≤ 50 kWh Exempt)'}
-                            </div>
-                            <div>
-                              5. Regulatory Fee (0.5%): <span className="font-mono font-bold text-gray-900 dark:text-white">({step.energyCharge.toFixed(3)} + {step.serviceCharge.toFixed(2)}) × 0.5% = {step.regulatoryFee.toFixed(6)} ETB</span>
-                            </div>
-                            <div>
-                              6. VAT (15%): <span className="font-mono font-bold text-gray-900 dark:text-white">{step.vatAmount > 0 ? `(${step.energyCharge.toFixed(3)} + {step.serviceCharge.toFixed(2)}) × 15% = ${step.vatAmount.toFixed(6)} ETB` : '0.00 ETB (≤ 200 kWh Exempt)'}</span>
-                            </div>
-                            <div>
-                              7. Cumulative Total Bill: <span className="font-mono font-bold text-gray-900 dark:text-white">{step.cumulativeTotalCost.toFixed(6)} ETB</span>
-                            </div>
-                            {step.previousCumulativeTotalCost > 0 ? (
-                              <div>
-                                8. Deduct previously paid amount ({step.previousCumulativeTotalCost.toFixed(6)} ETB):
-                                <br />
-                                <span className="font-mono font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-2.5 py-1 rounded-md mt-1.5 inline-block border border-emerald-500/20">
-                                  {step.cumulativeTotalCost.toFixed(6)} – {step.previousCumulativeTotalCost.toFixed(6)} = {step.customerPaysNow.toFixed(6)} ETB
-                                </span>
-                              </div>
-                            ) : (
-                              <div>
-                                8. Net amount payable for Step {step.stepNumber}:
-                                <br />
-                                <span className="font-mono font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-2.5 py-1 rounded-md mt-1.5 inline-block border border-emerald-500/20">
-                                  {step.customerPaysNow.toFixed(6)} ETB
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Total Monthly Summary Banner */}
-            <div className="px-5 sm:px-6 py-4 h-[115.5px] bg-gradient-to-r from-[#078930] to-[#5FA354] text-white rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
-              <div>
-                <span className="text-xs uppercase font-sans font-bold text-emerald-100 block tracking-wider">
-                  Total Monthly Top-Up Balance
-                </span>
-                <h3 className="text-2xl font-black font-sans tracking-tight mt-0.5">
-                  {totalKwhPurchased.toFixed(1)} kWh Total Purchased
+          {isOver3000Kwh ? (
+            /* Over 3000 kWh Limit Warning Card */
+            <div className="bg-white dark:bg-zinc-950 border border-amber-300 dark:border-amber-800/60 rounded-2xl p-6 sm:p-8 shadow-xs text-center space-y-4">
+              <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center justify-center mx-auto">
+                <AlertTriangle className="w-7 h-7" />
+              </div>
+              <div className="max-w-md mx-auto space-y-2">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white font-sans">
+                  Calculation Unavailable Above 3,000 kWh
                 </h3>
-                <p className="text-xs text-emerald-100 mt-1 font-medium">
-                  Cumulative total paid across all {calculatedSteps.length} top-up steps
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-zinc-300 leading-relaxed font-sans">
+                  The cumulative consumption is <strong className="font-mono font-bold text-amber-700 dark:text-amber-400">{totalKwhPurchased.toLocaleString()} kWh</strong>, which exceeds the maximum allowed calculation threshold of <strong>3,000 kWh</strong>.
+                </p>
+                <p className="text-xs text-gray-500 dark:text-zinc-400 font-sans">
+                  Calculations and billing breakdowns are strictly not shown above 3,000 kWh. Please adjust or reduce top-up steps to 3,000 kWh or lower.
                 </p>
               </div>
 
-              <div className="text-right shrink-0 bg-white/10 p-4 rounded-xl border border-white/20">
-                <span className="text-[11px] font-sans font-bold text-emerald-100 uppercase block">Total ETB Paid</span>
-                <span className="text-3xl font-extrabold font-mono text-white">
-                  {totalPaidMonth.toFixed(2)} <span className="text-sm font-bold">ETB</span>
-                </span>
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTopUpSteps([{ id: '1', stepNumber: 1, label: '1st Top-Up', kwh: 50 }]);
+                    setNewKwhInput('');
+                  }}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors cursor-pointer"
+                >
+                  Reset to 50 kWh
+                </button>
               </div>
             </div>
+          ) : (
+            /* Step-By-Step Incremental Top-Up Calculation Breakdown */
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xs font-bold text-gray-800 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-2 font-sans">
+                  <Calculator className="w-4 h-4 text-[#5FA354] dark:text-emerald-400" />
+                  Step-by-Step Calculation Audit ({calculatedSteps.length} Steps)
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setShowFormulaDetails(!showFormulaDetails)}
+                  className="text-xs font-semibold text-emerald-600 hover:underline cursor-pointer"
+                >
+                  {showFormulaDetails ? 'Hide Formulas' : 'Show Formulas'}
+                </button>
+              </div>
 
-          </div>
+              <div className="space-y-4">
+                {calculatedSteps.map((step) => {
+                  return (
+                    <div
+                      key={`audit-step-${step.id}`}
+                      className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-900 rounded-2xl p-5 shadow-xs space-y-4 transition-all hover:border-emerald-500/30"
+                    >
+                      {/* Step Header */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-150 dark:border-zinc-900 pb-3">
+                        <div className="flex items-center gap-2.5">
+                          <span className="w-7 h-7 rounded-xl bg-[#078930] text-white font-extrabold text-xs flex items-center justify-center shadow-xs">
+                            {step.stepNumber}
+                          </span>
+                          <div>
+                            <h3 className="text-sm font-bold text-gray-900 dark:text-white font-sans">
+                              Step {step.stepNumber}: Customer tops up {step.kwhAdded} kWh
+                            </h3>
+                            <p className="text-[11px] text-gray-500 dark:text-zinc-400 font-sans mt-0.5">
+                              {step.previousKwh === 0 ? (
+                                <span>First top-up of the month = <strong className="font-mono text-gray-700 dark:text-zinc-300">{step.kwhAdded} kWh</strong></span>
+                              ) : (
+                                <span>Previous {step.previousKwh} kWh + new {step.kwhAdded} kWh = <strong className="font-mono text-gray-700 dark:text-zinc-300">{step.cumulativeKwh} kWh Total Cumulative</strong></span>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Customer Pays Badge */}
+                        <div className="text-left sm:text-right bg-[#078930] p-2.5 px-3.5 rounded-xl shrink-0">
+                          <span className="text-[10px] font-bold text-white uppercase tracking-wider block">
+                            Customer Purchased
+                          </span>
+                          <span className="text-lg font-extrabold text-white font-sans">
+                            {step.customerPaysNow.toFixed(2)} ETB
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Mathematical Formula Walkthrough */}
+                      {showFormulaDetails && (
+                        <div className="animate-in fade-in-50 duration-200">
+                          <div className="p-4 bg-emerald-500/5 dark:bg-emerald-950/20 border border-emerald-500/20 rounded-xl space-y-2.5 text-xs font-sans text-gray-800 dark:text-zinc-200">
+                            <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-bold text-xs uppercase tracking-wider">
+                              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                              Step {step.stepNumber} EEU Billing Formula
+                            </div>
+
+                            <div className="space-y-1.5 text-xs leading-relaxed font-sans">
+                              <div>
+                                1. Cumulative Consumption: <span className="font-mono font-bold text-gray-900 dark:text-white">{step.previousKwh} + {step.kwhAdded} = {step.cumulativeKwh} kWh</span>
+                              </div>
+                              <div>
+                                2. Energy Charge: <span className="font-mono font-bold text-gray-900 dark:text-white">{step.cumulativeKwh} kWh × {step.rate.toFixed(4)} = {step.energyCharge.toFixed(3)} ETB</span>
+                              </div>
+                              <div>
+                                3. Service Charge (Prepaid): <span className="font-mono font-bold text-gray-900 dark:text-white">{step.serviceCharge.toFixed(2)} ETB</span>
+                              </div>
+                              <div>
+                                4. TV (EBC) Fee: <span className="font-mono font-bold text-gray-900 dark:text-white">{step.ebcFee.toFixed(2)} ETB</span> {step.cumulativeKwh > 50 ? '(> 50 kWh)' : '(≤ 50 kWh Exempt)'}
+                              </div>
+                              <div>
+                                5. Regulatory Fee (0.5%): <span className="font-mono font-bold text-gray-900 dark:text-white">({step.energyCharge.toFixed(3)} + {step.serviceCharge.toFixed(2)}) × 0.5% = {step.regulatoryFee.toFixed(6)} ETB</span>
+                              </div>
+                              <div>
+                                6. VAT (15%): <span className="font-mono font-bold text-gray-900 dark:text-white">{step.vatAmount > 0 ? `(${step.energyCharge.toFixed(3)} + {step.serviceCharge.toFixed(2)}) × 15% = ${step.vatAmount.toFixed(6)} ETB` : '0.00 ETB (≤ 200 kWh Exempt)'}</span>
+                              </div>
+                              <div>
+                                7. Cumulative Total Bill: <span className="font-mono font-bold text-gray-900 dark:text-white">{step.cumulativeTotalCost.toFixed(6)} ETB</span>
+                              </div>
+                              {step.previousCumulativeTotalCost > 0 ? (
+                                <div>
+                                  8. Deduct previously paid amount ({step.previousCumulativeTotalCost.toFixed(6)} ETB):
+                                  <br />
+                                  <span className="font-mono font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-2.5 py-1 rounded-md mt-1.5 inline-block border border-emerald-500/20">
+                                    {step.cumulativeTotalCost.toFixed(6)} – {step.previousCumulativeTotalCost.toFixed(6)} = {step.customerPaysNow.toFixed(6)} ETB
+                                  </span>
+                                </div>
+                              ) : (
+                                <div>
+                                  8. Net amount payable for Step {step.stepNumber}:
+                                  <br />
+                                  <span className="font-mono font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-2.5 py-1 rounded-md mt-1.5 inline-block border border-emerald-500/20">
+                                    {step.customerPaysNow.toFixed(6)} ETB
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Total Monthly Summary Banner */}
+              <div className="px-5 sm:px-6 py-4 h-[115.5px] bg-gradient-to-r from-[#078930] to-[#5FA354] text-white rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
+                <div>
+                  <span className="text-xs uppercase font-sans font-bold text-emerald-100 block tracking-wider">
+                    Total Monthly Top-Up Balance
+                  </span>
+                  <h3 className="text-2xl font-black font-sans tracking-tight mt-0.5">
+                    {totalKwhPurchased.toFixed(1)} kWh Total Purchased
+                  </h3>
+                  <p className="text-xs text-emerald-100 mt-1 font-medium">
+                    Cumulative total paid across all {calculatedSteps.length} top-up steps
+                  </p>
+                </div>
+
+                <div className="text-right shrink-0 bg-white/10 p-4 rounded-xl border border-white/20">
+                  <span className="text-[11px] font-sans font-bold text-emerald-100 uppercase block">Total ETB Paid</span>
+                  <span className="text-3xl font-extrabold font-mono text-white">
+                    {totalPaidMonth.toFixed(2)} <span className="text-sm font-bold">ETB</span>
+                  </span>
+                </div>
+              </div>
+
+            </div>
+          )}
 
         </div>
 

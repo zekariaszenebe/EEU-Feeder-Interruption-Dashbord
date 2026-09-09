@@ -672,6 +672,19 @@ export default function AdminPanel({
     );
   });
 
+  // Sort interruptions: Active disruptions on top, Restored feeders pushed to the bottom
+  const sortedInterruptions = [...interruptions].sort((a, b) => {
+    const aRestored = a.status === InterruptionStatus.RESTORED;
+    const bRestored = b.status === InterruptionStatus.RESTORED;
+
+    // If one is restored and the other isn't, non-restored comes first
+    if (!aRestored && bRestored) return -1;
+    if (aRestored && !bRestored) return 1;
+
+    // Within the same status group, sort by lastUpdated descending (newest first)
+    return (b.lastUpdated || '').localeCompare(a.lastUpdated || '');
+  });
+
   return (
     <div id="admin-management-view" className="space-y-6">
       {/* Admin Action Header */}
@@ -841,7 +854,7 @@ export default function AdminPanel({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60 text-sm">
-                {interruptions.map((item) => {
+                {sortedInterruptions.map((item) => {
                   const isRestored = item.status === InterruptionStatus.RESTORED;
                   return (
                     <tr 
