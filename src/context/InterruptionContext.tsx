@@ -21,7 +21,9 @@ interface InterruptionContextType {
 
 const InterruptionContext = createContext<InterruptionContextType | undefined>(undefined);
 
-const channel = typeof window !== 'undefined' ? new BroadcastChannel('eeu_interruptions_channel') : null;
+const channel = (typeof window !== 'undefined' && 'BroadcastChannel' in window) 
+  ? new BroadcastChannel('eeu_interruptions_channel') 
+  : null;
 
 export function useInterruptions() {
   const context = useContext(InterruptionContext);
