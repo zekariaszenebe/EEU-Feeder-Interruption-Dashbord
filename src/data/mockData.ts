@@ -142,6 +142,42 @@ export const INITIAL_INTERRUPTIONS: FeederInterruption[] = [
     affectedArea: 'ድሬ ከአስፋልት በታች፣ ጉዳ፣ ኬላ፣ ጉዮ፣ ታጠቅ ኢንዱስትሪ መንደር በከፊል ፣ቶልቻ ፤ ሰሪፊ ፤ ጉጄ ፤ ቶልቻ ፤ ታጠቅ ኢንዱስትሪ ፤ ፌስቱላ ማዕከል እና አካባቢው',
     remark: 'Permanent earth fault on Burayu path. Patrol crew tracking insulator breakdown near heavy factories.',
     lastUpdated: getPastHoursString(0.4)
+  },
+  {
+    id: 'f-10',
+    feederName: 'KOTEBE - KOT-02',
+    district: 'Team B',
+    type: InterruptionType.DIFFERENTIAL,
+    status: InterruptionStatus.ACTIVE,
+    startTime: getPastHoursString(0.9),
+    estimatedRestorationTime: 'N/A',
+    affectedArea: 'ኮተቤ 02 ፤ መምህራን ኮሌጅ ፤ ብርሃነ ህይወት ፤ አያት 2 አደባባይ እና አካባቢው',
+    remark: 'Substation power transformer differential protection relay (87T) operated. Crew verifying internal bushing integrity.',
+    lastUpdated: getPastHoursString(0.3)
+  },
+  {
+    id: 'f-11',
+    feederName: 'KALITI - KAL-08',
+    district: 'Team D',
+    type: InterruptionType.OVER_CURRENT,
+    status: InterruptionStatus.ACTIVE,
+    startTime: getPastHoursString(1.8),
+    estimatedRestorationTime: 'N/A',
+    affectedArea: 'ቃሊቲ ማረሚያ ፊት ለፊት ፤ ጉምሩክ ፤ ቃሊቲ ብረታ ብረት ፤ ቆቃ መጋዘን እና አካባቢው',
+    remark: 'Overcurrent threshold exceeded (50/51) during heavy industrial manufacturing load surge. Line thermal checks in progress.',
+    lastUpdated: getPastHoursString(0.2)
+  },
+  {
+    id: 'f-12',
+    feederName: 'SEBETA - SEB-01',
+    district: 'Team D',
+    type: InterruptionType.TOTAL_BLACKOUT,
+    status: InterruptionStatus.ACTIVE,
+    startTime: getPastHoursString(2.1),
+    estimatedRestorationTime: 'N/A',
+    affectedArea: 'ሰበታ ከተማ ሙሉ ፤ አለምገና ፤ ዋላያ ፤ አዋሽ መልካሳ መገንጠያ እና የኢንዱስትሪ ዞኑ በሙሉ',
+    remark: 'Total blackout across regional 132kV grid interconnect. National dispatch center coordinating black-start step recovery.',
+    lastUpdated: getPastHoursString(0.1)
   }
 ];
 

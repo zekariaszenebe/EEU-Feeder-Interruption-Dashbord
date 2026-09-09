@@ -1,6 +1,9 @@
 export enum InterruptionType {
   EARTH_FAULT = 'Earth Fault',
   SHORT_CIRCUIT = 'Short Circuit',
+  DIFFERENTIAL = 'Differential',
+  OVER_CURRENT = 'Over Current',
+  TOTAL_BLACKOUT = 'Total Blackout',
   PLANNED_INTERRUPTION = 'Planned Interruption',
   OPERATIONAL_INTERRUPTION = 'Operational Interruption'
 }

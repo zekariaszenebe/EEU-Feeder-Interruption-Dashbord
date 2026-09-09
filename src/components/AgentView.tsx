@@ -5,7 +5,8 @@ import {
   SlidersHorizontal, CheckSquare, Square, Bell, CalendarClock, Info,
   Columns, Rows, Zap, Settings, Compass, ArrowUp, ArrowDown, ArrowLeft, ArrowRight,
   Trash2, Edit3, Plus, MessageSquare, AlertCircle, Languages,
-  Undo, Redo, Bold, Italic, Underline, Strikethrough, AlignLeft, AlignCenter, AlignRight, AlignJustify, Table, ChevronDown
+  Undo, Redo, Bold, Italic, Underline, Strikethrough, AlignLeft, AlignCenter, AlignRight, AlignJustify, Table, ChevronDown,
+  Activity, Gauge, PowerOff
 } from 'lucide-react';
 import { FeederInterruption, InterruptionType, InterruptionStatus, stripBrackets, TeamLeaderNote } from '../types';
 import { INITIAL_DISTRICTS } from '../data/mockData';
@@ -149,6 +150,24 @@ export function getTypeBadgeStyles(type: InterruptionType) {
         bg: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200/50 dark:border-blue-950/30',
         icon: Zap,
         colorClass: 'text-blue-500'
+      };
+    case InterruptionType.DIFFERENTIAL:
+      return {
+        bg: 'bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-200/50 dark:border-purple-950/30',
+        icon: Activity,
+        colorClass: 'text-purple-500'
+      };
+    case InterruptionType.OVER_CURRENT:
+      return {
+        bg: 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-200/50 dark:border-amber-950/30',
+        icon: Gauge,
+        colorClass: 'text-amber-500'
+      };
+    case InterruptionType.TOTAL_BLACKOUT:
+      return {
+        bg: 'bg-zinc-800/10 dark:bg-zinc-800/60 text-zinc-900 dark:text-zinc-100 border-zinc-300 dark:border-zinc-700',
+        icon: PowerOff,
+        colorClass: 'text-zinc-800 dark:text-zinc-200'
       };
     case InterruptionType.PLANNED_INTERRUPTION:
       return {

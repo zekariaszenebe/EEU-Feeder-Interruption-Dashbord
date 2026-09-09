@@ -326,6 +326,9 @@ export default function App() {
     const incidentTypes = [
       { t: InterruptionType.EARTH_FAULT, r: 'Ground phase breakdown detected. Substation tripped protectively.' },
       { t: InterruptionType.SHORT_CIRCUIT, r: 'Tree line friction under heavy gusts. Insulators damaged.' },
+      { t: InterruptionType.DIFFERENTIAL, r: 'Substation power transformer differential protection (87T) operated. Isolation in progress.' },
+      { t: InterruptionType.OVER_CURRENT, r: 'Feeder breaker tripped on high overcurrent threshold (50/51). Crews surveying trunk line.' },
+      { t: InterruptionType.TOTAL_BLACKOUT, r: 'Grid total blackout reported across incoming high-voltage transmission lines.' },
       { t: InterruptionType.OPERATIONAL_INTERRUPTION, r: 'Replacing burnt overhead cables and tightening drop link lines.' }
     ];
     const pickedTypeObj = incidentTypes[Math.floor(Math.random() * incidentTypes.length)];
